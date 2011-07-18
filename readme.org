@@ -1,0 +1,7 @@
+* Proyecto fringeproc.
+
+  Basicamente, aqui tenemos una pequeña colección de filtros para el
+  procesamiento de imágenes. Se encuentran documentadas las funciones.
+
+  Principalmente hay que revisar la informacion que puse bajo la
+  carpeta 'filters'.

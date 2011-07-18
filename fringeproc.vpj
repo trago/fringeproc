@@ -1,0 +1,258 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+  Version="10.0"
+  VendorName="SlickEdit"
+  WorkingDir=".">
+  <Config
+    Name="Debug"
+    Type="gnuc"
+    DebugCallbackName="gdb"
+    Version="1"
+    OutputFile="%bdfringeproc.so"
+    CompilerConfigName="Latest Version">
+    <Menu>
+      <Target
+        Name="Compile"
+        MenuCaption="&amp;Compile"
+        Dialog="_gnuc_options_form Compile"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        OutputExts="*.o"
+        SaveOption="SaveCurrent"
+        RunFromDir="%rw">
+        <Exec CmdLine='g++ -c %xup  %defd -g -o "%bd%n%oe" %i "%f"'/>
+      </Target>
+      <Target
+        Name="Link"
+        MenuCaption="&amp;Link"
+        ShowOnMenu="Never"
+        Dialog="_gnuc_options_form Link"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveCurrent"
+        RunFromDir="%rw">
+        <Exec CmdLine='g++ %xup -g -o "%o" %f %libs -shared -fPIC'/>
+      </Target>
+      <Target
+        Name="Build"
+        MenuCaption="&amp;Build"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveWorkspaceFiles"
+        RunFromDir="%rw/Build">
+        <Exec CmdLine="make"/>
+      </Target>
+      <Target
+        Name="Rebuild"
+        MenuCaption="&amp;Rebuild"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveWorkspaceFiles"
+        RunFromDir="%rw">
+        <Exec CmdLine=""/>
+      </Target>
+      <Target
+        Name="Debug"
+        MenuCaption="&amp;Debug"
+        Dialog="_gnuc_options_form Run/Debug"
+        BuildFirst="1"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveNone"
+        RunFromDir="%rw">
+        <Exec CmdLine=""/>
+      </Target>
+      <Target
+        Name="Execute"
+        MenuCaption="E&amp;xecute"
+        Dialog="_gnuc_options_form Run/Debug"
+        BuildFirst="1"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveWorkspaceFiles"
+        RunFromDir="%rw">
+        <Exec CmdLine=""/>
+      </Target>
+      <Target
+        Name="dash"
+        MenuCaption="-"
+        Deletable="0">
+        <Exec/>
+      </Target>
+      <Target
+        Name="GNU C Options"
+        MenuCaption="GNU C &amp;Options..."
+        ShowOnMenu="HideIfNoCmdLine"
+        Deletable="0"
+        SaveOption="SaveNone">
+        <Exec
+          CmdLine="gnucoptions"
+          Type="Slick-C"/>
+      </Target>
+    </Menu>
+    <List Name="GNUC Options">
+      <Item
+        Name="LinkerOutputType"
+        Value="SharedLibrary"/>
+    </List>
+  </Config>
+  <Config
+    Name="Release"
+    Type="gnuc"
+    DebugCallbackName="gdb"
+    Version="1"
+    OutputFile="%bdfringeproc.so"
+    CompilerConfigName="Latest Version">
+    <Menu>
+      <Target
+        Name="Compile"
+        MenuCaption="&amp;Compile"
+        Dialog="_gnuc_options_form Compile"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        OutputExts="*.o"
+        SaveOption="SaveCurrent"
+        RunFromDir="%rw">
+        <Exec CmdLine='g++ -c %xup %defd -o "%bd%n%oe" %i "%f"'/>
+      </Target>
+      <Target
+        Name="Link"
+        MenuCaption="&amp;Link"
+        ShowOnMenu="Never"
+        Dialog="_gnuc_options_form Link"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveCurrent"
+        RunFromDir="%rw">
+        <Exec CmdLine='g++ %xup -o "%o" %f %libs -shared -fPIC'/>
+      </Target>
+      <Target
+        Name="Build"
+        MenuCaption="&amp;Build"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveWorkspaceFiles"
+        RunFromDir="%rw/Build">
+        <Exec CmdLine="make"/>
+      </Target>
+      <Target
+        Name="Rebuild"
+        MenuCaption="&amp;Rebuild"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveWorkspaceFiles"
+        RunFromDir="%rw">
+        <Exec CmdLine=""/>
+      </Target>
+      <Target
+        Name="Debug"
+        MenuCaption="&amp;Debug"
+        Dialog="_gnuc_options_form Run/Debug"
+        BuildFirst="1"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveNone"
+        RunFromDir="%rw">
+        <Exec CmdLine=""/>
+      </Target>
+      <Target
+        Name="Execute"
+        MenuCaption="E&amp;xecute"
+        Dialog="_gnuc_options_form Run/Debug"
+        BuildFirst="1"
+        CaptureOutputWith="ProcessBuffer"
+        Deletable="0"
+        SaveOption="SaveWorkspaceFiles"
+        RunFromDir="%rw">
+        <Exec CmdLine=""/>
+      </Target>
+      <Target
+        Name="dash"
+        MenuCaption="-"
+        Deletable="0">
+        <Exec/>
+      </Target>
+      <Target
+        Name="GNU C Options"
+        MenuCaption="GNU C &amp;Options..."
+        ShowOnMenu="HideIfNoCmdLine"
+        Deletable="0"
+        SaveOption="SaveNone">
+        <Exec
+          CmdLine="gnucoptions"
+          Type="Slick-C"/>
+      </Target>
+    </Menu>
+    <List Name="GNUC Options">
+      <Item
+        Name="LinkerOutputType"
+        Value="SharedLibrary"/>
+    </List>
+  </Config>
+  <Files>
+    <Folder
+      Name="imcore"
+      Filters="">
+      <F N="imcore/array.cc"/>
+      <F N="imcore/array.h"/>
+      <F N="imcore/exception.cc"/>
+      <F N="imcore/exception.h"/>
+      <F N="imcore/floodfill.cc"/>
+      <F N="imcore/floodfill.h"/>
+      <F N="imcore/linalg.c"/>
+      <F N="imcore/linalg.h"/>
+      <F N="imcore/numpy.cc"/>
+      <F N="imcore/numpy.h"/>
+      <F N="imcore/seguidor.cc"/>
+      <F N="imcore/seguidor.h"/>
+    </Folder>
+    <Folder
+      Name="cmake"
+      Filters="">
+      <Folder
+        Name="cmake_cpython"
+        Filters="">
+        <F N="cython/CMakeLists.txt"/>
+      </Folder>
+      <Folder
+        Name="cmake_imcore"
+        Filters="">
+        <F N="imcore/CMakeLists.txt"/>
+      </Folder>
+      <Folder
+        Name="cmake_filters"
+        Filters="">
+        <F N="filters/CMakeLists.txt"/>
+      </Folder>
+      <F N="CMakeLists.txt"/>
+    </Folder>
+    <Folder
+      Name="cython"
+      Filters="*.pyx;*.pyd">
+      <F N="cython/exception.pyx"/>
+      <F N="cython/filters.pyx"/>
+    </Folder>
+    <Folder
+      Name="filters"
+      Filters="">
+      <F N="filters/aux.h"/>
+      <F N="filters/convolution.c"/>
+      <F N="filters/convolution.h"/>
+      <F N="filters/demodula.c"/>
+      <F N="filters/demodula.h"/>
+      <F N="filters/document.c"/>
+      <F N="filters/follower.cc"/>
+      <F N="filters/follower.h"/>
+      <F N="filters/fringeproc.c"/>
+      <F N="filters/fringeproc.h"/>
+      <F N="filters/matrix.cc"/>
+      <F N="filters/matrix.h"/>
+      <F N="filters/mfuntions.c"/>
+      <F N="filters/mfuntions.h"/>
+      <F N="filters/optimization.c"/>
+      <F N="filters/optimization.h"/>
+      <F N="filters/seguidor.cc"/>
+      <F N="filters/seguidor.h"/>
+    </Folder>
+  </Files>
+</Project>
