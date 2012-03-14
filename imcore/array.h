@@ -332,7 +332,7 @@ public:
   }
 
   /**
-   * Indexa la matriz usando la notaci�n matriz[col][row].
+   * Indexa la matriz usando la notaci�n matriz[row][col].
    * @param c el n�mero de columna.
    * @return a reference to the given column. 
    *

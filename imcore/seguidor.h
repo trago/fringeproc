@@ -7,6 +7,7 @@
 class Punto{
   friend class Seguidor;
   private:
+   Punto(){r=0; c=0;}
    Punto(int row, int col);
    int r;
    int c;
@@ -162,7 +163,15 @@ class Seguidor{
      *@todo Considerar el uso de m?scara sobre el dominio.
      */
      void cargaVecinos();
-      
+
+     /**
+      * Calcula el numero de vecinos que ya han sido visitados al rededor
+      * del punto (i,j).
+      *
+      * A esto se le define como el peso del punto (i,j)
+      */
+     int pesoVecinos(const int i, const int j);
+
  public:
     /** Crea una nueva instancia de Seguidor.
      * Al crearce esta nueva instancia, se calcula autom?ticamente el mapa de

@@ -2,7 +2,7 @@
 #include <cmath>
 
 
-void fill_parabola(cv::Mat mat, float A) throw(Exception)
+void parabola(cv::Mat mat, float A) throw(Exception)
 {
   if((mat.depth()!=CV_32F || mat.depth()!=CV_64F) && mat.channels()!=1){
     Exception ex("In fill_parabola",

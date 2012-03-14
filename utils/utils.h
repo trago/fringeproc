@@ -17,7 +17,7 @@
   @param mat the matrix
   @param A the manitude.
   */
-void fill_parabola(cv::Mat mat, float A) throw(Exception);
+void parabola(cv::Mat mat, float A) throw(Exception);
 
 /**
   Takes the cosine of the matrix given as angle.

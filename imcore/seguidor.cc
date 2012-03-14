@@ -30,7 +30,7 @@ void Seguidor::calcQualityMap(int levels)
         dy[i][j]=g[i][j] - g[i][j-1];
       else
         dy[i][j]=g[i][j+1] - g[i][j];
-      path[i][j]=sqrt(dx[i][j]*dx[i][j] + dy[i][j]*dy[i][j]);
+      path[i][j]=dx[i][j]*dx[i][j] + dy[i][j]*dy[i][j];
       a=(a>path[i][j])? path[i][j]:a;
       b=(b<path[i][j])? path[i][j]:b;
     }
@@ -65,6 +65,40 @@ void Seguidor::set_inicio()
    _puntos.push_back(_punto);
    _colas[(int)qmap[i_init][j_init]].push_back(_punto);
    _caminado[i_init][j_init]=1;
+}
+
+int Seguidor::pesoVecinos(const int i, const int j)
+{
+  int nr=_I.rows();
+  int nc=_I.cols();
+  sArray &caminado=_caminado;
+  int peso=0;
+
+  if(i-1>=0)
+    if(caminado[i-1][j]==1)
+      peso++;
+  if(i-1>=0 && j-1>=0)
+    if(caminado[i-1][j-1]==1)
+      peso++;
+  if(j-1>=0)
+    if(caminado[i][j-1]==1)
+      peso++;
+  if(i+1<nc && j-1>=0)
+    if(caminado[i+1][j-1]==1)
+      peso++;
+  if(i+1<nc)
+    if(caminado[i+1][j]==1)
+      peso++;
+  if(i+1<nc && j+1<nr)
+    if(caminado[i+1][j+1]==1)
+      peso++;
+  if(j+1<nr)
+    if(caminado[i][j+1]==1)
+      peso++;
+  if(i-1>=0 && j+1<nr)
+    if(caminado[i-1][j+1]==1)
+      peso++;
+  return peso;
 }
 
 void Seguidor::cargaVecinos()

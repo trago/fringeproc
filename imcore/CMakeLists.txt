@@ -8,7 +8,6 @@ set(imcore_SRCS
 	exception.cc
 	floodfill.cc
 	seguidor.cc
-    numpy.cc
 	linalg.c)
 
 add_library(imcore SHARED ${imcore_SRCS})

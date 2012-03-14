@@ -1,6 +1,10 @@
-#include <opencv2/core.hpp>
-#include <opencv2/highghi.hpp>
+include_directories(${CMAKE_SOURCE_DIR}
+)
 
-int main()
-{
-}
+set(seguidor_LIBS utils
+    imcore
+    ${OpenCV_LIBS}
+)
+
+add_executable(seguidor seguidor.cc)
+target_link_libraries(seguidor ${seguidor_LIBS})
