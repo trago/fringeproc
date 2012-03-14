@@ -6,7 +6,15 @@ Punto::Punto(int row, int col)
 {
   c=col;
   r=row;
+  valid=true;
 }
+Punto::Punto()
+{
+  r=0;
+  c=0;
+  valid=false;
+}
+
 
 void Seguidor::calcQualityMap(int levels)
 {
@@ -18,7 +26,7 @@ void Seguidor::calcQualityMap(int levels)
 
   sArray &qmap=_qmap;
   sArray path(nr,nc);
-        
+
   double a=0,b=0;
   for(int i=0; i<nr; i++)
     for(int j=0; j<nc; j++){
@@ -49,7 +57,7 @@ void Seguidor::set_inicio()
    sArray &qmap= _qmap;
    int nr=_qmap.rows();
    int nc=_qmap.cols();
-      
+
    //Primero se busca el punto con nivel mas alto de calidad
    double level=0;
    for(int i=0; i<nr; i++)
@@ -67,6 +75,7 @@ void Seguidor::set_inicio()
    _caminado[i_init][j_init]=1;
 }
 
+inline
 int Seguidor::pesoVecinos(const int i, const int j)
 {
   int nr=_I.rows();
@@ -101,73 +110,98 @@ int Seguidor::pesoVecinos(const int i, const int j)
   return peso;
 }
 
-void Seguidor::cargaVecinos()
+void Seguidor::ordenaVecinos(Punto* vecinos[])
 {
   int i=_punto->r;
   int j=_punto->c;
   int nr=_I.rows();
   int nc=_I.cols();
   sArray &caminado=_caminado;
-  sArray &qmap=_qmap;
   Punto* ptmp=NULL;
-  
+  int pesos[8];
+
+  for(int k=0; k<8; k++){
+    vecinos[k]=NULL;
+    pesos[k]=-1;
+  }
+
   if(i-1>=0)
     if(caminado[i-1][j]==0){
       ptmp=new Punto(i-1,j);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i-1][j]].push_back(ptmp);
-      caminado[i-1][j]=1;
+      pesos[0]=pesoVecinos(i-1,j);
+      vecinos[0]=ptmp;
     }
   if(i-1>=0 && j-1>=0)
     if(caminado[i-1][j-1]==0){
       ptmp=new Punto(i-1,j-1);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i-1][j-1]].push_back(ptmp);
-      caminado[i-1][j-1]=1;
+      pesos[1]=pesoVecinos(i-1,j-1);
+      vecinos[1]=ptmp;
     }
   if(j-1>=0)
     if(caminado[i][j-1]==0){
       ptmp=new Punto(i,j-1);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i][j-1]].push_back(ptmp);
-      caminado[i][j-1]=1;
+      pesos[2]=pesoVecinos(i,j-1);
+      vecinos[2]=ptmp;
     }
   if(i+1<nc && j-1>=0)
     if(caminado[i+1][j-1]==0){
       ptmp=new Punto(i+1,j-1);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i+1][j-1]].push_back(ptmp);
-      caminado[i+1][j-1]=1;
+      pesos[3]=pesoVecinos(i+1,j-1);
+      vecinos[3]=ptmp;
     }
   if(i+1<nc)
     if(caminado[i+1][j]==0){
       ptmp=new Punto(i+1,j);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i+1][j]].push_back(ptmp);
-      caminado[i+1][j]=1;
+      pesos[4]=pesoVecinos(i+1,j);
+      vecinos[4]=ptmp;
     }
   if(i+1<nc && j+1<nr)
     if(caminado[i+1][j+1]==0){
       ptmp=new Punto(i+1,j+1);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i+1][j+1]].push_back(ptmp);
-      caminado[i+1][j+1]=1;
+      pesos[5]=pesoVecinos(i+1,j+1);
+      vecinos[5]=ptmp;
     }
   if(j+1<nr)
     if(caminado[i][j+1]==0){
       ptmp=new Punto(i,j+1);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i][j+1]].push_back(ptmp);
-      caminado[i][j+1]=1;
+      pesos[6]=pesoVecinos(i,j+1);
+      vecinos[6]=ptmp;
     }
   if(i-1>=0 && j+1<nr)
     if(caminado[i-1][j+1]==0){
       ptmp=new Punto(i-1,j+1);
-      _puntos.push_back(ptmp);
-      _colas[(int)qmap[i-1][j+1]].push_back(ptmp);
-      caminado[i-1][j+1]=1;
+      pesos[7]=pesoVecinos(i-1,j+1);
+      vecinos[7]=ptmp;
     }
 
+  int aux;
+  for(int k=1; k<7; k++)
+    for(int l=0; l<7-k; l++){
+      if(pesos[l]<pesos[l+1]){
+        aux=pesos[k];
+        pesos[k]=pesos[l];
+        pesos[l]=aux;
+        ptmp=vecinos[k];
+        vecinos[k]=vecinos[l];
+        vecinos[l]=ptmp;
+      }
+    }
+}
+
+void Seguidor::cargaVecinos()
+{
+  sArray &caminado=_caminado;
+  sArray &qmap=_qmap;
+  Punto* ptmp=NULL;
+  Punto* vecinos[8];
+
+  ordenaVecinos(vecinos);
+  for(int k=0; k<8; k++)
+    if(vecinos[k]!=NULL){
+      _puntos.push_back(vecinos[k]);
+      _colas[(int)qmap[vecinos[k]->r][vecinos[k]->c]].push_back(vecinos[k]);
+      caminado[vecinos[k]->r][vecinos[k]->c]=1;
+    }
 }
 
 Seguidor::Seguidor(const sArray& I,int levels)
@@ -182,7 +216,7 @@ Seguidor::Seguidor(const sArray& I,int levels)
   _caminado=0;
   _qmap=0;
   _punto=NULL;
-  //la variable _punto se inicializa en set_inicio()     
+  //la variable _punto se inicializa en set_inicio()
   //Primero calculamos el mapa de calidad por niveles
   calcQualityMap(levels);
   //Finalmente establecemos el punto inicial
@@ -201,7 +235,7 @@ Seguidor::Seguidor(const sArray& I,int r, int c, int levels)
   _caminado=0;
   _qmap=0;
   _punto=NULL;
-  //la variable _punto se inicializa en set_inicio()     
+  //la variable _punto se inicializa en set_inicio()
   //Primero calculamos el mapa de calidad por niveles
   calcQualityMap(levels);
   //Finalmente establecemos el punto inicial
@@ -253,7 +287,7 @@ void Seguidor::setQMap(sArray& qmap)
 {
   _qmap=qmap;
   sArray& map=_qmap;
-        
+
   double a,b;
   a=map[0][0];
   b=a;
@@ -275,11 +309,11 @@ void Seguidor::setQMap(sArray& qmap)
 Seguidor::~Seguidor()
 {
   std::list<Punto*>::iterator j;
-  
+
   int n=0, N=_I.rows()*_I.cols();
   for(j=_puntos.begin(); j!=_puntos.end() && n<N; j++, n++){
     delete *j;
   }
- 
+
   delete []_colas;
 }

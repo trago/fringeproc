@@ -7,16 +7,17 @@
 class Punto{
   friend class Seguidor;
   private:
-   Punto(){r=0; c=0;}
+   Punto();
    Punto(int row, int col);
    int r;
    int c;
+   bool valid;
 };
 
 /**
  * Esta clase implementa los mecanismos para seguir las franjas de una im?gen
  * con patrones de franjas dado.
- * 
+ *
  * <P>
  * El algoritmo empleado aqui para seguir las franjas viene de la siguiente
  * referencia:
@@ -24,11 +25,11 @@ class Punto{
  * @li Str?bel, "Processing of interferometric phase maps as complex-valued
  * phasor images", Appl. Opt. 35, 2192-2198 (1996)
  *
- * Para implementar el seguidor de franjas uno obtiene el gradiente de la 
+ * Para implementar el seguidor de franjas uno obtiene el gradiente de la
  im?gen
  *@f[
-  \nabla I = \left[\frac{\partial I}{\partial x}, \frac{\partial I}{\partial y} 
-  \right]^T  
+  \nabla I = \left[\frac{\partial I}{\partial x}, \frac{\partial I}{\partial y}
+  \right]^T
  *@f]
  * donde @f$ I @f$ es la im?gen con patrones de franjas. Dado el gradiente de
  * la im?gen, el siguiente paso es el c?lculo de la magnitud en cada punto:
@@ -48,15 +49,15 @@ class Punto{
  * as? pues generamos @f$ n @f$ registros para cada uno de los @f$ n @f$ niveles
  * del gradiente generado.
  *
- * El procedimiento para seguir las franjas dada la magnitud cuantizada en 
+ * El procedimiento para seguir las franjas dada la magnitud cuantizada en
  * @f$ n @f$ niveles, los @f$ n @f$ registros y un punto incial @f$ (x,y) @f$
  * es:
  * @li 1 Colocamos los vecionos del punto @f$ (x,y) @f$ a los registros
- * correspondientes deacuerdo al nivel dado en la magnitud cauntizada en 
+ * correspondientes deacuerdo al nivel dado en la magnitud cauntizada en
  * @f$ M_n(x,y) @f$.
  * @li 2 Sacamos del primer registro no vacio el primer punto introducido y lo
  * procesamos como en el paso 1.
- * @li 3 procesamos el paso 2 hasta que todos los registros queden 
+ * @li 3 procesamos el paso 2 hasta que todos los registros queden
  * completamente
  * vacios.
  *
@@ -82,10 +83,10 @@ class Punto{
     .
    }
  * @endcode
- * 
+ *
  * Observaci?nes: El punto inicial del seguidor es tomado como el ?ltimo punto
  * encontrado cuyo nivel de cauntizaci?n es m?ximo. Es posible establecer un
- * punto de inicio diferente usando las funciones que para esto dispone la 
+ * punto de inicio diferente usando las funciones que para esto dispone la
  * clase.
  * </P>
  * @author Julio Cesar Estrada Rico
@@ -127,7 +128,7 @@ class Seguidor{
 
     /**
      *Calcula el mapa de calidad de la imagen de acuerdo al gradiente.
-     *El mapa de calidad se refiere a la magnitud del gradiente. Las 
+     *El mapa de calidad se refiere a la magnitud del gradiente. Las
      *operaciones realizadas aqui son:
       @f[
       M(x,y) = \|\nabla I(x,y)\|
@@ -143,12 +144,12 @@ class Seguidor{
       \end{array} \right.
       @f]
      *
-     *@param levels es el n?mero de niveles en el cual ser? cuantizado 
+     *@param levels es el n?mero de niveles en el cual ser? cuantizado
      *el mapa de calidad
      *@todo Considerar el uso de m?scara sobre el dominio.
      */
      void calcQualityMap(int levels);
-     
+
      /**
      *Establece autom?ticamente el punto incial.
      *La l?gica que se toma para establecer el punto inicial autom?ticamente
@@ -172,6 +173,10 @@ class Seguidor{
       */
      int pesoVecinos(const int i, const int j);
 
+     /**
+      * Ordena los vecinos del punto actual de acuerdo a su peso.
+      */
+     void ordenaVecinos(Punto* vecinos[]);
  public:
     /** Crea una nueva instancia de Seguidor.
      * Al crearce esta nueva instancia, se calcula autom?ticamente el mapa de
@@ -197,7 +202,7 @@ class Seguidor{
      * m?scara que ser? plicada al dominio del seguidor.
      */
     Seguidor(const sArray& I,int r, int c, int levels);
-    
+
     ~Seguidor();
     /**
      *Regresa el renglon del ultimo punto enlistado a seguir
@@ -222,12 +227,12 @@ class Seguidor{
      *@return boolean false si ya no hay puntos a seguir.
      **/
     bool siguiente();
-    
+
     /**
       Establece un mapa de calidad dado de forma externa y lo cuantiza en los
       @f$ n @f$ niveles dados al contruir el objeto.
       Aunque internamente se genera  un mapa de calidad a partir del patr?n de
-      franjas dado, este m?todo ofrece la posibilidad de usar otro mapa de 
+      franjas dado, este m?todo ofrece la posibilidad de usar otro mapa de
       forma expl?cita. Este m?todo se debe llamar antes de seguir las franjas,
       en caso contrario el resultado es desconocido.
       @param qmap es el mapa de calidad a utilizar
