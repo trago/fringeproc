@@ -3,6 +3,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 set(seguidor_LIBS utils
     imcore
+    cfilters
     ${OpenCV_LIBS}
 )
 

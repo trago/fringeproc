@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <imcore/seguidor.h>
 #include <utils/utils.h>
+#include <filters/fringeproc.h>
 
 int main()
 {
@@ -11,9 +12,11 @@ int main()
   sArray arrPath(path.ptr<float>(), M, N);
 
 
-  parabola(path, 0.0001);
+  //parabola(path, 0.001);
+  path = peaks(M,N)*15;
   cosine(path, path);
-  Seguidor seguidor(arrPath, 8);
+  filter_sgaussian(path.ptr<float>(), path.ptr<float>(), 5, N, M);
+  Seguidor seguidor(arrPath, 5);
   int i=seguidor.get_r(), j=seguidor.get_c();
 
   cv::namedWindow("visited");
@@ -24,7 +27,7 @@ int main()
     j=seguidor.get_c();
     visited.at<float>(i,j)=1;
 
-    if((iter++)%5==0){
+    if((iter++)%50==0){
       cv::imshow("visited", visited);
       cv::waitKey(20);
     }
