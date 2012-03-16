@@ -1,14 +1,15 @@
 #ifndef SEGUIDOR_H_
 #define SEGUIDOR_H_
 
-#include "array.h"
-#include <list>
+#include <opencv2/core/core.hpp>
+#include <vector>
 
 class Punto{
   friend class Seguidor;
   private:
    Punto();
    Punto(int row, int col);
+   Punto(const Punto& cpy);
    int r;
    int c;
    bool valid;
@@ -95,34 +96,30 @@ class Punto{
 class Seguidor{
  private:
     /**Es la imagen de entrada*/
-    sArray _I;
+    cv::Mat _I;
     /**Es la m?scara de valores que son v?lidos en la imagen.
 
        @note Actualmente esta variable es puesta para uso en el futuro
        @todo Implementar la aplicaci?n de m?scaras sobre la im?gen
      */
-    sArray _m;
+    cv::Mat _m;
     /**Contiene etiquetas de los puntos que ya han sido caminados.
 
        El objetivo es para identificar aquellos puntos que ya han sido
        recorridos por el seguidor. Si un punto tiene un valor de 1 es que ya ha
        sido recorrido, 0 es que no.
      */
-    sArray _caminado;
+    cv::Mat _caminado;
     /**Aqui se guarda el mapa de calidad de la im?gen.
 
        El mapa de calidad se refiere al mapa cauntozado de la magnitud del
        gradiente como se explico anteriormente.
      */
-    sArray _qmap;
+    cv::Mat _qmap;
     /**Es un arrglo de registros para cada nivel de cauntizaci?n.*/
-    std::list<Punto*>* _colas;
-    /**Aqui se guarda la secuencia de puntos para ser eliminados al destruirse
-     * la clase.
-     */
-    std::list<Punto*> _puntos;
+    std::vector<Punto>* _colas;
     /**Es el punto que actualmente es recorrido.*/
-    Punto* _punto;
+    Punto _punto;
     /**Numero de niveles del mapa de calidad*/
     int _levels;
 
@@ -176,7 +173,7 @@ class Seguidor{
      /**
       * Ordena los vecinos del punto actual de acuerdo a su peso.
       */
-     void ordenaVecinos(Punto* vecinos[]);
+     void ordenaVecinos(Punto* vecinos);
  public:
     /** Crea una nueva instancia de Seguidor.
      * Al crearce esta nueva instancia, se calcula autom?ticamente el mapa de
