@@ -6,17 +6,15 @@
 
 int main()
 {
-  const int M=228, N=228;
+  const int M=228, N=228*2;
   cv::Mat path(M,N,CV_32FC1);
   cv::Mat visited= cv::Mat::zeros(M,N,CV_32FC1);
-  sArray arrPath(path.ptr<float>(), M, N);
-
 
   //parabola(path, 0.001);
   path = peaks(M,N)*15;
   cosine(path, path);
   filter_sgaussian(path.ptr<float>(), path.ptr<float>(), 5, N, M);
-  Seguidor seguidor(arrPath, 5);
+  Seguidor seguidor(path, 128);
   int i=seguidor.get_r(), j=seguidor.get_c();
 
   cv::namedWindow("visited");

@@ -2,14 +2,16 @@
 #define SEGUIDOR_H_
 
 #include <opencv2/core/core.hpp>
-#include <vector>
+#include <list>
 
 class Punto{
   friend class Seguidor;
-  private:
+public:
    Punto();
    Punto(int row, int col);
    Punto(const Punto& cpy);
+   void set(const int row, const int col, const bool valid=true);
+private:
    int r;
    int c;
    bool valid;
@@ -117,7 +119,7 @@ class Seguidor{
      */
     cv::Mat _qmap;
     /**Es un arrglo de registros para cada nivel de cauntizaci?n.*/
-    std::vector<Punto>* _colas;
+    std::list<Punto>* _colas;
     /**Es el punto que actualmente es recorrido.*/
     Punto _punto;
     /**Numero de niveles del mapa de calidad*/
@@ -185,7 +187,7 @@ class Seguidor{
      * @todo Implementar un constructor que permita pasar como par?metro la
      * m?scara que ser? plicada al dominio del seguidor.
      */
-    Seguidor(const sArray& I,int levels);
+    Seguidor(const cv::Mat& I,int levels);
     /** Crea una nueva instancia de Seguidor.
      * Al crearce esta nueva instancia, se calcula autom?ticamente el mapa de
      * calidad cauntizado a @f$ n @f$ niveles (cuantizaci?n de la magnitud
@@ -198,7 +200,7 @@ class Seguidor{
      * @todo Implementar un constructor que permita pasar como par?metro la
      * m?scara que ser? plicada al dominio del seguidor.
      */
-    Seguidor(const sArray& I,int r, int c, int levels);
+    Seguidor(const cv::Mat& I,int r, int c, int levels);
 
     ~Seguidor();
     /**
@@ -217,7 +219,7 @@ class Seguidor{
      *Regresa el mapa de calidad que se esta utilizando.
      *@return double[][] el mapa de calidad
      **/
-    sArray get_qmap();
+    cv::Mat get_qmap();
     /**
      *Extrae el siguiente punto a seguir de acuerdo al mapa de calidad.
      *
@@ -235,7 +237,7 @@ class Seguidor{
       @param qmap es el mapa de calidad a utilizar
      *@todo Considerar el uso de m?scara sobre el dominio.
      */
-    void setQMap(sArray& qmap);
+    void setQMap(const cv::Mat& qmap);
 };
 
 
