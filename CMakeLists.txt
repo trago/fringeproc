@@ -18,6 +18,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mfpmath=sse -msse3 -ffast-math -funroll-loops"
 set(CMAKE_C_FLAGS_DEBUG "-std=gnu99 -ggdb -DBZ_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -DBZ_DEBUG")
 
+find_package(OpenCV REQUIRED)
+
 add_subdirectory(imcore)
 add_subdirectory(filters)
 add_subdirectory(utils)
