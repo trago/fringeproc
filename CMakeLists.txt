@@ -20,5 +20,4 @@ set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -DBZ_DEBUG")
 
 add_subdirectory(imcore)
 add_subdirectory(filters)
-add_subdirectory(tests)
 add_subdirectory(utils)
