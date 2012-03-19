@@ -130,7 +130,6 @@ void Seguidor::ordenaVecinos(Punto vecinos[])
   int j=_punto.c;
   int nr=_I.rows;
   int nc=_I.cols;
-  const cv::Mat &caminado=_caminado;
   Punto ptmp;
   int pesos[8];
 
@@ -139,52 +138,60 @@ void Seguidor::ordenaVecinos(Punto vecinos[])
   }
 
   if(i-1>=0)
-    if(caminado.at<uchar>(i-1,j)==0){
+    if(_caminado.at<uchar>(i-1,j)==0){
       ptmp.set(i-1,j);
       pesos[0]=pesoVecinos(i-1,j);
       vecinos[0]=ptmp;
+      _caminado.at<uchar>(i-1,j)=1;
     }
   if(i-1>=0 && j-1>=0)
-    if(caminado.at<uchar>(i-1,j-1)==0){
+    if(_caminado.at<uchar>(i-1,j-1)==0){
       ptmp.set(i-1,j-1);
       pesos[1]=pesoVecinos(i-1,j-1);
       vecinos[1]=ptmp;
+      _caminado.at<uchar>(i-1,j-1)=1;
     }
   if(j-1>=0)
-    if(caminado.at<uchar>(i,j-1)==0){
+    if(_caminado.at<uchar>(i,j-1)==0){
       ptmp.set(i,j-1);
       pesos[2]=pesoVecinos(i,j-1);
       vecinos[2]=ptmp;
+      _caminado.at<uchar>(i,j-1)=1;
     }
   if(i+1<nr && j-1>=0)
-    if(caminado.at<uchar>(i+1,j-1)==0){
+    if(_caminado.at<uchar>(i+1,j-1)==0){
       ptmp.set(i+1,j-1);
       pesos[3]=pesoVecinos(i+1,j-1);
       vecinos[3]=ptmp;
+      _caminado.at<uchar>(i+1,j-1)=1;
     }
   if(i+1<nr)
-    if(caminado.at<uchar>(i+1,j)==0){
+    if(_caminado.at<uchar>(i+1,j)==0){
       ptmp.set(i+1,j);
       pesos[4]=pesoVecinos(i+1,j);
       vecinos[4]=ptmp;
+      _caminado.at<uchar>(i+1,j)=1;
     }
   if(i+1<nr && j+1<nc)
-    if(caminado.at<uchar>(i+1,j+1)==0){
+    if(_caminado.at<uchar>(i+1,j+1)==0){
       ptmp.set(i+1,j+1);
       pesos[5]=pesoVecinos(i+1,j+1);
       vecinos[5]=ptmp;
+      _caminado.at<uchar>(i+1,j+1)=1;
     }
   if(j+1<nc)
-    if(caminado.at<uchar>(i,j+1)==0){
+    if(_caminado.at<uchar>(i,j+1)==0){
       ptmp.set(i,j+1);
       pesos[6]=pesoVecinos(i,j+1);
       vecinos[6]=ptmp;
+      _caminado.at<uchar>(i,j+1)=1;
     }
   if(i-1>=0 && j+1<nc)
-    if(caminado.at<uchar>(i-1,j+1)==0){
+    if(_caminado.at<uchar>(i-1,j+1)==0){
       ptmp.set(i-1,j+1);
       pesos[7]=pesoVecinos(i-1,j+1);
       vecinos[7]=ptmp;
+      _caminado.at<uchar>(i-1,j+1)=1;
     }
 
   int aux;
@@ -209,16 +216,13 @@ void Seguidor::ordenaVecinos(Punto vecinos[])
 
 void Seguidor::cargaVecinos()
 {
-  cv::Mat &caminado=_caminado;
-  const cv::Mat &qmap=_qmap;
   Punto ptmp;
   Punto vecinos[8];
 
   ordenaVecinos(vecinos);
   for(int k=0; k<8; k++)
     if(vecinos[k].valid){
-      _colas[qmap.at<uchar>(vecinos[k].r,vecinos[k].c)].push_back(vecinos[k]);
-      caminado.at<uchar>(vecinos[k].r,vecinos[k].c)=1;
+      _colas[_qmap.at<uchar>(vecinos[k].r,vecinos[k].c)].push_back(vecinos[k]);
     }
 }
 
@@ -257,16 +261,12 @@ Seguidor::Seguidor(const cv::Mat& I,int r, int c, int levels)
 
 int Seguidor::get_c()
 {
-  if(_punto.valid)
-    return _punto.c;
-  return -1;
+  return _punto.c;
 }
 
 int Seguidor::get_r()
 {
-  if(_punto.valid)
-    return _punto.r;
-  return -1;
+  return _punto.r;
 }
 
 cv::Mat Seguidor::get_qmap()
