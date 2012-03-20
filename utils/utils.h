@@ -2,7 +2,6 @@
 #define UTILS_H
 
 #include <opencv2/core/core.hpp>
-#include <imcore/exception.h>
 
 /**
   Fills the matrix using an parabola.
@@ -17,7 +16,7 @@
   @param mat the matrix
   @param A the manitude.
   */
-void parabola(cv::Mat mat, float A) throw(Exception);
+void parabola(cv::Mat mat, float A) throw(cv::Exception);
 
 /**
   Takes the cosine of the matrix given as angle.
@@ -28,7 +27,7 @@ void parabola(cv::Mat mat, float A) throw(Exception);
   @param angle the values taken as argument of the cosine function
   @param cc the cosine values obtained
   */
-void cosine(const cv::Mat angle, cv::Mat& cc) throw(Exception);
+void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception);
 
 /**
   Generates the field X and Y with linear spaced data.

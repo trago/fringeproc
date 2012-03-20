@@ -2,12 +2,12 @@
 #include <cmath>
 #include <opencv2/imgproc/imgproc.hpp>
 
-void parabola(cv::Mat mat, float A) throw(Exception)
+void parabola(cv::Mat mat, float A) throw(cv::Exception)
 {
   if((mat.depth()!=CV_32F || mat.depth()!=CV_64F) && mat.channels()!=1){
-    Exception ex("In fill_parabola",
-                 "The matrix must be float or double with one channel");
-    throw(ex);
+    cv::Exception e(1000, "The matrix must be float or double with channel=1",
+                    "parabola", std::string(__FILE__), __LINE__);
+    throw(e);
   }
   const int M=mat.rows, N=mat.cols;
   const float cm=M/2.0, cn=N/2.0;
@@ -21,12 +21,12 @@ void parabola(cv::Mat mat, float A) throw(Exception)
         mat.at<double>(i,j)= A*((i-cm)*(i-cm) + (j-cn)*(j-cn));
 }
 
-void cosine(const cv::Mat angle, cv::Mat& cc) throw(Exception)
+void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception)
 {
   if((angle.depth()!=CV_32F || angle.depth()!=CV_64F) && angle.channels()!=1){
-    Exception ex("In cosine",
-                 "The matrix angle must be float or double with one channel");
-    throw(ex);
+    cv::Exception e(1000, "The matrix must be float or double with channel=1",
+                    "cosine", std::string(__FILE__), __LINE__);
+    throw(e);
   }
   if(angle.depth()!=cc.depth() && angle.channels()!=1)
     cc = cv::Mat(angle.size(), CV_MAKETYPE(angle.depth(), 1));
