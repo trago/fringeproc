@@ -44,6 +44,37 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
   }
 }
 
+inline
+void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
+                         cv::Mat& pp, cv::Mat& visited, double tao, const int N)
+{
+  int low_i = (ii-N/2)>=0? (ii-N/2):0;
+  int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
+  int low_j = (jj-N/2)>=0? (jj-N/2):0;
+  int hig_j = (jj+N/2)<(wp.cols-1)? (jj+N/2):(wp.cols-1);
+
+  for(int i=low_i; i<hig_i; i++){
+    if(i%2==0)
+      for(int j=low_j; j<hig_j; j++){
+        pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
+                                           wp.ptr<double>(),
+                                           pp.ptr<double>(),
+                                           visited.ptr<uchar>(),
+                                           tao, wp.rows, wp.cols);
+        visited.at<uchar>(i,j)=1;
+      }
+    else
+      for(int j=hig_j-1; j>=low_j; j--){
+        pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
+                                        wp.ptr<double>(),
+                                        pp.ptr<double>(),
+                                        visited.ptr<uchar>(),
+                                        tao, wp.rows, wp.cols);
+        visited.at<uchar>(i,j)=1;
+      }
+  }
+}
+
 template<typename T>
 void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
                 double smooth_path)
@@ -62,18 +93,25 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
 
   Seguidor scan(path, 128); //Discretizes the dynamic rango in 128 levels
   int i,j, iter=0;
-  do{
-    i=scan.get_r();
-    j=scan.get_c();
-    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
-  }while(scan.siguiente());
+  if(wphase.type()==CV_32F)
+    do{
+      i=scan.get_r();
+      j=scan.get_c();
+      sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+    }while(scan.siguiente());
+  else
+    do{
+      i=scan.get_r();
+      j=scan.get_c();
+      dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+    }while(scan.siguiente());
 
 }
 
 void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
               double smooth_path=0.0) throw(cv::Exception)
 {
-  if(wphase.type()!=CV_32F || wphase.type()!=CV_64F){
+  if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
     cv::Exception e(1000,
                     "Type not supported, must be single or double precision.",
                     "unwrap2D", std::string(__FILE__), __LINE__);
@@ -91,7 +129,7 @@ void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
 
 int main()
 {
-  const int M=355, N=355;
+  const int M=855, N=1355;
   cv::Mat phase = peaks(M,N)*20;
   cv::Mat wphase = atan2<float>(sin<float>(phase), cos<float>(phase));
   cv::Mat uphase = cv::Mat::zeros(M, N, CV_32F);
@@ -101,6 +139,7 @@ int main()
   int i,j, iter=0;
   float tao=0.7;
   unwrap2D(wphase, uphase, tao, 0.5);
+  /*
   do{
     i=scan.get_r();
     j=scan.get_c();
@@ -117,6 +156,7 @@ int main()
     }
   }while(scan.siguiente());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
+  */
   cv::namedWindow("phase");
   cv::namedWindow("wphase");
   imshow("phase", wphase);
