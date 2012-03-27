@@ -1,5 +1,6 @@
 #include <imcore/seguidor.h>
 #include <utils/utils.h>
+#include <filters/fringeproc.h>
 #include <opencv2/highgui/highgui.hpp>
 #include "unwrap_gears.h"
 #include <iostream>
@@ -13,7 +14,7 @@ void imshow(const char* wn, cv::Mat im)
 }
 
 inline
-void unwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
+void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
                          cv::Mat& pp, cv::Mat& visited, float tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
@@ -24,7 +25,7 @@ void unwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
   for(int i=low_i; i<hig_i; i++){
     if(i%2==0)
       for(int j=low_j; j<hig_j; j++){
-        pp.at<float>(i,j)=calcUnwrapped(i*wp.cols+j, j, i,
+        pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
                                            wp.ptr<float>(),
                                            pp.ptr<float>(),
                                            visited.ptr<uchar>(),
@@ -33,7 +34,7 @@ void unwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
       }
     else
       for(int j=hig_j-1; j>=low_j; j--){
-        pp.at<float>(i,j)=calcUnwrapped(i*wp.cols+j, j, i,
+        pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
                                         wp.ptr<float>(),
                                         pp.ptr<float>(),
                                         visited.ptr<uchar>(),
@@ -41,6 +42,51 @@ void unwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
         visited.at<uchar>(i,j)=1;
       }
   }
+}
+
+template<typename T>
+void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
+                double smooth_path)
+{
+  const int M=wphase.rows, N=wphase.cols;
+  cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
+  cv::Mat path;
+
+  if(wphase.type()==CV_32F)
+    path = sin<float>(wphase);
+  else
+    sin<double>(wphase).convertTo(path, CV_32F);
+
+  if(smooth_path>0)
+    filter_sgaussian(path.ptr<float>(), path.ptr<float>(), smooth_path, N, M);
+
+  Seguidor scan(path, 128); //Discretizes the dynamic rango in 128 levels
+  int i,j, iter=0;
+  do{
+    i=scan.get_r();
+    j=scan.get_c();
+    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+  }while(scan.siguiente());
+
+}
+
+void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
+              double smooth_path=0.0) throw(cv::Exception)
+{
+  if(wphase.type()!=CV_32F || wphase.type()!=CV_64F){
+    cv::Exception e(1000,
+                    "Type not supported, must be single or double precision.",
+                    "unwrap2D", std::string(__FILE__), __LINE__);
+    throw(e);
+  }
+  if(uphase.rows!=wphase.rows && uphase.cols!=wphase.cols &&
+     uphase.type()!=wphase.type())
+    uphase.create(wphase.rows, wphase.cols, wphase.type());
+
+  if(wphase.type()==CV_32F)
+    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path);
+  else
+    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path);
 }
 
 int main()
@@ -54,6 +100,7 @@ int main()
   Seguidor scan(sin<float>(wphase), 128);
   int i,j, iter=0;
   float tao=0.7;
+  unwrap2D(wphase, uphase, tao, 0.5);
   do{
     i=scan.get_r();
     j=scan.get_c();
@@ -63,7 +110,7 @@ int main()
     //                                    visited.ptr<uchar>(),
     //                                    tao, M, N);
     //visited.at<uchar>(i,j)=1;
-    unwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
     if(iter++ % 1000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
