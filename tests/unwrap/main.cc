@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 
   Seguidor scan(path, 128);
   int i,j, iter=0;
-  float tao=0.08;
+  float tao=0.1;
   //unwrap2D(wphase, uphase, tao, 0.5);
   do{
     i=scan.get_r();
@@ -169,8 +169,8 @@ int main(int argc, char* argv[])
     //                                    visited.ptr<uchar>(),
     //                                    tao, M, N);
     //visited.at<uchar>(i,j)=1;
-    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 17);
-    if(iter++ % 1000 ==0){
+    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 21);
+    if(iter++ % 9000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
     }
