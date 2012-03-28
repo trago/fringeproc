@@ -127,19 +127,39 @@ void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
     unwrap2D_engine<double>(wphase, uphase, tao, smooth_path);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-  const int M=855, N=1355;
-  cv::Mat phase = peaks(M,N)*20;
-  cv::Mat wphase = atan2<float>(sin<float>(phase), cos<float>(phase));
-  cv::Mat uphase = cv::Mat::zeros(M, N, CV_32F);
-  cv::Mat visited= cv::Mat::zeros(M,N, CV_8U);
+  using namespace std;
 
-  Seguidor scan(sin<float>(wphase), 128);
+  cv::Mat wphase;
+  cv::Mat uphase;
+  cv::Mat visited;
+  cv::Mat path;
+
+  if(argc != 2){
+    cout<<"Phase unwrapping method." <<endl
+        <<"Usage: "<< argv[0] <<" <image_file>"<<endl;
+    return 1;
+  }
+  cv::Mat image = cv::imread(argv[1], 0);
+  if(image.empty()){
+    cerr<<"I can not read the image file." << endl;
+    return 1;
+  }
+  wphase.create(image.rows, image.cols, CV_32F);
+  image.convertTo(wphase, CV_32F);
+  cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
+  visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
+  uphase = cv::Mat::zeros(image.rows, image.cols, CV_32F);
+  path = sin<float>(wphase);
+  filter_sgaussian(path.ptr<float>(), path.ptr<float>(), 15,
+                   path.cols, path.rows);
+
+
+  Seguidor scan(path, 128);
   int i,j, iter=0;
-  float tao=0.7;
-  unwrap2D(wphase, uphase, tao, 0.5);
-  /*
+  float tao=0.08;
+  //unwrap2D(wphase, uphase, tao, 0.5);
   do{
     i=scan.get_r();
     j=scan.get_c();
@@ -149,18 +169,20 @@ int main()
     //                                    visited.ptr<uchar>(),
     //                                    tao, M, N);
     //visited.at<uchar>(i,j)=1;
-    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 17);
     if(iter++ % 1000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
     }
   }while(scan.siguiente());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
-  */
+
   cv::namedWindow("phase");
   cv::namedWindow("wphase");
-  imshow("phase", wphase);
-  imshow("wphase", uphase);
+  cv::namedWindow("path");
+  imshow("phase", uphase);
+  imshow("wphase", wphase);
+  imshow("path", cos<float>(uphase));
 
   cv::waitKey();
   return 0;
