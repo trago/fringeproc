@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "unwrap_gears.h"
 #include <iostream>
+#include <cstdlib>
 
 inline
 void imshow(const char* wn, cv::Mat im)
@@ -136,9 +137,16 @@ int main(int argc, char* argv[])
   cv::Mat visited;
   cv::Mat path;
 
-  if(argc != 2){
+  if(argc != 5){
     cout<<"Phase unwrapping method." <<endl
-        <<"Usage: "<< argv[0] <<" <image_file>"<<endl;
+        <<"Usage: "<< argv[0] <<" <image_file> <tao> <smooth> <N>"<<endl
+        <<"\n<image_file> \tis the file name of the image having the wrapped "
+        <<"phase map."<<endl
+        <<"<tao> \t\tis the paramater of the linear low-pass filter. You mus "
+        <<"\n\t\tchoose tao>0 and tao<1"<<endl
+        <<"<smooth> \tThe scanning path is taken from the phase map. This "
+        <<"parameter \n\t\tis to remove noise from the path."<<endl
+        <<"<N> \t\tis the neighborhood size used by the linear system."<<endl;
     return 1;
   }
   cv::Mat image = cv::imread(argv[1], 0);
@@ -146,19 +154,21 @@ int main(int argc, char* argv[])
     cerr<<"I can not read the image file." << endl;
     return 1;
   }
+  float tao = atof(argv[2]);
+  float sigma = atof(argv[3]);
+  int N = atoi(argv[4]);
   wphase.create(image.rows, image.cols, CV_32F);
   image.convertTo(wphase, CV_32F);
   cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
   visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
   uphase = cv::Mat::zeros(image.rows, image.cols, CV_32F);
   path = sin<float>(wphase);
-  filter_sgaussian(path.ptr<float>(), path.ptr<float>(), 15,
+  filter_sgaussian(path.ptr<float>(), path.ptr<float>(), sigma,
                    path.cols, path.rows);
 
 
   Seguidor scan(path, 128);
   int i,j, iter=0;
-  float tao=0.1;
   //unwrap2D(wphase, uphase, tao, 0.5);
   do{
     i=scan.get_r();
@@ -169,7 +179,7 @@ int main(int argc, char* argv[])
     //                                    visited.ptr<uchar>(),
     //                                    tao, M, N);
     //visited.at<uchar>(i,j)=1;
-    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 21);
+    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, N);
     if(iter++ % 9000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
