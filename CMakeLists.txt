@@ -21,6 +21,5 @@ set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -DBZ_DEBUG")
 find_package(OpenCV REQUIRED)
 
 add_subdirectory(imcore)
-add_subdirectory(filters)
 add_subdirectory(utils)
 add_subdirectory(tests)

@@ -1,6 +1,7 @@
 #include <imcore/seguidor.h>
 #include <utils/utils.h>
 #include <filters/fringeproc.h>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "unwrap_gears.h"
 #include <iostream>
@@ -10,7 +11,8 @@ inline
 void imshow(const char* wn, cv::Mat im)
 {
   cv::Mat tmp;
-  cv::normalize(im, tmp, 1, 0, cv::NORM_MINMAX);
+  im.convertTo(tmp, CV_32F);
+  cv::normalize(tmp, tmp, 1, 0, cv::NORM_MINMAX);
   cv::imshow(wn, tmp);
 }
 
@@ -90,7 +92,7 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
     sin<double>(wphase).convertTo(path, CV_32F);
 
   if(smooth_path>0)
-    filter_sgaussian(path.ptr<float>(), path.ptr<float>(), smooth_path, N, M);
+    cv::GaussianBlur(path, path, cv::Size(0,0), smooth_path, smooth_path);
 
   Seguidor scan(path, 128); //Discretizes the dynamic rango in 128 levels
   int i,j, iter=0;
@@ -163,23 +165,18 @@ int main(int argc, char* argv[])
   visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
   uphase = cv::Mat::zeros(image.rows, image.cols, CV_32F);
   path = sin<float>(wphase);
-  filter_sgaussian(path.ptr<float>(), path.ptr<float>(), sigma,
-                   path.cols, path.rows);
+  cv::GaussianBlur(path, path, cv::Size(0,0), sigma, sigma);
 
-
-  Seguidor scan(path, 128);
+  cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
+  path = sin<float>(path);
+  Seguidor scan(path, 5);
   int i,j, iter=0;
   //unwrap2D(wphase, uphase, tao, 0.5);
   do{
     i=scan.get_r();
     j=scan.get_c();
-    //uphase.at<float>(i,j)=calcUnwrapped(i*N+j, j, i,
-    //                                    wphase.ptr<float>(),
-    //                                    uphase.ptr<float>(),
-    //                                    visited.ptr<uchar>(),
-    //                                    tao, M, N);
-    //visited.at<uchar>(i,j)=1;
     sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, N);
+    //uphase.at<float>(i,j)=10;
     if(iter++ % 9000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
@@ -191,8 +188,8 @@ int main(int argc, char* argv[])
   cv::namedWindow("wphase");
   cv::namedWindow("path");
   imshow("phase", uphase);
-  imshow("wphase", wphase);
-  imshow("path", cos<float>(uphase));
+  imshow("wphase", scan.get_qmap());
+  imshow("path", path);
 
   cv::waitKey();
   return 0;
