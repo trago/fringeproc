@@ -167,9 +167,9 @@ int main(int argc, char* argv[])
   path = sin<float>(wphase);
   cv::GaussianBlur(path, path, cv::Size(0,0), sigma, sigma);
 
-  cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
-  path = sin<float>(path);
-  Seguidor scan(path, 5);
+  //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
+  //path = sin<float>(path);
+  Seguidor scan(path, 125);
   int i,j, iter=0;
   //unwrap2D(wphase, uphase, tao, 0.5);
   do{
