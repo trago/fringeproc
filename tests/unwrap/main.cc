@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
   //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
-  Seguidor scan(path, 28);
+  Seguidor scan(path, 15);
   int i,j, iter=0;
   do{
     i=scan.get_r();
