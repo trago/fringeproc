@@ -80,7 +80,7 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
 
 template<typename T>
 void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
-                double smooth_path)
+                double smooth_path, int n)
 {
   const int M=wphase.rows, N=wphase.cols;
   cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
@@ -94,25 +94,25 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
   if(smooth_path>0)
     cv::GaussianBlur(path, path, cv::Size(0,0), smooth_path, smooth_path);
 
-  Seguidor scan(path, 128); //Discretizes the dynamic rango in 128 levels
+  Seguidor scan(path, 28); //Discretizes the dynamic rango in 128 levels
   int i,j, iter=0;
   if(wphase.type()==CV_32F)
     do{
       i=scan.get_r();
       j=scan.get_c();
-      sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+      sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
     }while(scan.siguiente());
   else
     do{
       i=scan.get_r();
       j=scan.get_c();
-      dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, 5);
+      dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
     }while(scan.siguiente());
 
 }
 
 void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
-              double smooth_path=0.0) throw(cv::Exception)
+              double smooth_path=0.0, int N=7) throw(cv::Exception)
 {
   if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
     cv::Exception e(1000,
@@ -125,9 +125,9 @@ void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
     uphase.create(wphase.rows, wphase.cols, wphase.type());
 
   if(wphase.type()==CV_32F)
-    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path);
+    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path, N);
   else
-    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path);
+    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path, N);
 }
 
 int main(int argc, char* argv[])
@@ -169,9 +169,9 @@ int main(int argc, char* argv[])
 
   //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
   //path = sin<float>(path);
-  Seguidor scan(path, 125);
+  //unwrap2D(wphase, uphase, tao, sigma,N);
+  Seguidor scan(path, 28);
   int i,j, iter=0;
-  //unwrap2D(wphase, uphase, tao, 0.5);
   do{
     i=scan.get_r();
     j=scan.get_c();
@@ -188,8 +188,8 @@ int main(int argc, char* argv[])
   cv::namedWindow("wphase");
   cv::namedWindow("path");
   imshow("phase", uphase);
-  imshow("wphase", scan.get_qmap());
-  imshow("path", path);
+  imshow("wphase", wphase);
+  imshow("path", cos<float>(uphase));
 
   cv::waitKey();
   return 0;
