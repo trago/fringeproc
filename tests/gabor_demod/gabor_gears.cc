@@ -224,3 +224,58 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
 
   return freqs;
 }
+cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
+                      const int x, const int y)
+{
+  cv::Vec2d freqs;
+  if(x-1>=0)
+    if(visited.at<char>(y,x-1)){
+      freqs[0]=fx.at<float>(y,x-1);
+      freqs[1]=fy.at<float>(y,x-1);
+      return freqs;
+    }
+  if(x+1<fx.cols)
+    if(visited.at<char>(y,x+1)){
+      freqs[0]=fx.at<float>(y,x+1);
+      freqs[1]=fy.at<float>(y,x+1);
+      return freqs;
+    }
+  if(y-1>=0)
+    if(visited.at<char>(y-1,x)){
+      freqs[0]=fx.at<float>(y-1,x);
+      freqs[1]=fy.at<float>(y-1,x);
+      return freqs;
+    }
+  if(y+1<fx.rows)
+    if(visited.at<char>(y+1,x)){
+      freqs[0]=fx.at<float>(y+1,x);
+      freqs[1]=fy.at<float>(y+1,x);
+      return freqs;
+    }
+  if(x-1>=0 && y-1>=0)
+    if(visited.at<char>(y-1,x-1)){
+      freqs[0]=fx.at<float>(y-1,x-1);
+      freqs[1]=fy.at<float>(y-1,x-1);
+      return freqs;
+    }
+  if(x+1<fx.cols && y-1>=0)
+    if(visited.at<char>(y-1,x+1)){
+      freqs[0]=fx.at<float>(y-1,x+1);
+      freqs[1]=fy.at<float>(y-1,x+1);
+      return freqs;
+    }
+  if(x+1<fx.cols && y+1<fx.rows)
+    if(visited.at<char>(y+1,x+1)){
+      freqs[0]=fx.at<float>(y+1,x+1);
+      freqs[1]=fy.at<float>(y+1,x+1);
+      return freqs;
+    }
+  if(x-1>=0 && y+1<fx.rows)
+    if(visited.at<char>(y+1,x-1)){
+      freqs[0]=fx.at<float>(y+1,x-1);
+      freqs[1]=fy.at<float>(y+1,x-1);
+      return freqs;
+    }
+
+
+}
