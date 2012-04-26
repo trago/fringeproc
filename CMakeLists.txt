@@ -13,8 +13,8 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 set(CMAKE_BUILD_TYPE "Release")
 
-set(CMAKE_C_FLAGS_RELEASE "-std=gnu99 -O3 -mfpmath=sse -msse3 -ffast-math -funroll-loops")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mfpmath=sse -msse3 -ffast-math -funroll-loops")
+set(CMAKE_C_FLAGS_RELEASE "-std=gnu99 -O3 -mfpmath=sse -msse2 -ffast-math -funroll-loops")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mfpmath=sse -msse2 -ffast-math -funroll-loops")
 set(CMAKE_C_FLAGS_DEBUG "-std=gnu99 -ggdb -DBZ_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -DBZ_DEBUG")
 
