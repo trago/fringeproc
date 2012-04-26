@@ -142,7 +142,7 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
                             const int x, const int y)
 {
   cv::Mat hxr, hxi, hyr, hyi;
-  double sx = 1.57/wx, sy = 1.57/wy;
+  double sx = fabs(1.57/wx), sy = fabs(1.57/wy);
 
   sx = sx>22? 22:(sx<1? 1:sx);
   sy = sy>22? 22:(sy<1? 1:sy);
