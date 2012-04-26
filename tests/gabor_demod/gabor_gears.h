@@ -11,6 +11,12 @@ void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
 void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi, const double wx,
                     const double wy, const int x, const int y);
 
+void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
+                  const double wx, const double wy);
+
+cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
+                      const int x, const int y);
+
 double dconvolutionAtXY(const double *__restrict data,
                const double *__restrict kernelx,
                const double *__restrict kernely,

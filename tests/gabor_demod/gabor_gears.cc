@@ -156,9 +156,71 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
         convolutionAtXY<float>(data, hxi, hyr, x, y);
   }
   else if(data.type()==CV_64F){
-    fr.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyr, x, y) -
-        convolutionAtXY<float>(data, hxi, hyi, x, y);
-    fi.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyi, x, y) +
-        convolutionAtXY<float>(data, hxi, hyr, x, y);
+    fr.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyr, x, y) -
+        convolutionAtXY<double>(data, hxi, hyi, x, y);
+    fi.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyi, x, y) +
+        convolutionAtXY<double>(data, hxi, hyr, x, y);
   }
+}
+
+void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
+                  const double wx, const double wy)
+{
+  cv::Mat hxr, hxi, hyr, hyi;
+  cv::Mat tmp1(data.rows, data.cols, data.type());
+  cv::Mat tmp2(data.rows, data.cols, data.type());
+  double sx = 1.57/wx, sy = 1.57/wy;
+
+  sx = sx>22? 22:(sx<1? 1:sx);
+  sy = sy>22? 22:(sy<1? 1:sy);
+  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
+  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+
+  if(data.type()==CV_32F){
+    sconvolution(data.ptr<float>(), hxr.ptr<float>(), hyr.ptr<float>(),
+                 tmp1.ptr<float>(), data.rows, data.cols, hyr.cols, hxr.cols);
+    sconvolution(data.ptr<float>(), hxi.ptr<float>(), hyi.ptr<float>(),
+                 tmp2.ptr<float>(), data.rows, data.cols, hyi.cols, hxi.cols);
+    fr = tmp1 - tmp2;
+    sconvolution(data.ptr<float>(), hxr.ptr<float>(), hyi.ptr<float>(),
+                 tmp1.ptr<float>(), data.rows, data.cols, hyi.cols, hxr.cols);
+    sconvolution(data.ptr<float>(), hxi.ptr<float>(), hyr.ptr<float>(),
+                 tmp2.ptr<float>(), data.rows, data.cols, hyr.cols, hxi.cols);
+    fi = tmp1 + tmp2;
+  }
+  else if(data.type()==CV_64F){
+    dconvolution(data.ptr<double>(), hxr.ptr<double>(), hyr.ptr<double>(),
+                 tmp1.ptr<double>(), data.rows, data.cols, hyr.cols, hxr.cols);
+    dconvolution(data.ptr<double>(), hxi.ptr<double>(), hyi.ptr<double>(),
+                 tmp2.ptr<double>(), data.rows, data.cols, hyi.cols, hxi.cols);
+    fr = tmp1 - tmp2;
+    dconvolution(data.ptr<double>(), hxr.ptr<double>(), hyi.ptr<double>(),
+                 tmp1.ptr<double>(), data.rows, data.cols, hyi.cols, hxr.cols);
+    dconvolution(data.ptr<double>(), hxi.ptr<double>(), hyr.ptr<double>(),
+                 tmp2.ptr<double>(), data.rows, data.cols, hyr.cols, hxi.cols);
+    fi = tmp1 + tmp2;
+  }
+}
+
+cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
+                      const int x, const int y)
+{
+  cv::Vec2d freqs;
+  double imx = x-1>=0? (fi.at<float>(y,x)-fi.at<float>(y,x-1)):
+                       (fi.at<float>(y,x+1)-fi.at<float>(y,x));
+  double rex = x-1>=0? (fr.at<float>(y,x)-fr.at<float>(y,x-1)):
+                       (fr.at<float>(y,x+1)-fr.at<float>(y,x));
+  double magn = fr.at<float>(y,x)*fr.at<float>(y,x) +
+      fi.at<float>(y,x)*fi.at<float>(y,x);
+
+  freqs[0] = (imx*fr.at<float>(y,x) - fi.at<float>(y,x)*rex)/magn;
+
+  imx = y-1>=0? (fi.at<float>(y,x)-fi.at<float>(y-1,x)):
+                       (fi.at<float>(y+1,x)-fi.at<float>(y,x));
+  rex = y-1>=0? (fr.at<float>(y,x)-fr.at<float>(y-1,x)):
+                       (fr.at<float>(y+1,x)-fr.at<float>(y,x));
+
+  freqs[1] = (imx*fr.at<float>(y,x) - fi.at<float>(y,x)*rex)/magn;
+
+  return freqs;
 }

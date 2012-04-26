@@ -1,20 +1,25 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <utils/utils.h>
+#include <iostream>
 #include "gabor_gears.h"
 
 int main()
 {
-  const float wx= .3, wy=.65;
+  const float wx= .1, wy=.5;
   const int M=456, N=456;
-  cv::Mat I = cos<float>(ramp(wx, wy, M, N));
+  cv::Mat I(M,N,CV_32F);
+  //I=cos<float>(ramp(wx, wy, M, N));
+  parabola(I, 0.003);
+  I=cos<float>(I);
   cv::Mat noise(M,N,CV_32F);
   cv::Mat fr(M,N,CV_32F), fi(M,N,CV_32F);
+  cv::Mat magn;
   cv::Mat hxr, hxi, hyr, hyi;
   cv::Mat h;
   cv::Mat fase;
   cv::Mat tmp;
 
-  cv::randn(noise, 0, 3);
+  cv::randn(noise, 0, .3);
   float sx = 1.57/wx, sy = 1.57/wy;
   sx = sx>22? 22:(sx<1? 1:sx);
   sy = sy>22? 22:(sy<1? 1:sy);
@@ -22,6 +27,17 @@ int main()
   gen_gaborKernel(hyr, hyi, wy, sy, CV_32F);
   I=I+noise;
 
+  gabor_filter(I, fr, fi, wx, wy);
+  cv::magnitude(fr, fi, magn);
+  double min, max;
+  cv::Point2i p;
+  cv::minMaxLoc(magn, &min, &max, NULL, &p);
+  std::cout<<"Puno inicial: ("<<p.x<<", "<<p.y<<")"<<std::endl;
+  I.at<float>(p.y, p.x)=20;
+  cv::Vec2d freqs = calc_freqXY(fr, fi, p.x, p.y);
+  std::cout<<"Frecuencia local en el punto: ("<<freqs[0]<<", "<<freqs[1]
+          <<")"<<std::endl;
+  /*
   for(int i=0; i<M; i++)
     for(int j=0; j<N; j++){
       fr.at<float>(i,j)=convolutionAtXY<float>(I, hxr, hyr, j, i) -
@@ -30,7 +46,7 @@ int main()
           convolutionAtXY<float>(I, hxi, hyr, j, i);
       //gabor_adaptiveFilterXY(I, fr, fi, wx, wy, j, i); //This line resumes the previous two lines
     }
-
+*/
   h.create(hyr.cols, hxr.cols, CV_32F);
   for(int i=0; i<hyr.cols; i++)
     for(int j=0; j<hxr.cols; j++)
@@ -53,7 +69,7 @@ int main()
   cv::imshow("imag", tmp);
   cv::normalize(h,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("kernel", tmp);
-  cv::normalize(fase,tmp,1,0,cv::NORM_MINMAX);
+  cv::normalize(magn,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("fase", tmp);
 
   cv::waitKey(0);
