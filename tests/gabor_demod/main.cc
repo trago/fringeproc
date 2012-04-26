@@ -23,7 +23,7 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 
 int main()
 {
-  const float wx= -.5, wy=-.5;
+  float wx= -.5, wy=-.5;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_32F);
   cv::Mat phase(M,N,CV_32F);
@@ -45,12 +45,6 @@ int main()
   cv::randn(noise, 0, 2.5);
   I=I+noise;
 
-  // Genera kerneles del filtro de gabor
-  float sx = fabs(1.57/wx), sy = fabs(1.57/wy);
-  sx = sx>22? 22:(sx<1? 1:sx);
-  sy = sy>22? 22:(sy<1? 1:sy);
-  gen_gaborKernel(hxr, hxi, wx, sx, CV_32F);
-  gen_gaborKernel(hyr, hyi, wy, sy, CV_32F);
 
   // Aplica filtro y busca el pixel que esta entonado con el filtro.
   // despues calcula su frecuencia local
@@ -77,18 +71,29 @@ int main()
     gabor_adaptiveFilterXY(I, fr, fi, fx.at<float>(i,j), fy.at<float>(i,j),
                            j, i);
     if((cont++)%1000==0){
+      // Genera kerneles del filtro de gabor
+      wx = fx.at<float>(i,j);
+      wx = fy.at<float>(i,j);
+      float sx = fabs(1.57/wx), sy = fabs(1.57/wy);
+      sx = sx>22? 22:(sx<1? 1:sx);
+      sy = sy>22? 22:(sy<1? 1:sy);
+      gen_gaborKernel(hxr, hxi, wx, sx, CV_32F);
+      gen_gaborKernel(hyr, hyi, wy, sy, CV_32F);
+      // Genera la parte imaginaria del filtro de gabor para desplegarlo
+      h.create(hyr.cols, hxr.cols, CV_32F);
+      for(int i=0; i<hyr.cols; i++)
+        for(int j=0; j<hxr.cols; j++)
+          h.at<float>(i,j)=hxr.at<float>(0,j)*hyi.at<float>(0,i) +
+              hxi.at<float>(0,j)*hyr.at<float>(0,i);
+
       cv::normalize(fr,tmp,1,0,cv::NORM_MINMAX);
       cv::imshow("real", tmp);
-      cv::waitKey(32);
+      cv::normalize(h,tmp,1,0,cv::NORM_MINMAX);
+      cv::imshow("kernel", tmp);
+      cv::waitKey(62);
     }
   }while(scan.siguiente());
 
-  // Genera la parte imaginaria del filtro de gabor para desplegarlo
-  h.create(hyr.cols, hxr.cols, CV_32F);
-  for(int i=0; i<hyr.cols; i++)
-    for(int j=0; j<hxr.cols; j++)
-      h.at<float>(i,j)=hxr.at<float>(0,j)*hyi.at<float>(0,i) +
-    hxi.at<float>(0,j)*hyr.at<float>(0,i);
 
   // Calculo de la fase de salida
   fase = atan2<float>(fi,fr);
