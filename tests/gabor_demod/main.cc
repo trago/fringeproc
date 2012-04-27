@@ -23,11 +23,12 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 
 int main()
 {
-  float wx= -.2, wy=.3;
+  float wx= 0.5, wy=0.5;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_32F);
   cv::Mat phase(M,N,CV_32F);
-  cv::Mat fx, fy, ffx, ffy; // las f's son las frecuencias teoricas y las ff's las estimadas
+  cv::Mat fx(cv::Mat::zeros(M,N,CV_32F)), fy(cv::Mat::zeros(M,N,CV_32F)),
+      ffx, ffy; // las f's son las frecuencias teoricas y las ff's las estimadas
   cv::Mat noise(M,N,CV_32F);
   cv::Mat fr(cv::Mat::zeros(M,N,CV_32F)), fi(cv::Mat::zeros(M,N,CV_32F)),
       visited;
@@ -40,11 +41,11 @@ int main()
 
   // Genera datos de entrada
   parabola(phase, 0.001);
-  phase+=ramp(wx, wy, M, N);
+  phase += peaks(M, N)*23;
+  //phase+=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
-  cv::randn(noise, 0, 2.5);
-  noise=noise*0;
+  cv::randn(noise, 0, 2.003);
   I=I+noise;
 
 
@@ -68,7 +69,8 @@ int main()
   // tomando las frecuancias teoricas para entonar los filtros de gabor
   cv::GaussianBlur(I, path, cv::Size(29,29),0);
   Seguidor scan(path, p.y, p.x, 5);
-  int i,j,cont=0;
+  scan.siguiente(); // Parece que el primer punto lo repite
+  int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::zeros(I.rows, I.cols, CV_32F);
   ffy = cv::Mat::zeros(I.rows, I.cols, CV_32F);
   ffx.at<float>(i,j)=freqs[0];
@@ -77,8 +79,8 @@ int main()
   do{
     i=scan.get_r();
     j=scan.get_c();
-    if(i!=p.y && j!=p.x)
-      freqs = peak_freqXY(fx, fy, visited, j, i);
+    if(!(i==p.y && j==p.x))
+      freqs = peak_freqXY(ffx, ffy, visited, j, i);
 
     if(i-1>=0)
       gabor_adaptiveFilterXY(I, fr, fi, freqs[0], freqs[1],
@@ -98,11 +100,11 @@ int main()
     ffx.at<float>(i,j)=freqs[0];
     ffy.at<float>(i,j)=freqs[1];
     visited.at<char>(i,j)=1;
-    if((cont++)%5000==0){
+    if((cont++)%5000==1000){
       // Genera kerneles del filtro de gabor
-      wx = fx.at<float>(i,j);
-      wy = fy.at<float>(i,j);
-      float sx = fabs(1.57/wx), sy = fabs(1.57/wy);
+      wx = ffx.at<float>(i,j);
+      wy = ffy.at<float>(i,j);
+      float sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
       sx = sx>22? 22:(sx<1? 1:sx);
       sy = sy>22? 22:(sy<1? 1:sy);
       gen_gaborKernel(hxr, hxi, wx, sx, CV_32F);
@@ -152,6 +154,8 @@ int main()
   cv::imshow("ffx", tmp);
   cv::normalize(ffy,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffy", tmp);
+  cv::normalize(magn,tmp,1,0,cv::NORM_MINMAX);
+  cv::imshow("kernel", tmp);
 
   cv::waitKey(0);
 
