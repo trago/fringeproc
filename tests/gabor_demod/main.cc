@@ -41,11 +41,11 @@ int main()
 
   // Genera datos de entrada
   parabola(phase, 0.001);
-  phase += peaks(M, N)*23;
+  //phase = peaks(M, N)*33;
   //phase+=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
-  cv::randn(noise, 0, 2.003);
+  cv::randn(noise, 0, 0.003);
   I=I+noise;
 
 
@@ -96,7 +96,9 @@ int main()
                              j+1, i);
     gabor_adaptiveFilterXY(I, fr, fi, freqs[0], freqs[1],
                            j, i);
-    freqs = calc_freqXY(fr, fi, j, i);
+     freqs = calc_freqXY(fr, fi, j, i);
+     //freqs = calc_freqXY(fr, fi, ffx, ffy, visited, j, i);
+
     ffx.at<float>(i,j)=freqs[0];
     ffy.at<float>(i,j)=freqs[1];
     visited.at<char>(i,j)=1;

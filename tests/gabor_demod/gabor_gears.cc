@@ -224,6 +224,76 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
 
   return freqs;
 }
+
+cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
+                      const cv::Mat fx, const cv::Mat fy, const cv::Mat visited,
+                      const int x, const int y)
+{
+  cv::Vec2d freqs = calc_freqXY(fr, fi, x, y);
+  cv::Vec2d sumx=0, sumy=0;
+  if(x-1>=0)
+    if(visited.at<char>(y,x-1)){
+      sumx[0]+=fabs(fx.at<float>(y,x-1)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y,x-1)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y,x-1)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y,x-1)+freqs[1]);
+    }
+  if(x+1<fx.cols)
+    if(visited.at<char>(y,x+1)){
+      sumx[0]+=fabs(fx.at<float>(y,x+1)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y,x+1)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y,x+1)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y,x+1)+freqs[1]);
+    }
+  if(y-1>=0)
+    if(visited.at<char>(y-1,x)){
+      sumx[0]+=fabs(fx.at<float>(y-1,x)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y-1,x)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y-1,x)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y-1,x)+freqs[1]);
+    }
+  if(y+1<fx.rows)
+    if(visited.at<char>(y+1,x)){
+      sumx[0]+=fabs(fx.at<float>(y+1,x)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y+1,x)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y+1,x)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y+1,x)+freqs[1]);
+    }
+  if(x-1>=0 && y-1>=0)
+    if(visited.at<char>(y-1,x-1)){
+      sumx[0]+=fabs(fx.at<float>(y-1,x-1)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y-1,x-1)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y-1,x-1)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y-1,x-1)+freqs[1]);
+    }
+  if(x+1<fx.cols && y-1>=0)
+    if(visited.at<char>(y-1,x+1)){
+      sumx[0]+=fabs(fx.at<float>(y-1,x+1)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y-1,x+1)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y-1,x+1)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y-1,x+1)+freqs[1]);
+    }
+  if(x+1<fx.cols && y+1<fx.rows)
+    if(visited.at<char>(y+1,x+1)){
+      sumx[0]+=fabs(fx.at<float>(y+1,x+1)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y+1,x+1)+freqs[0]);
+      sumy[0]+=fabs(fy.at<float>(y+1,x+1)-freqs[1]);
+      sumy[1]+=fabs(fy.at<float>(y+1,x+1)+freqs[1]);
+    }
+  if(x-1>=0 && y+1<fx.rows)
+    if(visited.at<char>(y+1,x-1)){
+      sumx[0]+=fabs(fx.at<float>(y+1,x-1)-freqs[0]);
+      sumx[1]+=fabs(fx.at<float>(y+1,x-1)+freqs[0]);
+      sumy[0]+=fabs(fx.at<float>(y+1,x-1)-freqs[1]);
+      sumy[1]+=fabs(fx.at<float>(y+1,x-1)+freqs[1]);
+    }
+
+  freqs[0]=(sumx[0]>sumx[1])? -freqs[0]:freqs[0];
+  freqs[1]=(sumy[0]>sumy[1])? -freqs[1]:freqs[1];
+
+  return freqs;
+}
+
 cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
                       const int x, const int y)
 {
