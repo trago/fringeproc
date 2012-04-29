@@ -194,6 +194,7 @@ void Seguidor::ordenaVecinos(Punto vecinos[])
       _caminado.at<uchar>(i-1,j+1)=1;
     }
 
+  /*
   int aux;
   bool ordenado=false;
   for(int k=1; k<8; k++){
@@ -212,6 +213,7 @@ void Seguidor::ordenaVecinos(Punto vecinos[])
       }
     }
   }
+   */
 }
 
 void Seguidor::cargaVecinos()
@@ -277,7 +279,13 @@ cv::Mat Seguidor::get_qmap()
 bool Seguidor::siguiente()
 {
   std::list<Punto>* cola=NULL;
-  for(int i=_levels-1; i>=0; i--)
+  int level=_qmap.at<char>(_punto.r, _punto.c);
+  for(int i=level; i>=0; i--)
+    if(_colas[i].begin()!=_colas[i].end()){
+      cola=_colas+i;
+      break;
+    }
+  for(int i=level+1; i<_levels; i++)
     if(_colas[i].begin()!=_colas[i].end()){
       cola=_colas+i;
       break;
