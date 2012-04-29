@@ -16,7 +16,7 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
 
 cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
                       const int x, const int y);
-cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
+cv::Vec2d calc_freqXY(cv::Mat fr, cv::Mat fi,
                       const cv::Mat fx, const cv::Mat fy, const cv::Mat visited,
                       const int x, const int y);
 cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
