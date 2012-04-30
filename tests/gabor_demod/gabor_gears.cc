@@ -202,6 +202,36 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
   }
 }
 
+double dW(double phase)
+{
+  double m= 2 * M_PI;
+  int n= (phase < 0) ? (phase - M_PI) / m : (phase + M_PI) / m;
+
+  return (phase - m * n);
+}
+cv::Vec2d calc_freqXY01(const cv::Mat fr, const cv::Mat fi,
+                        const int x, const int y)
+{
+  cv::Vec2d freqs;
+  double p0 = x-1>=0? atan2(fi.at<float>(y,x-1),fr.at<float>(y,x-1)):
+                      atan2(fi.at<float>(y,x+1),fr.at<float>(y,x+1));
+  double p1 = atan2(fi.at<float>(y,x),fr.at<float>(y,x));
+
+  freqs[0] = x-1>=0? dW(p1-p0):dW(p0-p1);
+
+  p0 = y-1>=0? atan2(fi.at<float>(y-1,x),fr.at<float>(y-1,x)):
+               atan2(fi.at<float>(y+1,x),fr.at<float>(y+1,x));
+
+  freqs[1] = y-1>=0? dW(p1-p0):dW(p0-p1);
+
+  if((freqs[0]*freqs[0]+freqs[1]*freqs[1]) < 0.0025){
+    float magn = 0.05/sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]);
+    freqs[0]=freqs[0]*magn;
+    freqs[1]=freqs[1]*magn;
+  }
+
+  return freqs;
+}
 cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
                       const int x, const int y)
 {
@@ -222,8 +252,8 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
 
   freqs[1] = (imx*fr.at<float>(y,x) - fi.at<float>(y,x)*rex)/magn;
 
-  if((freqs[0]*freqs[0]+freqs[1]*freqs[1]) < 0.0025){
-    float magn = 0.05/sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]);
+  if((freqs[0]*freqs[0]+freqs[1]*freqs[1]) < 0.03*0.03){
+    float magn = 0.03/sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]);
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
   }
@@ -242,18 +272,37 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
   int sum=0;
 
   if(x-1>=0){
-    f_[0]=fx.at<float>(y,x-1);
-    f_[1]=fy.at<float>(y,x-1);
-    sum++;
+    if(visited.at<char>(y,x-1)){
+      f_[0]=fx.at<float>(y,x-1);
+      f_[1]=fy.at<float>(y,x-1);
+      sum++;
+    }
    }
   if(y-1>=0){
-    f_[0]+=fx.at<float>(y-1,x);
-    f_[1]+=fy.at<float>(y-1,x);
-    sum++;
+    if(visited.at<char>(y-1,x)){
+      f_[0]+=fx.at<float>(y-1,x);
+      f_[1]+=fy.at<float>(y-1,x);
+      sum++;
+    }
+   }
+  if(x+1<fr.cols){
+    if(visited.at<char>(y,x+1)){
+      f_[0]+=fx.at<float>(y,x+1);
+      f_[1]+=fy.at<float>(y,x+1);
+      sum++;
+    }
+   }
+  if(y+1<fr.rows){
+    if(visited.at<char>(y+1,x)){
+      f_[0]+=fx.at<float>(y+1,x);
+      f_[1]+=fy.at<float>(y+1,x);
+      sum++;
+    }
    }
   freqs[0]=(freqs[0]+lamb*f_[0])/(1+sum*lamb);
   freqs[1]=(freqs[1]+lamb*f_[1])/(1+sum*lamb);
 
+  /*
   f_=0;
   if(x-2>=0){
     f_[0]=fabs(2*fx.at<float>(y,x-1)-fx.at<float>(y,x-2) - freqs[0]);
@@ -274,7 +323,7 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
     f_[1]+=fabs(2*fy.at<float>(y-1,x)-fy.at<float>(y-2,x) + freqs[1]);
    }
   freqs[1]=f_[0]<=f_[1]? freqs[1]:-freqs[1];
-
+    */
   return freqs;
 }
 

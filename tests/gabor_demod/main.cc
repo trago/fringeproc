@@ -21,6 +21,7 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
     dx.at<float>(I.rows-1,i)=dx.at<float>(I.rows-2,i);
 }
 
+inline
 void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
                         float wx, float wy, int i, int j)
 {
@@ -39,10 +40,80 @@ void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
   gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
                          j, i);
 }
+inline
+void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
+                        cv::Mat fx, cv::Mat fy, cv::Mat visited,
+                        float wx, float wy, int i, int j, const int N)
+{
+  int liM = (i-N/2>=0)? i-N/2:0, lsM = (i+N/2<I.rows)? i+N/2:I.rows-1;
+  int liN = (j-N/2>=0)? j-N/2:0, lsN = (j+N/2<I.cols)? j+N/2:I.cols-1;
+  cv::Vec2d freqs;
+  for(int m=i; m<lsM; m++){
+    freqs = peak_freqXY(fx, fy, visited, j, m);
+    wx=freqs[0];
+    wy=freqs[1];
+    for(int n=j; n<lsN; n++){
+      if(visited.at<char>(m,n)==0){
+        filtraNeighborhood(I, fr, fi, wx, wy, m, n);
+        freqs=calc_freqXY(fr, fi, n, m);
+        fx.at<float>(m,n)=freqs[0];
+        fy.at<float>(m,n)=freqs[1];
+        wx=fx.at<float>(m,n);
+        wy=fy.at<float>(m,n);
+        visited.at<char>(m,n)=1;
+      }
+    }
+    freqs = peak_freqXY(fx, fy, visited, j-1, m);
+    wx=freqs[0];
+    wy=freqs[1];
+    for(int n=j-1; n>=liN; n--){
+      if(visited.at<char>(m,n)==0){
+        filtraNeighborhood(I, fr, fi, wx, wy, m, n);
+        freqs=calc_freqXY(fr, fi, n, m);
+        fx.at<float>(m,n)=freqs[0];
+        fy.at<float>(m,n)=freqs[1];
+        wx=fx.at<float>(m,n);
+        wy=fy.at<float>(m,n);
+        visited.at<char>(m,n)=1;
+      }
+    }
+  }
+  for(int m=i-1; m>=liM; m--){
+    freqs = peak_freqXY(fx, fy, visited, j, m);
+    wx=freqs[0];
+    wy=freqs[1];
+    for(int n=j; n<lsN; n++){
+      if(visited.at<char>(m,n)==0){
+        filtraNeighborhood(I, fr, fi, wx, wy, m, n);
+        freqs=calc_freqXY(fr, fi, n, m);
+        wx=fx.at<float>(m,n)=freqs[0];
+        fy.at<float>(m,n)=freqs[1];
+        fx.at<float>(m,n);
+        wy=fy.at<float>(m,n);
+        visited.at<char>(m,n)=1;
+      }
+    }
+    freqs = peak_freqXY(fx, fy, visited, j-1, m);
+    wx=freqs[0];
+    wy=freqs[1];
+    for(int n=j-1; n>=liN; n--){
+      if(visited.at<char>(m,n)==0){
+        filtraNeighborhood(I, fr, fi, wx, wy, m, n);
+        freqs=calc_freqXY(fr, fi, n, m);
+        fx.at<float>(m,n)=freqs[0];
+        fy.at<float>(m,n)=freqs[1];
+        wx=fx.at<float>(m,n);
+        wy=fy.at<float>(m,n);
+        visited.at<char>(m,n)=1;
+      }
+    }
+  }
+
+}
 
 int main()
 {
-  float wx= 0.5, wy=0.9;
+  float wx= 1.1, wy=0.;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_32F);
   cv::Mat phase(M,N,CV_32F);
@@ -59,9 +130,9 @@ int main()
   cv::Mat tmp;
 
   // Genera datos de entrada
-  //parabola(phase, 0.0005);
-  phase = peaks(M, N)*33;
-  //phase+=ramp(wx, wy, M, N);
+  parabola(phase, 0.0005);
+  phase += peaks(M, N)*33;
+  //phase=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
   cv::randn(noise, 0, 0.001);
@@ -87,8 +158,8 @@ int main()
   // Demodula siguiendo franjas usando filtro de gabor adaptivo
   // tomando las frecuancias teoricas para entonar los filtros de gabor
 
-  cv::GaussianBlur(I, path, cv::Size(65,65),0);
-  Seguidor scan(path, p.y, p.x, 128);
+  cv::GaussianBlur(I, path, cv::Size(5,5),0);
+  Seguidor scan(I, p.y, p.x, 9);
   //scan.siguiente(); // Parece que el primer punto lo repite
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::zeros(I.rows, I.cols, CV_32F);
@@ -102,16 +173,25 @@ int main()
   do{
     i=scan.get_r();
     j=scan.get_c();
-    if(!(i==p.y && j==p.x))
+    if((i==p.y && j==p.x)){
+      filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+      freqs = calc_freqXY(fr, fi, j, i);
+      ffx.at<float>(i,j)=freqs[0];
+      ffy.at<float>(i,j)=freqs[1];
+      visited.at<char>(i,j)=1;
+    }
+    else{
       freqs = peak_freqXY(ffx, ffy, visited, j, i);
 
-    filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-    freqs = calc_freqXY(fr, fi, j, i);
-    //freqs = calc_freqXY(fr, fi, ffx, ffy, visited, j, i);
-    ffx.at<float>(i,j)=freqs[0];
-    ffy.at<float>(i,j)=freqs[1];
-    visited.at<char>(i,j)=1;
+      filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+      //filtraNeighborhood(I,fr,fi,ffx,ffy,visited,freqs[0],freqs[1],i,j,150);
+      //freqs = calc_freqXY(fr, fi, ffx, ffy, visited, j, i);
+      freqs = calc_freqXY(fr, fi, j, i);
+      ffx.at<float>(i,j)=freqs[0];
+      ffy.at<float>(i,j)=freqs[1];
+      visited.at<char>(i,j)=1;
 
+    }
     if((cont++)%5000==1000){
       // Genera kerneles del filtro de gabor
       wx = ffx.at<float>(i,j);
