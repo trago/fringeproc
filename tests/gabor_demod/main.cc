@@ -118,8 +118,8 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
+  //filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  //freqs = calc_freqXY(fr, fi, j, i);
   //fixFreqs(freqs[0], freqs[1], fx, fy, visited, i, j);
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
@@ -178,12 +178,12 @@ int main()
   cv::Mat tmp;
 
   // Genera datos de entrada
-  parabola(phase, 0.0005);
+  parabola(phase, 0.0008);
   phase = peaks(M, N)*33;
   //phase=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
-  cv::randn(noise, 0, 1.2);
+  cv::randn(noise, 0, 2.2);
   I=I+noise;
 
 
@@ -210,8 +210,8 @@ int main()
   //Seguidor scan(I, p.y, p.x, 9);
   //scan.siguiente(); // Parece que el primer punto lo repite
   int i=p.y, j=p.x, cont=0;
-  ffx = cv::Mat::zeros(I.rows, I.cols, CV_32F);
-  ffy = cv::Mat::zeros(I.rows, I.cols, CV_32F);
+  ffx = cv::Mat::ones(I.rows, I.cols, CV_32F);
+  ffy = cv::Mat::ones(I.rows, I.cols, CV_32F);
   fr = cv::Mat::zeros(I.rows, I.cols, CV_32F);
   fi = cv::Mat::zeros(I.rows, I.cols, CV_32F);
   ffx.at<float>(i,j)=freqs[0];

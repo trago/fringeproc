@@ -82,10 +82,10 @@ bool Scanner::next()
       }
 
     int idx=0;
-    double mayor=magn[0];
-    bool found=mayor>=0? true:false;
+    double mayor=magn[0], minf=0.5*0.5;
+    bool found=mayor>=minf? true:false;
     for(int i=1; i<8; i++)
-      if(mayor<=magn[i] && magn[i]>=0){
+      if(mayor<=magn[i] && magn[i]>=minf){
         mayor=magn[i];
         idx=i;
         found=true;
