@@ -118,8 +118,8 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  //filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  //freqs = calc_freqXY(fr, fi, j, i);
+  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  freqs = calc_freqXY(fr, fi, j, i);
   //fixFreqs(freqs[0], freqs[1], fx, fy, visited, i, j);
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
@@ -179,7 +179,7 @@ int main()
 
   // Genera datos de entrada
   parabola(phase, 0.0005);
-  phase += peaks(M, N)*13;
+  phase += peaks(M, N)*23;
   //phase=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
@@ -242,8 +242,8 @@ int main()
       wx = ffx.at<float>(i,j);
       wy = ffy.at<float>(i,j);
       float sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
-      sx = sx>22? 22:(sx<1? 1:sx);
-      sy = sy>22? 22:(sy<1? 1:sy);
+      sx = sx>7? 7:(sx<1? 1:sx);
+      sy = sy>7? 7:(sy<1? 1:sy);
       gen_gaborKernel(hxr, hxi, wx, sx, CV_32F);
       gen_gaborKernel(hyr, hyi, wy, sy, CV_32F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo
