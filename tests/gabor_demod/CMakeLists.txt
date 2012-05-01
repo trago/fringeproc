@@ -1,5 +1,7 @@
 set(gabor_SRC main.cc
-    gabor_gears.cc)
+    gabor_gears.cc
+    scanner.cc
+)
 set(gabor_LIBS imcore utils ${OpenCV_LIBS})
 
 add_executable(gabor ${gabor_SRC})

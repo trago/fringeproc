@@ -268,7 +268,7 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
   cv::Vec2d freqs = calc_freqXY(fr, fi, x, y);
 
   cv::Vec2d f_=0;
-  float lamb=0.5;
+  float lamb=1;
   int sum=0;
 
   if(x-1>=0){
@@ -302,28 +302,6 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
   freqs[0]=(freqs[0]+lamb*f_[0])/(1+sum*lamb);
   freqs[1]=(freqs[1]+lamb*f_[1])/(1+sum*lamb);
 
-  /*
-  f_=0;
-  if(x-2>=0){
-    f_[0]=fabs(2*fx.at<float>(y,x-1)-fx.at<float>(y,x-2) - freqs[0]);
-    f_[1]=fabs(2*fx.at<float>(y,x-1)-fx.at<float>(y,x-2) + freqs[0]);
-   }
-  if(y-2>=0){
-    f_[0]+=fabs(2*fx.at<float>(y-1,x)-fx.at<float>(y-2,x) - freqs[0]);
-    f_[1]+=fabs(2*fx.at<float>(y-1,x)-fx.at<float>(y-2,x) + freqs[0]);
-   }
-  freqs[0]=f_[0]<=f_[1]? freqs[0]:-freqs[0];
-  f_=0;
-  if(x-2>=0){
-    f_[0]=fabs(2*fy.at<float>(y,x-1)-fy.at<float>(y,x-2) - freqs[1]);
-    f_[1]=fabs(2*fy.at<float>(y,x-1)-fy.at<float>(y,x-2) + freqs[1]);
-   }
-  if(y-2>=0){
-    f_[0]+=fabs(2*fy.at<float>(y-1,x)-fy.at<float>(y-2,x) - freqs[1]);
-    f_[1]+=fabs(2*fy.at<float>(y-1,x)-fy.at<float>(y-2,x) + freqs[1]);
-   }
-  freqs[1]=f_[0]<=f_[1]? freqs[1]:-freqs[1];
-    */
   return freqs;
 }
 
