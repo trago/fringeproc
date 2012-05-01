@@ -100,8 +100,6 @@ bool Scanner::next()
     }
     else
       m_path.pop_back();
-    if(m_path.size()%5000==0)
-      std::cout<<"List elements: "<<m_path.size()<<std::endl;
   }
   return false;
 }

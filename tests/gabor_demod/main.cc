@@ -43,6 +43,74 @@ void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
 }
 
 inline
+void fixFreqs(double& wx, double& wy, cv::Mat fx, cv::Mat fy,
+              cv::Mat visited, int i, int j)
+{
+  cv::Mat_<char>& visit=(cv::Mat_<char>&)visited;
+  cv::Mat_<float>& ffx=(cv::Mat_<float>&)fx;
+  cv::Mat_<float>& ffy=(cv::Mat_<float>&)fy;
+  cv::Vec2d sum;
+  double tau=0.5;
+  int cont=0;
+  sum[0]=0;
+  sum[1]=0;
+  if(j-1>=0)
+    if(visit(i,j-1)){
+      sum[0]+=ffx(i,j-1);
+      sum[1]+=ffy(i,j-1);
+      cont++;
+    }
+  if(j+1<fx.cols)
+    if(visit(i,j+1)){
+      sum[0]+=ffx(i,j+1);
+      sum[1]+=ffy(i,j+1);
+      cont++;
+    }
+  if(i-1>=0)
+    if(visit(i-1,j)){
+      sum[0]+=ffx(i-1,j);
+      sum[1]+=ffy(i-1,j);
+      cont++;
+    }
+  if(i+1<fx.rows)
+    if(visit(i+1,j)){
+      sum[0]+=ffx(i+1,j);
+      sum[1]+=ffy(i+1,j);
+      cont++;
+    }
+  if(j-1>=0 && i-1>=0)
+    if(visit(i-1,j-1)){
+      sum[0]+=ffx(i-1,j-1);
+      sum[1]+=ffy(i-1,j-1);
+      cont++;
+    }
+  if(j+1<fx.cols && i-1>=0)
+    if(visit(i-1,j+1)){
+      sum[0]+=ffx(i-1,j+1);
+      sum[1]+=ffy(i-1,j+1);
+      cont++;
+    }
+  if(j+1<fx.cols && i+1<fx.rows)
+    if(visit(i+1,j+1)){
+      sum[0]+=ffx(i+1,j+1);
+      sum[1]+=ffy(i+1,j+1);
+      cont++;
+    }
+  if(j-1>=0 && i+1<fx.rows)
+    if(visit(i+1,j-1)){
+      sum[0]+=ffx(i+1,j-1);
+      sum[1]+=ffy(i+1,j-1);
+      cont++;
+    }
+  //wx = (cont>0)? sum[0]/cont:sum[0];
+  //wy = (cont>0)? sum[1]/cont:sum[1];
+  if(cont<0){
+    wx= sum[0]/cont;
+    wy= sum[1]/cont;
+  }
+}
+
+inline
 void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
                 cv::Mat visited, int i, int j)
 {
@@ -50,11 +118,9 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
-  //freqs = calc_freqXY(fr, fi, fx, fy, visited, j, i);
+  //filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  //freqs = calc_freqXY(fr, fi, j, i);
+  //fixFreqs(freqs[0], freqs[1], fx, fy, visited, i, j);
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
   visited.at<char>(i,j)=1;
@@ -113,11 +179,11 @@ int main()
 
   // Genera datos de entrada
   parabola(phase, 0.0005);
-  //phase = peaks(M, N)*43;
+  phase += peaks(M, N)*13;
   //phase=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
-  cv::randn(noise, 0, 0.001);
+  cv::randn(noise, 0, .1);
   I=I+noise;
 
 
