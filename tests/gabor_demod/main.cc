@@ -183,7 +183,7 @@ int main()
   //phase=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
-  cv::randn(noise, 0, 2.2);
+  cv::randn(noise, 0, 1.2);
   I=I+noise;
 
 
