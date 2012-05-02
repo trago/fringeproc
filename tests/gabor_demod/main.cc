@@ -120,11 +120,7 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs = calc_freqXY(fr, fi, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
-  //fixFreqs(freqs[0], freqs[1], fx, fy, visited, i, j);
+
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
   visited.at<char>(i,j)=1;
@@ -163,9 +159,20 @@ void demodNeighbor(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
       demodPixel(I, fr, fi, fx, fy, visited, i+1, j-1);
 }
 
+inline
+void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
+                    cv::Mat visited, cv::Vec2d freqs, int i, int j)
+{
+  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  freqs = calc_freqXY(fr, fi, j, i);
+  fx.at<float>(i,j)=freqs[0];
+  fy.at<float>(i,j)=freqs[1];
+  visited.at<char>(i,j)=1;
+}
+
 int main()
 {
-  float wx= 1.1, wy=0.;
+  float wx= 1.3, wy=1.3;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_32F);
   cv::Mat phase(M,N,CV_32F);
@@ -188,8 +195,14 @@ int main()
   I=cos<float>(phase);
   gradient(phase, fx, fy);
   cv::randn(noise, 0, 1.0);
-  I=I+noise;
+  I=I+noise + 4;
 
+  I=cv::imread("interferogram01.tif", 0);
+  I.convertTo(tmp, CV_32F);
+  I=tmp.clone();
+  cv::GaussianBlur(I, tmp, cv::Size(0,0), 11);
+  I = I - tmp;
+  //cv::GaussianBlur(I, I, cv::Size(3,3),0);
 
   // Aplica filtro y busca el pixel que esta entonado con el filtro.
   // despues calcula su frecuencia local
@@ -206,16 +219,11 @@ int main()
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<float>(p.y,p.x)
            <<", "<<fy.at<float>(p.y,p.x) <<")"<<std::endl;
 
+  freqs[0]=0.07; freqs[1]=0.07;
 
-  // Demodula siguiendo franjas usando filtro de gabor adaptivo
-  // tomando las frecuancias teoricas para entonar los filtros de gabor
-
-  cv::GaussianBlur(I, path, cv::Size(51,51),0);
-  //Seguidor scan(I, p.y, p.x, 9);
-  //scan.siguiente(); // Parece que el primer punto lo repite
   int i=p.y, j=p.x, cont=0;
-  ffx = cv::Mat::ones(I.rows, I.cols, CV_32F);
-  ffy = cv::Mat::ones(I.rows, I.cols, CV_32F);
+  ffx = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;
+  ffy = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;
   fr = cv::Mat::zeros(I.rows, I.cols, CV_32F);
   fi = cv::Mat::zeros(I.rows, I.cols, CV_32F);
   ffx.at<float>(i,j)=freqs[0];
@@ -227,32 +235,25 @@ int main()
   cv::Point pixel;
   do{
     pixel=scan.getPosition();
-    //i=scan.get_r();
-    //j=scan.get_c();
     i=pixel.y;
     j=pixel.x;
-    if((i==p.y && j==p.x)){
-      filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-      freqs = calc_freqXY(fr, fi, j, i);
-      ffx.at<float>(i,j)=freqs[0];
-      ffy.at<float>(i,j)=freqs[1];
-      visited.at<char>(i,j)=1;
-    }
-    else{
+    if((i==p.y && j==p.x))
+      demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
+    else
       demodNeighbor(I, fr, fi, ffx, ffy, visited, i,j);
-      //demodPixel(I, fr, fi, ffx, ffy, visited, i,j);
-    }
+
+    // Codigo para mostrar resultados en tiempo real
     if((cont++)%5000==000){
       // Genera kerneles del filtro de gabor
       wx = ffx.at<float>(i,j);
       wy = ffy.at<float>(i,j);
       float sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
-      sx = sx>9? 9:(sx<1? 1:sx);
-      sy = sy>9? 9:(sy<1? 1:sy);
+      sx = sx>7? 7:(sx<1? 1:sx);
+      sy = sy>7? 7:(sy<1? 1:sy);
       gen_gaborKernel(hxr, hxi, wx, sx, CV_32F);
       gen_gaborKernel(hyr, hyi, wy, sy, CV_32F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo
-      h=cv::Mat::zeros(156,156, CV_32F)-1;
+      h=cv::Mat::zeros(64,64, CV_32F)-1;
       for(int i=0; i<hyr.cols; i++)
         for(int j=0; j<hxr.cols; j++)
           h.at<float>(i,j)=hxr.at<float>(0,j)*hyi.at<float>(0,i) +

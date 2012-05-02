@@ -1,6 +1,8 @@
 #include <cmath>
 #include "gabor_gears.h"
 
+/**
+ */
 double dconvolutionAtXY(const double *__restrict data,
                const double *__restrict kernelx,
                const double *__restrict kernely,
