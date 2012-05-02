@@ -37,23 +37,25 @@ void Scanner::setFreqMin(double freq)
 
 bool Scanner::next()
 {
-  
-  /*
+
+/*
   if(!next(m_freqmin*m_freqmin)){
-    m_freqmin=m_matu(m_pixel.y,m_pixel.x)*m_matu(m_pixel.y,m_pixel.x) 
-      + m_matv(m_pixel.y,m_pixel.x)*m_matv(m_pixel.y,m_pixel.x)-0.02;
-    if(m_freqmin>=0){
-      m_pixel=findPixel();
-      if(m_pixel.x>=0 && m_pixel.y>=0){
-	insertPixelToPath(m_pixel);
-	return next(m_freqmin*m_freqmin);
-      }
-      return false;
+    m_pixel=findPixel();
+    if(m_pixel.x>=0 && m_pixel.y>=0){
+      std::cout<<"Frequencia actual: "<<m_freqmin;
+      m_freqmin=m_matu(m_pixel.y,m_pixel.x)*m_matu(m_pixel.y,m_pixel.x)
+        + m_matv(m_pixel.y,m_pixel.x)*m_matv(m_pixel.y,m_pixel.x);
+      //m_freqmin-=0.01;
+      std::cout<<", Frecuencia ajustada: "<<m_freqmin<<std::endl;
+      std::cout<<"Nuevo punto inicial: (" << m_pixel.x << ", " <<m_pixel.y
+               << ")" << std::endl;
+      insertPixelToPath(m_pixel);
+      return next(m_freqmin*m_freqmin);
     }
     return false;
   }
   return true;
-  */
+*/
   return next(m_freqmin*m_freqmin);
 }
 
@@ -64,29 +66,30 @@ bool Scanner::checkNeighbor(cv::Point pixel)
   if(m_visited(y,x)){
     if(x-1>=0)
       if(!m_visited(y,x-1))
-	return true;
+        return true;
     if(x+1<m_matu.cols)
       if(!m_visited(y,x+1))
-	return true;
+        return true;
     if(y-1>=0)
       if(!m_visited(y-1,x))
-	return true;
+        return true;
     if(y+1<m_matu.rows)
       if(!m_visited(y+1,x))
-	return true;
+        return true;
     if(x-1>=0 && y-1>=0)
       if(!m_visited(y-1,x-1))
-	return true;
+        return true;
     if(x+1<m_matu.cols && y-1>=0)
       if(!m_visited(y-1,x+1))
-	return true;
+        return true;
     if(x+1<m_matu.cols && y+1<m_matu.rows)
       if(!m_visited(y+1,x+1))
-	return true;
+        return true;
     if(x-1>=0 && y+1<m_matu.rows)
       if(!m_visited(y+1,x-1))
-	return true;
+        return true;
   }
+  return false;
 }
 
 cv::Point Scanner::findPixel()
@@ -95,27 +98,33 @@ cv::Point Scanner::findPixel()
   cv::Point pixel, mayor_pixel;
   int &x=pixel.x, &y=pixel.y;
   double mayor,tmp;
-  
+
   for(y=0; y<m_visited.rows; y++)
     for(x=0; x<m_visited.cols; x++){
       if(checkNeighbor(pixel)){
-	tmp= m_matu(y,x)*m_matu(y,x) + m_matv(y,x)*m_matv(y,x);
-	if(!encontrado){
-	  mayor_pixel=pixel;
-	  mayor = tmp;
-	  encontrado=true;
-	}
-	else
-	  if(mayor<tmp){
-	    mayor=tmp;
-	    mayor_pixel=pixel;
-	  }
-      }	
+        tmp= m_matu(y,x)*m_matu(y,x) + m_matv(y,x)*m_matv(y,x);
+        if(!encontrado){
+          std::cout<<"Nuevo Pixel: ("<<pixel.x<<", "<<pixel.y
+                  <<")"<<std::endl;
+          mayor_pixel=pixel;
+          mayor = tmp;
+          encontrado=true;
+        }
+        else
+          if(mayor<tmp){
+            std::cout<<"Nuevo Pixel: ("<<pixel.x<<", "<<pixel.y
+                    <<")"<<std::endl;
+            mayor=tmp;
+            mayor_pixel=pixel;
+          }
+      }
     }
-  if(encontrado)
+  if(encontrado){
+    std::cout<<"Pixel encontrado: ("<<mayor_pixel.x<<", "<<mayor_pixel.y
+            <<")"<<std::endl;
     return mayor_pixel;
-  else
-    return cv::Point(-1,-1);
+  }
+  return cv::Point(-1,-1);
 }
 
 inline

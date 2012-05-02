@@ -50,7 +50,7 @@ void fixFreqs(double& wx, double& wy, cv::Mat fx, cv::Mat fy,
   cv::Mat_<float>& ffx=(cv::Mat_<float>&)fx;
   cv::Mat_<float>& ffy=(cv::Mat_<float>&)fy;
   cv::Vec2d sum;
-  double tau=0.5;
+  double tau=0.1;
   int cont=0;
   sum[0]=0;
   sum[1]=0;
@@ -104,9 +104,9 @@ void fixFreqs(double& wx, double& wy, cv::Mat fx, cv::Mat fy,
     }
   //wx = (cont>0)? sum[0]/cont:sum[0];
   //wy = (cont>0)? sum[1]/cont:sum[1];
-  if(cont<0){
-    wx= sum[0]/cont;
-    wy= sum[1]/cont;
+  if(cont>0){
+    wx= (1-tau)*sum[0]/cont +tau*wx;
+    wy= (1-tau)*sum[1]/cont *tau*wx;
   }
 }
 
@@ -118,8 +118,12 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  //filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  //freqs = calc_freqXY(fr, fi, j, i);
+  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  freqs = calc_freqXY(fr, fi, j, i);
+  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  freqs = calc_freqXY(fr, fi, j, i);
+  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  freqs = calc_freqXY(fr, fi, j, i);
   //fixFreqs(freqs[0], freqs[1], fx, fy, visited, i, j);
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
@@ -179,11 +183,11 @@ int main()
 
   // Genera datos de entrada
   parabola(phase, 0.0008);
-  phase = peaks(M, N)*33;
+  phase = peaks(M, N)*43;
   //phase=ramp(wx, wy, M, N);
   I=cos<float>(phase);
   gradient(phase, fx, fy);
-  cv::randn(noise, 0, 1.2);
+  cv::randn(noise, 0, 1.0);
   I=I+noise;
 
 
@@ -257,7 +261,7 @@ int main()
       cv::normalize(fr,tmp,1,0,cv::NORM_MINMAX);
       cv::imshow("real", tmp);
       cv::normalize(h,tmp,1,0,cv::NORM_MINMAX);
-      cv::imshow("kernel", tmp);
+      cv::imshow("cos(fase)", tmp);
       cv::waitKey(32);
     }
   }while(scan.next());
@@ -273,7 +277,7 @@ int main()
   cv::namedWindow("fx");
   cv::namedWindow("ffy");
   cv::namedWindow("ffy");
-  cv::namedWindow("kernel");
+  cv::namedWindow("cos(fase)");
   cv::namedWindow("fase");
 
   cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
@@ -292,8 +296,8 @@ int main()
   cv::imshow("ffx", tmp);
   cv::normalize(ffy,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffy", tmp);
-  cv::normalize(magn,tmp,1,0,cv::NORM_MINMAX);
-  cv::imshow("kernel", tmp);
+  cv::normalize(cos<float>(fase),tmp,1,0,cv::NORM_MINMAX);
+  cv::imshow("cos(fase)", tmp);
 
   cv::waitKey(0);
 

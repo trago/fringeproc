@@ -144,8 +144,8 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
   cv::Mat hxr, hxi, hyr, hyi;
   double sx = fabs(1.57/wx), sy = fabs(1.57/wy);
 
-  sx = sx>9? 9:(sx<1? 1:sx);
-  sy = sy>9? 9:(sy<1? 1:sy);
+  sx = sx>7? 7:(sx<1? 1:sx);
+  sy = sy>7? 7:(sy<1? 1:sy);
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
 
@@ -171,8 +171,8 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
   cv::Mat tmp2(data.rows, data.cols, data.type());
   double sx = 1.5708/wx, sy = 1.5708/wy;
 
-  sx = sx>6? 6:(sx<1? 1:sx);
-  sy = sy>6? 6:(sy<1? 1:sy);
+  sx = sx>9? 9:(sx<1? 1:sx);
+  sy = sy>9? 9:(sy<1? 1:sy);
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
 
@@ -252,12 +252,17 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
 
   freqs[1] = (imx*fr.at<float>(y,x) - fi.at<float>(y,x)*rex)/magn;
 
-  if((freqs[0]*freqs[0]+freqs[1]*freqs[1]) < 0.05*0.05){
-    float magn = 0.05/sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]);
+  magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
+  if(magn < 0.03*0.03){
+    magn = 0.03/sqrt(magn);
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
   }
-
+  else if(magn > 1.57*1.57){
+    magn = 1.57/sqrt(magn);
+    freqs[0]=freqs[0]*magn;
+    freqs[1]=freqs[1]*magn;
+  }
   return freqs;
 }
 
@@ -315,56 +320,56 @@ cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
       freqs[0]+=fx.at<float>(y,x-1);
       freqs[1]+=fy.at<float>(y,x-1);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(x+1<fx.cols)
     if(visited.at<char>(y,x+1)){
       freqs[0]+=fx.at<float>(y,x+1);
       freqs[1]+=fy.at<float>(y,x+1);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(y-1>=0)
     if(visited.at<char>(y-1,x)){
       freqs[0]+=fx.at<float>(y-1,x);
       freqs[1]+=fy.at<float>(y-1,x);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(y+1<fx.rows)
     if(visited.at<char>(y+1,x)){
       freqs[0]+=fx.at<float>(y+1,x);
       freqs[1]+=fy.at<float>(y+1,x);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(x-1>=0 && y-1>=0)
     if(visited.at<char>(y-1,x-1)){
       freqs[0]+=fx.at<float>(y-1,x-1);
       freqs[1]+=fy.at<float>(y-1,x-1);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(x+1<fx.cols && y-1>=0)
     if(visited.at<char>(y-1,x+1)){
       freqs[0]+=fx.at<float>(y-1,x+1);
       freqs[1]+=fy.at<float>(y-1,x+1);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(x+1<fx.cols && y+1<fx.rows)
     if(visited.at<char>(y+1,x+1)){
       freqs[0]+=fx.at<float>(y+1,x+1);
       freqs[1]+=fy.at<float>(y+1,x+1);
       cont++;
-      return freqs;
+      //return freqs;
     }
   if(x-1>=0 && y+1<fx.rows)
     if(visited.at<char>(y+1,x-1)){
       freqs[0]+=fx.at<float>(y+1,x-1);
       freqs[1]+=fy.at<float>(y+1,x-1);
       cont++;
-      return freqs;
+      //return freqs;
     }
 
   freqs[0]=cont>=0? freqs[0]/cont:0;
