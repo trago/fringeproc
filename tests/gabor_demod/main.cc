@@ -219,6 +219,7 @@ int main()
   visited = cv::Mat::zeros(I.rows, I.cols, CV_8U);
 
   Scanner scan(ffx, ffy, p);
+  scan.setFreqMin(.01);
   cv::Point pixel;
   do{
     pixel=scan.getPosition();

@@ -15,6 +15,7 @@ public:
   bool next();
   cv::Point getPosition();
   void setInitPosition(cv::Point pixel);
+  void setFreqMin(double freq);
 
 private:
   cv::Mat_<float> m_matu;
@@ -22,7 +23,13 @@ private:
   cv::Mat_<bool> m_visited;
   cv::Point m_pixel;
   std::vector<cv::Point> m_path;
+  double m_freqmin;
+
   void insertPixelToPath(const cv::Point& pixel);
+  bool next(double magn);
+  cv::Point findPixel();
+  bool checkNeighbor(cv::Point pixel);
+  
 };
 
 class CompPoints{

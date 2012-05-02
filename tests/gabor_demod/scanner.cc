@@ -16,6 +16,7 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
   m_pixel.x=0;
   m_pixel.y=0;
   insertPixelToPath(m_pixel);
+  m_freqmin=0.6;
 }
 Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
 {
@@ -26,9 +27,99 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
   m_visited = cv::Mat_<bool>::zeros(mat_u.rows, mat_u.cols);
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
+  m_freqmin=0.6;
+}
+
+void Scanner::setFreqMin(double freq)
+{
+  m_freqmin = freq;
 }
 
 bool Scanner::next()
+{
+  
+  /*
+  if(!next(m_freqmin*m_freqmin)){
+    m_freqmin=m_matu(m_pixel.y,m_pixel.x)*m_matu(m_pixel.y,m_pixel.x) 
+      + m_matv(m_pixel.y,m_pixel.x)*m_matv(m_pixel.y,m_pixel.x)-0.02;
+    if(m_freqmin>=0){
+      m_pixel=findPixel();
+      if(m_pixel.x>=0 && m_pixel.y>=0){
+	insertPixelToPath(m_pixel);
+	return next(m_freqmin*m_freqmin);
+      }
+      return false;
+    }
+    return false;
+  }
+  return true;
+  */
+  return next(m_freqmin*m_freqmin);
+}
+
+bool Scanner::checkNeighbor(cv::Point pixel)
+{
+  int y=pixel.y, x=pixel.x;
+
+  if(m_visited(y,x)){
+    if(x-1>=0)
+      if(!m_visited(y,x-1))
+	return true;
+    if(x+1<m_matu.cols)
+      if(!m_visited(y,x+1))
+	return true;
+    if(y-1>=0)
+      if(!m_visited(y-1,x))
+	return true;
+    if(y+1<m_matu.rows)
+      if(!m_visited(y+1,x))
+	return true;
+    if(x-1>=0 && y-1>=0)
+      if(!m_visited(y-1,x-1))
+	return true;
+    if(x+1<m_matu.cols && y-1>=0)
+      if(!m_visited(y-1,x+1))
+	return true;
+    if(x+1<m_matu.cols && y+1<m_matu.rows)
+      if(!m_visited(y+1,x+1))
+	return true;
+    if(x-1>=0 && y+1<m_matu.rows)
+      if(!m_visited(y+1,x-1))
+	return true;
+  }
+}
+
+cv::Point Scanner::findPixel()
+{
+  bool encontrado=false;
+  cv::Point pixel, mayor_pixel;
+  int &x=pixel.x, &y=pixel.y;
+  double mayor,tmp;
+  
+  for(y=0; y<m_visited.rows; y++)
+    for(x=0; x<m_visited.cols; x++){
+      if(checkNeighbor(pixel)){
+	tmp= m_matu(y,x)*m_matu(y,x) + m_matv(y,x)*m_matv(y,x);
+	if(!encontrado){
+	  mayor_pixel=pixel;
+	  mayor = tmp;
+	  encontrado=true;
+	}
+	else
+	  if(mayor<tmp){
+	    mayor=tmp;
+	    mayor_pixel=pixel;
+	  }
+      }	
+    }
+  if(encontrado)
+    return mayor_pixel;
+  else
+    return cv::Point(-1,-1);
+}
+
+inline
+bool Scanner::next(double fpow)
 {
   cv::Vec<double, 8> magn;
   std::vector<cv::Point> pixel(8,cv::Point(0,0));
@@ -82,10 +173,10 @@ bool Scanner::next()
       }
 
     int idx=0;
-    double mayor=magn[0], minf=0.5*0.5;
-    bool found=mayor>=minf? true:false;
+    double mayor=magn[0];
+    bool found=mayor>=fpow? true:false;
     for(int i=1; i<8; i++)
-      if(mayor<=magn[i] && magn[i]>=minf){
+      if(mayor<=magn[i] && magn[i]>=fpow){
         mayor=magn[i];
         idx=i;
         found=true;
@@ -103,6 +194,7 @@ bool Scanner::next()
   }
   return false;
 }
+
 cv::Point2i Scanner::getPosition()
 {
   return m_pixel;
