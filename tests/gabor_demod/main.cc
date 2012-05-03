@@ -43,74 +43,6 @@ void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
 }
 
 inline
-void fixFreqs(double& wx, double& wy, cv::Mat fx, cv::Mat fy,
-              cv::Mat visited, int i, int j)
-{
-  cv::Mat_<char>& visit=(cv::Mat_<char>&)visited;
-  cv::Mat_<float>& ffx=(cv::Mat_<float>&)fx;
-  cv::Mat_<float>& ffy=(cv::Mat_<float>&)fy;
-  cv::Vec2d sum;
-  double tau=0.1;
-  int cont=0;
-  sum[0]=0;
-  sum[1]=0;
-  if(j-1>=0)
-    if(visit(i,j-1)){
-      sum[0]+=ffx(i,j-1);
-      sum[1]+=ffy(i,j-1);
-      cont++;
-    }
-  if(j+1<fx.cols)
-    if(visit(i,j+1)){
-      sum[0]+=ffx(i,j+1);
-      sum[1]+=ffy(i,j+1);
-      cont++;
-    }
-  if(i-1>=0)
-    if(visit(i-1,j)){
-      sum[0]+=ffx(i-1,j);
-      sum[1]+=ffy(i-1,j);
-      cont++;
-    }
-  if(i+1<fx.rows)
-    if(visit(i+1,j)){
-      sum[0]+=ffx(i+1,j);
-      sum[1]+=ffy(i+1,j);
-      cont++;
-    }
-  if(j-1>=0 && i-1>=0)
-    if(visit(i-1,j-1)){
-      sum[0]+=ffx(i-1,j-1);
-      sum[1]+=ffy(i-1,j-1);
-      cont++;
-    }
-  if(j+1<fx.cols && i-1>=0)
-    if(visit(i-1,j+1)){
-      sum[0]+=ffx(i-1,j+1);
-      sum[1]+=ffy(i-1,j+1);
-      cont++;
-    }
-  if(j+1<fx.cols && i+1<fx.rows)
-    if(visit(i+1,j+1)){
-      sum[0]+=ffx(i+1,j+1);
-      sum[1]+=ffy(i+1,j+1);
-      cont++;
-    }
-  if(j-1>=0 && i+1<fx.rows)
-    if(visit(i+1,j-1)){
-      sum[0]+=ffx(i+1,j-1);
-      sum[1]+=ffy(i+1,j-1);
-      cont++;
-    }
-  //wx = (cont>0)? sum[0]/cont:sum[0];
-  //wy = (cont>0)? sum[1]/cont:sum[1];
-  if(cont>0){
-    wx= (1-tau)*sum[0]/cont +tau*wx;
-    wy= (1-tau)*sum[1]/cont *tau*wx;
-  }
-}
-
-inline
 void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
                 cv::Mat visited, int i, int j)
 {
@@ -170,7 +102,7 @@ void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   visited.at<char>(i,j)=1;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
   float wx= 1.3, wy=1.3;
   const int M=456, N=456;
@@ -188,21 +120,24 @@ int main()
   cv::Mat fase;
   cv::Mat tmp;
 
-  // Genera datos de entrada
-  parabola(phase, 0.0008);
-  phase = peaks(M, N)*43;
-  //phase=ramp(wx, wy, M, N);
-  I=cos<float>(phase);
-  gradient(phase, fx, fy);
-  cv::randn(noise, 0, 1.0);
-  I=I+noise + 4;
-
-  I=cv::imread("interferogram01.tif", 0);
-  I.convertTo(tmp, CV_32F);
-  I=tmp.clone();
-  cv::GaussianBlur(I, tmp, cv::Size(0,0), 11);
-  I = I - tmp;
-  //cv::GaussianBlur(I, I, cv::Size(3,3),0);
+  if(argc==1){
+    // Genera datos de entrada
+    parabola(phase, 0.0008);
+    phase = peaks(M, N)*43;
+    //phase=ramp(wx, wy, M, N);
+    I=cos<float>(phase);
+    gradient(phase, fx, fy);
+    cv::randn(noise, 0, 1.0);
+    I=I+noise;
+  }
+  else{
+    I=cv::imread(argv[1], 0);
+    I.convertTo(tmp, CV_32F);
+    I=tmp.clone();
+    cv::GaussianBlur(I, I, cv::Size(0,0), 1);
+    cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
+    I = I - tmp;
+  }
 
   // Aplica filtro y busca el pixel que esta entonado con el filtro.
   // despues calcula su frecuencia local

@@ -173,8 +173,8 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
   cv::Mat tmp2(data.rows, data.cols, data.type());
   double sx = 1.5708/wx, sy = 1.5708/wy;
 
-  sx = sx>9? 9:(sx<1? 1:sx);
-  sy = sy>9? 9:(sy<1? 1:sy);
+  sx = sx>22? 22:(sx<1? 1:sx);
+  sy = sy>22? 22:(sy<1? 1:sy);
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
 
@@ -204,36 +204,6 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
   }
 }
 
-double dW(double phase)
-{
-  double m= 2 * M_PI;
-  int n= (phase < 0) ? (phase - M_PI) / m : (phase + M_PI) / m;
-
-  return (phase - m * n);
-}
-cv::Vec2d calc_freqXY01(const cv::Mat fr, const cv::Mat fi,
-                        const int x, const int y)
-{
-  cv::Vec2d freqs;
-  double p0 = x-1>=0? atan2(fi.at<float>(y,x-1),fr.at<float>(y,x-1)):
-                      atan2(fi.at<float>(y,x+1),fr.at<float>(y,x+1));
-  double p1 = atan2(fi.at<float>(y,x),fr.at<float>(y,x));
-
-  freqs[0] = x-1>=0? dW(p1-p0):dW(p0-p1);
-
-  p0 = y-1>=0? atan2(fi.at<float>(y-1,x),fr.at<float>(y-1,x)):
-               atan2(fi.at<float>(y+1,x),fr.at<float>(y+1,x));
-
-  freqs[1] = y-1>=0? dW(p1-p0):dW(p0-p1);
-
-  if((freqs[0]*freqs[0]+freqs[1]*freqs[1]) < 0.0025){
-    float magn = 0.05/sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
-  }
-
-  return freqs;
-}
 cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
                       const int x, const int y)
 {
@@ -265,50 +235,6 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
   }
-  return freqs;
-}
-
-cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
-                      const cv::Mat fx, const cv::Mat fy, const cv::Mat visited,
-                      const int x, const int y)
-{
-  cv::Vec2d freqs = calc_freqXY(fr, fi, x, y);
-
-  cv::Vec2d f_=0;
-  float lamb=1;
-  int sum=0;
-
-  if(x-1>=0){
-    if(visited.at<char>(y,x-1)){
-      f_[0]=fx.at<float>(y,x-1);
-      f_[1]=fy.at<float>(y,x-1);
-      sum++;
-    }
-   }
-  if(y-1>=0){
-    if(visited.at<char>(y-1,x)){
-      f_[0]+=fx.at<float>(y-1,x);
-      f_[1]+=fy.at<float>(y-1,x);
-      sum++;
-    }
-   }
-  if(x+1<fr.cols){
-    if(visited.at<char>(y,x+1)){
-      f_[0]+=fx.at<float>(y,x+1);
-      f_[1]+=fy.at<float>(y,x+1);
-      sum++;
-    }
-   }
-  if(y+1<fr.rows){
-    if(visited.at<char>(y+1,x)){
-      f_[0]+=fx.at<float>(y+1,x);
-      f_[1]+=fy.at<float>(y+1,x);
-      sum++;
-    }
-   }
-  freqs[0]=(freqs[0]+lamb*f_[0])/(1+sum*lamb);
-  freqs[1]=(freqs[1]+lamb*f_[1])/(1+sum*lamb);
-
   return freqs;
 }
 
