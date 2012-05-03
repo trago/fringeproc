@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
   if(argc==1){
     // Genera datos de entrada
     parabola(phase, 0.0008);
-    phase = peaks(M, N)*43;
+    phase = peaks(M, N)*33;
     //phase=ramp(wx, wy, M, N);
     I=cos<float>(phase);
     gradient(phase, fx, fy);

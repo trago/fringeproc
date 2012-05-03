@@ -204,6 +204,48 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
   }
 }
 
+double rowConvolutionXY(cv::Mat_<float> I, cv::Mat_<float> h,
+                         const int x, const int y)
+{
+  const int kN=h.cols/2;
+  //const int LIx = (x-kN)>=0? -kN:-x;
+  //const int LSx = (x+kN)<N?  kN:N-x-1;
+  const int LIy = (y-kM)>=0? -kM:-y;
+  const int LSy = (y+kM)<M? kM:M-y-1;
+
+  double sum=0;
+  for(int i=LIy; i<=LSy; i++)
+    sum+= I(y+i,x)*h(kN+i);
+
+  return sum;
+}
+
+double colConvolutionXY(cv::Mat_<float> I, cv::Mat_<float> h,
+                         const int x, const int y)
+{
+  const int kN=h.cols/2;
+  const int LIx = (x-kN)>=0? -kN:-x;
+  const int LSx = (x+kN)<N?  kN:N-x-1;
+  //const int LIy = (y-kM)>=0? -kM:-y;
+  //const int LSy = (y+kM)<M? kM:M-y-1;
+
+  double sum=0;
+  for(int i=LIx; i<=LSx; i++)
+    sum+= I(y,x+i)*h(kN+i);
+
+  return sum;
+}
+
+cv::Vec2d stima_freqXY(cv::Mat I, cv::Vec2d freq, const int x,
+                       const int y)
+{
+  //Primero calculo las frecuencias en x
+  cv::Mat hr, hi;
+  const double minf = 1.57/22;
+  double sigma = (fabs(freq[0])<minf)? 1.57/minf:1.57/freq[0];
+  gen_gaborKernel(hr, hi, freq[0], sigma, CV_32F);
+}
+
 cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
                       const int x, const int y)
 {
