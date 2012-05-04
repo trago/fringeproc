@@ -29,7 +29,7 @@ private:
   bool next(double magn);
   cv::Point findPixel();
   bool checkNeighbor(cv::Point pixel);
-  
+
 };
 
 class CompPoints{

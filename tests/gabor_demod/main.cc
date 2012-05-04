@@ -50,8 +50,7 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
+  freqs = stima_freqXY(I, freqs, j, i);
 
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
@@ -154,7 +153,7 @@ int main(int argc, char* argv[])
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<float>(p.y,p.x)
            <<", "<<fy.at<float>(p.y,p.x) <<")"<<std::endl;
 
-  freqs[0]=0.07; freqs[1]=0.07;
+  //freqs[0]=0.07; freqs[1]=0.07;
 
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;
