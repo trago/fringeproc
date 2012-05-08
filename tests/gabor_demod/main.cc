@@ -50,7 +50,7 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  freqs = stima_freqXY(I, freqs, j, i);
+  //freqs = stima_freqXY(I, freqs, j, i);
 
   fx.at<float>(i,j)=freqs[0];
   fy.at<float>(i,j)=freqs[1];
@@ -103,7 +103,7 @@ void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
 
 int main(int argc, char* argv[])
 {
-  float wx= 1.3, wy=1.3;
+  float wx= .2, wy=.3;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_32F);
   cv::Mat phase(M,N,CV_32F);
@@ -121,8 +121,8 @@ int main(int argc, char* argv[])
 
   if(argc==1){
     // Genera datos de entrada
-    parabola(phase, 0.0008);
-    phase = peaks(M, N)*33;
+    //parabola(phase, 0.0008);
+    phase = peaks(M, N)*43;
     //phase=ramp(wx, wy, M, N);
     I=cos<float>(phase);
     gradient(phase, fx, fy);
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
     I.convertTo(tmp, CV_32F);
     I=tmp.clone();
     cv::GaussianBlur(I, I, cv::Size(0,0), 1);
-    cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
+    cv::GaussianBlur(I, tmp, cv::Size(0,0), 13);
     I = I - tmp;
   }
 
@@ -153,7 +153,8 @@ int main(int argc, char* argv[])
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<float>(p.y,p.x)
            <<", "<<fy.at<float>(p.y,p.x) <<")"<<std::endl;
 
-  //freqs[0]=0.07; freqs[1]=0.07;
+  freqs[0]=0.07; freqs[1]=0.07;
+  //p.x=200; p.y=200;
 
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;

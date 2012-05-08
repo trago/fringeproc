@@ -147,8 +147,9 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
   double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
       sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
 
-  sx = sx>7? 7:(sx<1? 1:sx);
-  sy = sy>7? 7:(sy<1? 1:sy);
+  sx = sx>8? 8:(sx<1? 1:sx);
+  sy = sy>8? 8:(sy<1? 1:sy);
+
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
 
@@ -172,7 +173,7 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
   cv::Mat hxr, hxi, hyr, hyi;
   cv::Mat tmp1(data.rows, data.cols, data.type());
   cv::Mat tmp2(data.rows, data.cols, data.type());
-  double sx = 1.5708/wx, sy = 1.5708/wy;
+  double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
 
   sx = sx>22? 22:(sx<1? 1:sx);
   sy = sy>22? 22:(sy<1? 1:sy);
@@ -246,53 +247,63 @@ cv::Vec2d stima_freqXY(cv::Mat I, cv::Vec2d freq, const int x,
                        const int y)
 {
   //Primero calculo las frecuencias en x
-  cv::Mat hr, hi;
+  cv::Mat hxr, hxi, hyr, hyi;
   const double minf = 1.57/22;
-  double sigma = (fabs(freq[0])<minf)? 1.57/minf:1.57/freq[0];
+  double sigmax = (fabs(freq[0])<minf)? 1.57/minf:fabs(1.57/freq[0]);
+  double sigmay = (fabs(freq[1])<minf)? 1.57/minf:fabs(1.57/freq[1]);
   double error=1;
-  const float TOL=0.0001;
+  const float TOL=0.001;
   const int x0 = x-1>=0? x-1:x+1;
   const int y0 = y-1>=0? y-1:y+1;
-  const int max_iter=10;
+  const int max_iter=1;
   double fr, fr0, fi, fi0;
 
-  gen_gaborKernel(hr, hi, freq[0], sigma, CV_32F);
 
+  gen_gaborKernel(hxr, hxi, freq[0], sigmax, CV_32F);
+  gen_gaborKernel(hyr, hyi, freq[1], sigmay, CV_32F);
+
+  sigmax = (sigmax>9)? 9:sigmax;
+  sigmay = (sigmay<1)? 1:sigmay;
   int iter=0;
-  double zdiff, w;
+  double zdiff, wx, wy;
   error=freq[0] + TOL;
+  int sign = freq[0]<0? -1:1;
   while(error>TOL && (iter++)<max_iter){
-    w=freq[0];
-    fr=colConvolutionXY(I, hr, x, y);
-    fi=colConvolutionXY(I, hi, x, y);
-    fr0=colConvolutionXY(I, hr, x0, y);
-    fi0=colConvolutionXY(I, hi, x0, y);
+    wx=freq[0];
+    wy=freq[1];
+    fr =convolutionAtXY<float>(I, hxr, hyr, x, y) -
+        convolutionAtXY<float>(I, hxi, hyi, x, y);
+    fi =convolutionAtXY<float>(I, hxr, hyi, x, y) +
+        convolutionAtXY<float>(I, hxi, hyr, x, y);
+    fr0 =convolutionAtXY<float>(I, hxr, hyr, x0, y) -
+        convolutionAtXY<float>(I, hxi, hyi, x0, y);
+    fi0 =convolutionAtXY<float>(I, hxr, hyi, x0, y) +
+        convolutionAtXY<float>(I, hxi, hyr, x0, y);
     if(x>x0)
       zdiff = (fi-fi0)*fr - (fr-fr0)*fi;
     else
       zdiff = (fi0-fi)*fr - (fr0-fr)*fi;
     freq[0] = zdiff/(fr*fr+fi*fi);
-    error = fabs(freq[0]-w);
-    gen_gaborKernel(hr, hi, freq[0], sigma, CV_32F);
-  }
-
-  gen_gaborKernel(hr, hi, freq[1], sigma, CV_32F);
-
-  iter=0;
-  error=freq[1] + TOL;
-  while(error>TOL && (iter++)<max_iter){
-    w=freq[1];
-    fr=rowConvolutionXY(I, hr, x, y);
-    fi=rowConvolutionXY(I, hi, x, y);
-    fr0=rowConvolutionXY(I, hr, x, y0);
-    fi0=rowConvolutionXY(I, hi, x, y0);
+    freq[0] = freq[0]*sign<0? -freq[0]:freq[0];
+    fr0 =convolutionAtXY<float>(I, hxr, hyr, x, y0) -
+        convolutionAtXY<float>(I, hxi, hyi, x, y0);
+    fi0 =convolutionAtXY<float>(I, hxr, hyi, x, y0) +
+        convolutionAtXY<float>(I, hxi, hyr, x, y0);
     if(y>y0)
       zdiff = (fi-fi0)*fr - (fr-fr0)*fi;
     else
       zdiff = (fi0-fi)*fr - (fr0-fr)*fi;
     freq[1] = zdiff/(fr*fr+fi*fi);
-    error = fabs(freq[1]-w);
-    gen_gaborKernel(hr, hi, freq[1], sigma, CV_32F);
+    freq[1] = freq[1]*sign<0? -freq[1]:freq[1];
+    error = fabs(freq[0]-wx);
+    sigmax = (fabs(freq[0])<minf)? 1.57/minf:fabs(1.57/freq[0]);
+    sigmax = (sigmax>9)? 9:sigmax;
+    sigmax = (sigmax<1)? 1:sigmax;
+    sigmay = (fabs(freq[1])<minf)? 1.57/minf:fabs(1.57/freq[1]);
+    sigmay = (sigmay>9)? 9:sigmay;
+    sigmay = (sigmay<1)? 1:sigmay;
+    gen_gaborKernel(hxr, hxi, freq[0], sigmax, CV_32F);
+    gen_gaborKernel(hyr, hyi, freq[1], sigmay, CV_32F);
   }
 
   double magn=freq[0]*freq[0]+freq[1]*freq[1];
