@@ -153,8 +153,8 @@ int main(int argc, char* argv[])
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<float>(p.y,p.x)
            <<", "<<fy.at<float>(p.y,p.x) <<")"<<std::endl;
 
-  freqs[0]=0.07; freqs[1]=0.07;
-  //p.x=200; p.y=200;
+  freqs[0]=.7; freqs[1]=.7;
+  p.x=200; p.y=200;
 
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;
@@ -166,14 +166,26 @@ int main(int argc, char* argv[])
   visited = cv::Mat::zeros(I.rows, I.cols, CV_8U);
 
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.01);
+  scan.setFreqMin(.3);
   cv::Point pixel;
   do{
     pixel=scan.getPosition();
     i=pixel.y;
     j=pixel.x;
-    if((i==p.y && j==p.x))
+    if((i==p.y && j==p.x)){
       demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
+      freqs[0]=ffx.at<float>(i,j); freqs[1]=ffy.at<float>(i,j);
+      std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
+              <<", "<<freqs[1] <<")"<<std::endl;
+      demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
+      freqs[0]=ffx.at<float>(i,j); freqs[1]=ffy.at<float>(i,j);
+      std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
+              <<", "<< freqs[1]<<")"<<std::endl;
+      demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
+      freqs[0]=ffx.at<float>(i,j); freqs[1]=ffy.at<float>(i,j);
+      std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
+              <<", "<< freqs[1]<<")"<<std::endl;
+    }
     else
       demodNeighbor(I, fr, fi, ffx, ffy, visited, i,j);
 
@@ -205,6 +217,7 @@ int main(int argc, char* argv[])
   // Calculo de la fase de salida
   fase = atan2<float>(fi,fr);
   cv::magnitude(fr, fi, magn);
+  cv::threshold(ffx, magn, 0, 1, cv::THRESH_BINARY);
 
   cv::namedWindow("I");
   cv::namedWindow("real");
@@ -233,7 +246,7 @@ int main(int argc, char* argv[])
   cv::normalize(ffy,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffy", tmp);
   cv::normalize(cos<float>(fase),tmp,1,0,cv::NORM_MINMAX);
-  cv::imshow("cos(fase)", tmp);
+  cv::imshow("cos(fase)", magn);
 
   cv::waitKey(0);
 
