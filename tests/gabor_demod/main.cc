@@ -13,18 +13,18 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 
   for(int i=0; i<I.rows-1; i++)
     for(int j=0; j<I.cols-1; j++){
-      dx.at<float>(i,j) = I.at<float>(i,j+1)-I.at<float>(i,j);
-      dy.at<float>(i,j) = I.at<float>(i+1,j)-I.at<float>(i,j);
+      dx.at<double>(i,j) = I.at<double>(i,j+1)-I.at<double>(i,j);
+      dy.at<double>(i,j) = I.at<double>(i+1,j)-I.at<double>(i,j);
     }
   for(int i=0; i<I.rows; i++)
-    dy.at<float>(i,I.cols-1)=dy.at<float>(i,I.cols-2);
+    dy.at<double>(i,I.cols-1)=dy.at<double>(i,I.cols-2);
   for(int i=0; i<I.cols; i++)
-    dx.at<float>(I.rows-1,i)=dx.at<float>(I.rows-2,i);
+    dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
 inline
 void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
-                        float wx, float wy, int i, int j)
+                        double wx, double wy, int i, int j)
 {
   if(i-1>=0)
    gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
@@ -52,8 +52,8 @@ void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
   freqs = calc_freqXY(fr, fi, j, i);
   //freqs = stima_freqXY(I, freqs, j, i);
 
-  fx.at<float>(i,j)=freqs[0];
-  fy.at<float>(i,j)=freqs[1];
+  fx.at<double>(i,j)=freqs[0];
+  fy.at<double>(i,j)=freqs[1];
   visited.at<char>(i,j)=1;
 }
 
@@ -96,23 +96,23 @@ void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
 {
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
-  fx.at<float>(i,j)=freqs[0];
-  fy.at<float>(i,j)=freqs[1];
+  fx.at<double>(i,j)=freqs[0];
+  fy.at<double>(i,j)=freqs[1];
   visited.at<char>(i,j)=1;
 }
 
 int main(int argc, char* argv[])
 {
-  float wx= .2, wy=.3;
+  double wx= .2, wy=.3;
   const int M=456, N=456;
-  cv::Mat I(M,N,CV_32F);
-  cv::Mat phase(M,N,CV_32F);
-  cv::Mat fx(cv::Mat::zeros(M,N,CV_32F)), fy(cv::Mat::zeros(M,N,CV_32F)),
+  cv::Mat I(M,N,CV_64F);
+  cv::Mat phase(M,N,CV_64F);
+  cv::Mat fx(cv::Mat::zeros(M,N,CV_64F)), fy(cv::Mat::zeros(M,N,CV_64F)),
       ffx, ffy; // las f's son las frecuencias teoricas y las ff's las estimadas
-  cv::Mat noise(M,N,CV_32F);
-  cv::Mat fr(cv::Mat::zeros(M,N,CV_32F)), fi(cv::Mat::zeros(M,N,CV_32F)),
+  cv::Mat noise(M,N,CV_64F);
+  cv::Mat fr(cv::Mat::zeros(M,N,CV_64F)), fi(cv::Mat::zeros(M,N,CV_64F)),
       visited;
-  cv::Mat path(M,N,CV_32F);
+  cv::Mat path(M,N,CV_64F);
   cv::Mat magn;
   cv::Mat hxr, hxi, hyr, hyi;
   cv::Mat h;
@@ -124,14 +124,14 @@ int main(int argc, char* argv[])
     //parabola(phase, 0.0008);
     phase = peaks(M, N)*43;
     //phase=ramp(wx, wy, M, N);
-    I=cos<float>(phase);
+    I=cos<double>(phase);
     gradient(phase, fx, fy);
     cv::randn(noise, 0, 1.0);
     I=I+noise;
   }
   else{
     I=cv::imread(argv[1], 0);
-    I.convertTo(tmp, CV_32F);
+    I.convertTo(tmp, CV_64F);
     I=tmp.clone();
     cv::GaussianBlur(I, I, cv::Size(0,0), 1);
     cv::GaussianBlur(I, tmp, cv::Size(0,0), 13);
@@ -146,27 +146,27 @@ int main(int argc, char* argv[])
   cv::Point2i p;
   cv::minMaxLoc(magn, &min, &max, NULL, &p);
   std::cout<<"Puno inicial: ("<<p.x<<", "<<p.y<<")"<<std::endl;
-  //I.at<float>(p.y, p.x)=20;
+  //I.at<double>(p.y, p.x)=20;
   cv::Vec2d freqs = calc_freqXY(fr, fi, p.x, p.y);
   std::cout<<"Frecuencia local en el punto: ("<<freqs[0]<<", "<<freqs[1]
           <<")"<<std::endl;
-  std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<float>(p.y,p.x)
-           <<", "<<fy.at<float>(p.y,p.x) <<")"<<std::endl;
+  std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
+           <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
 
   freqs[0]=.7; freqs[1]=.7;
-  p.x=200; p.y=200;
+  p.x=100; p.y=100;
 
   int i=p.y, j=p.x, cont=0;
-  ffx = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;
-  ffy = cv::Mat::ones(I.rows, I.cols, CV_32F)*M_PI/2.0;
-  fr = cv::Mat::zeros(I.rows, I.cols, CV_32F);
-  fi = cv::Mat::zeros(I.rows, I.cols, CV_32F);
-  ffx.at<float>(i,j)=freqs[0];
-  ffy.at<float>(i,j)=freqs[1];
+  ffx = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
+  ffy = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
+  fr = cv::Mat::zeros(I.rows, I.cols, CV_64F);
+  fi = cv::Mat::zeros(I.rows, I.cols, CV_64F);
+  ffx.at<double>(i,j)=freqs[0];
+  ffy.at<double>(i,j)=freqs[1];
   visited = cv::Mat::zeros(I.rows, I.cols, CV_8U);
 
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.3);
+  scan.setFreqMin(.4);
   cv::Point pixel;
   do{
     pixel=scan.getPosition();
@@ -174,15 +174,15 @@ int main(int argc, char* argv[])
     j=pixel.x;
     if((i==p.y && j==p.x)){
       demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
-      freqs[0]=ffx.at<float>(i,j); freqs[1]=ffy.at<float>(i,j);
+      freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
       std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
               <<", "<<freqs[1] <<")"<<std::endl;
       demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
-      freqs[0]=ffx.at<float>(i,j); freqs[1]=ffy.at<float>(i,j);
+      freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
       std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
               <<", "<< freqs[1]<<")"<<std::endl;
       demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
-      freqs[0]=ffx.at<float>(i,j); freqs[1]=ffy.at<float>(i,j);
+      freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
       std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
               <<", "<< freqs[1]<<")"<<std::endl;
     }
@@ -192,19 +192,19 @@ int main(int argc, char* argv[])
     // Codigo para mostrar resultados en tiempo real
     if((cont++)%5000==000){
       // Genera kerneles del filtro de gabor
-      wx = ffx.at<float>(i,j);
-      wy = ffy.at<float>(i,j);
-      float sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
+      wx = ffx.at<double>(i,j);
+      wy = ffy.at<double>(i,j);
+      double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
       sx = sx>7? 7:(sx<1? 1:sx);
       sy = sy>7? 7:(sy<1? 1:sy);
-      gen_gaborKernel(hxr, hxi, wx, sx, CV_32F);
-      gen_gaborKernel(hyr, hyi, wy, sy, CV_32F);
+      gen_gaborKernel(hxr, hxi, wx, sx, CV_64F);
+      gen_gaborKernel(hyr, hyi, wy, sy, CV_64F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo
-      h=cv::Mat::zeros(64,64, CV_32F)-1;
+      h=cv::Mat::zeros(64,64, CV_64F)-1;
       for(int i=0; i<hyr.cols; i++)
         for(int j=0; j<hxr.cols; j++)
-          h.at<float>(i,j)=hxr.at<float>(0,j)*hyi.at<float>(0,i) +
-              hxi.at<float>(0,j)*hyr.at<float>(0,i);
+          h.at<double>(i,j)=hxr.at<double>(0,j)*hyi.at<double>(0,i) +
+              hxi.at<double>(0,j)*hyr.at<double>(0,i);
 
       cv::normalize(fr,tmp,1,0,cv::NORM_MINMAX);
       cv::imshow("real", tmp);
@@ -215,15 +215,15 @@ int main(int argc, char* argv[])
   }while(scan.next());
 
   // Calculo de la fase de salida
-  fase = atan2<float>(fi,fr);
+  fase = atan2<double>(fi,fr);
   cv::magnitude(fr, fi, magn);
-  cv::threshold(ffx, magn, 0, 1, cv::THRESH_BINARY);
+  //cv::threshold(ffx, magn, 0, 1, cv::THRESH_BINARY);
 
   cv::namedWindow("I");
   cv::namedWindow("real");
   cv::namedWindow("imag");
-  cv::namedWindow("fx");
-  cv::namedWindow("fx");
+  //cv::namedWindow("fx");
+  //cv::namedWindow("fy");
   cv::namedWindow("ffy");
   cv::namedWindow("ffy");
   cv::namedWindow("cos(fase)");
@@ -237,16 +237,16 @@ int main(int argc, char* argv[])
   cv::imshow("imag", tmp);
   cv::normalize(fase,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("fase", tmp);
-  cv::normalize(fx,tmp,1,0,cv::NORM_MINMAX);
-  cv::imshow("fx", tmp);
-  cv::normalize(fy,tmp,1,0,cv::NORM_MINMAX);
-  cv::imshow("fy", tmp);
+  //cv::normalize(fx,tmp,1,0,cv::NORM_MINMAX);
+  //cv::imshow("fx", tmp);
+  //cv::normalize(fy,tmp,1,0,cv::NORM_MINMAX);
+  //cv::imshow("fy", tmp);
   cv::normalize(ffx,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffx", tmp);
   cv::normalize(ffy,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffy", tmp);
-  cv::normalize(cos<float>(fase),tmp,1,0,cv::NORM_MINMAX);
-  cv::imshow("cos(fase)", magn);
+  cv::normalize(cos<double>(fase),tmp,1,0,cv::NORM_MINMAX);
+  cv::imshow("cos(fase)", cos<double>(fase));
 
   cv::waitKey(0);
 

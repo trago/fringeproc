@@ -8,7 +8,7 @@ Scanner::Scanner()
 
 Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
 {
-  CV_Assert(mat_u.type()==CV_32F && mat_v.type()==CV_32F);
+  CV_Assert(mat_u.type()==CV_64F && mat_v.type()==CV_64F);
 
   m_matu=mat_u;
   m_matv=mat_v;
@@ -20,7 +20,7 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
 }
 Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
 {
-  CV_Assert(mat_u.type()==CV_32F && mat_v.type()==CV_32F);
+  CV_Assert(mat_u.type()==CV_64F && mat_v.type()==CV_64F);
 
   m_matu=mat_u;
   m_matv=mat_v;

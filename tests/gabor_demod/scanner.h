@@ -18,8 +18,8 @@ public:
   void setFreqMin(double freq);
 
 private:
-  cv::Mat_<float> m_matu;
-  cv::Mat_<float> m_matv;
+  cv::Mat_<double> m_matu;
+  cv::Mat_<double> m_matv;
   cv::Mat_<bool> m_visited;
   cv::Point m_pixel;
   std::vector<cv::Point> m_path;

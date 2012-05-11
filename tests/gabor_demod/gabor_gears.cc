@@ -324,21 +324,21 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
                       const int x, const int y)
 {
   cv::Vec2d freqs;
-  double imx = x-1>=0? (fi.at<float>(y,x)-fi.at<float>(y,x-1)):
-                       (fi.at<float>(y,x+1)-fi.at<float>(y,x));
-  double rex = x-1>=0? (fr.at<float>(y,x)-fr.at<float>(y,x-1)):
-                       (fr.at<float>(y,x+1)-fr.at<float>(y,x));
-  double magn = fr.at<float>(y,x)*fr.at<float>(y,x) +
-      fi.at<float>(y,x)*fi.at<float>(y,x);
+  double imx = x-1>=0? (fi.at<double>(y,x)-fi.at<double>(y,x-1)):
+                       (fi.at<double>(y,x+1)-fi.at<double>(y,x));
+  double rex = x-1>=0? (fr.at<double>(y,x)-fr.at<double>(y,x-1)):
+                       (fr.at<double>(y,x+1)-fr.at<double>(y,x));
+  double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
+      fi.at<double>(y,x)*fi.at<double>(y,x);
 
-  freqs[0] = (imx*fr.at<float>(y,x) - fi.at<float>(y,x)*rex)/magn;
+  freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
-  imx = y-1>=0? (fi.at<float>(y,x)-fi.at<float>(y-1,x)):
-                       (fi.at<float>(y+1,x)-fi.at<float>(y,x));
-  rex = y-1>=0? (fr.at<float>(y,x)-fr.at<float>(y-1,x)):
-                       (fr.at<float>(y+1,x)-fr.at<float>(y,x));
+  imx = y-1>=0? (fi.at<double>(y,x)-fi.at<double>(y-1,x)):
+                       (fi.at<double>(y+1,x)-fi.at<double>(y,x));
+  rex = y-1>=0? (fr.at<double>(y,x)-fr.at<double>(y-1,x)):
+                       (fr.at<double>(y+1,x)-fr.at<double>(y,x));
 
-  freqs[1] = (imx*fr.at<float>(y,x) - fi.at<float>(y,x)*rex)/magn;
+  freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
   magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
   if(magn < 0.03*0.03){
@@ -361,57 +361,57 @@ cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
   int cont=0;
   if(x-1>=0)
     if(visited.at<char>(y,x-1)){
-      freqs[0]+=fx.at<float>(y,x-1);
-      freqs[1]+=fy.at<float>(y,x-1);
+      freqs[0]+=fx.at<double>(y,x-1);
+      freqs[1]+=fy.at<double>(y,x-1);
       cont++;
       //return freqs;
     }
   if(x+1<fx.cols)
     if(visited.at<char>(y,x+1)){
-      freqs[0]+=fx.at<float>(y,x+1);
-      freqs[1]+=fy.at<float>(y,x+1);
+      freqs[0]+=fx.at<double>(y,x+1);
+      freqs[1]+=fy.at<double>(y,x+1);
       cont++;
       //return freqs;
     }
   if(y-1>=0)
     if(visited.at<char>(y-1,x)){
-      freqs[0]+=fx.at<float>(y-1,x);
-      freqs[1]+=fy.at<float>(y-1,x);
+      freqs[0]+=fx.at<double>(y-1,x);
+      freqs[1]+=fy.at<double>(y-1,x);
       cont++;
       //return freqs;
     }
   if(y+1<fx.rows)
     if(visited.at<char>(y+1,x)){
-      freqs[0]+=fx.at<float>(y+1,x);
-      freqs[1]+=fy.at<float>(y+1,x);
+      freqs[0]+=fx.at<double>(y+1,x);
+      freqs[1]+=fy.at<double>(y+1,x);
       cont++;
       //return freqs;
     }
   if(x-1>=0 && y-1>=0)
     if(visited.at<char>(y-1,x-1)){
-      freqs[0]+=fx.at<float>(y-1,x-1);
-      freqs[1]+=fy.at<float>(y-1,x-1);
+      freqs[0]+=fx.at<double>(y-1,x-1);
+      freqs[1]+=fy.at<double>(y-1,x-1);
       cont++;
       //return freqs;
     }
   if(x+1<fx.cols && y-1>=0)
     if(visited.at<char>(y-1,x+1)){
-      freqs[0]+=fx.at<float>(y-1,x+1);
-      freqs[1]+=fy.at<float>(y-1,x+1);
+      freqs[0]+=fx.at<double>(y-1,x+1);
+      freqs[1]+=fy.at<double>(y-1,x+1);
       cont++;
       //return freqs;
     }
   if(x+1<fx.cols && y+1<fx.rows)
     if(visited.at<char>(y+1,x+1)){
-      freqs[0]+=fx.at<float>(y+1,x+1);
-      freqs[1]+=fy.at<float>(y+1,x+1);
+      freqs[0]+=fx.at<double>(y+1,x+1);
+      freqs[1]+=fy.at<double>(y+1,x+1);
       cont++;
       //return freqs;
     }
   if(x-1>=0 && y+1<fx.rows)
     if(visited.at<char>(y+1,x-1)){
-      freqs[0]+=fx.at<float>(y+1,x-1);
-      freqs[1]+=fy.at<float>(y+1,x-1);
+      freqs[0]+=fx.at<double>(y+1,x-1);
+      freqs[1]+=fy.at<double>(y+1,x-1);
       cont++;
       //return freqs;
     }
