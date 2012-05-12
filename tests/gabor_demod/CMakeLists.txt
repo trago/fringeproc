@@ -1,6 +1,7 @@
 set(gabor_SRC main.cc
     gabor_gears.cc
     scanner.cc
+    demodgabor.cc
 )
 set(gabor_LIBS imcore utils ${OpenCV_LIBS})
 

@@ -6,6 +6,13 @@
 #include <iostream>
 #include "gabor_gears.h"
 
+/**
+ * Calculates the gradient differences.
+ *
+ * @param I is the image.
+ * @param dx [output] the differences along x-direction (columns)
+ * @param dy [output] the differences along y-direction (rows)
+ */
 void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 {
   dx.create(I.rows, I.cols, I.type());
@@ -22,6 +29,23 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
     dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
+/**
+ * Filtrates the neighborhood around (i,j) with Gabor filter.
+ *
+ * It applies the Gabor filter to mage I around pixel (i, j) including itself.
+ * It tries to filter neighbors (i-1,j) and (i,j-1) if they are into the image
+ * matrix; otherwise it filters (i+1,j) or (i,j+1).
+ *
+ * @param I the image
+ * @param fr [output] here is stored the real part of the result at position
+ *           (i,j)
+ * @param fi [output] here is stored the imaginary part of the result at
+ *           position (i,j)
+ * @param wx the tuning frequency of the Gabor filter at x-direction.
+ * @param wy the tuning frequency of the Gabor filter at y-direction.
+ * @param i the i-row of the image
+ * @param j the j-column of the image
+ */
 inline
 void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
                         double wx, double wy, int i, int j)
