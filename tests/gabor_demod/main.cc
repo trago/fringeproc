@@ -146,11 +146,13 @@ int main(int argc, char* argv[])
   if(argc==1){
     // Genera datos de entrada
     //parabola(phase, 0.0008);
-    phase = peaks(M, N)*43;
+    tmp = peaks(M, N)*43;
+    tmp.convertTo(phase, CV_64F);
     //phase=ramp(wx, wy, M, N);
     I=cos<double>(phase);
+    
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, 1.0);
+    cv::randn(noise, 0, 1.5);
     I=I+noise;
   }
   else{
@@ -178,7 +180,7 @@ int main(int argc, char* argv[])
            <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
 
   freqs[0]=.7; freqs[1]=.7;
-  p.x=100; p.y=100;
+  p.x=I.rows/2; p.y=I.cols/2;
 
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
@@ -190,7 +192,7 @@ int main(int argc, char* argv[])
   visited = cv::Mat::zeros(I.rows, I.cols, CV_8U);
 
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.4);
+  scan.setFreqMin(.27);
   cv::Point pixel;
   do{
     pixel=scan.getPosition();
@@ -270,7 +272,7 @@ int main(int argc, char* argv[])
   cv::normalize(ffy,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffy", tmp);
   cv::normalize(cos<double>(fase),tmp,1,0,cv::NORM_MINMAX);
-  cv::imshow("cos(fase)", cos<double>(fase));
+  cv::imshow("cos(fase)", tmp);
 
   cv::waitKey(0);
 

@@ -11,7 +11,7 @@ project(fringeproc)
 # Setting verbose mode
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 
 set(CMAKE_C_FLAGS_RELEASE "-std=gnu99 -O3 -mfpmath=sse -msse2 -ffast-math -funroll-loops")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mfpmath=sse -msse2 -ffast-math -funroll-loops")

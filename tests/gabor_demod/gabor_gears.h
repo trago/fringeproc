@@ -125,4 +125,32 @@ T convolutionAtXY(const cv::Mat data, const cv::Mat kernelx,
   return 0;
 }
 
+namespace gabor{
+  /**
+   * Gabor filter at position (x,y).
+   *
+   * @author Julio C. Estrada
+   */
+  class FilterXY{
+  public:
+    FilterXY(cv::Mat data, cv::Mat fre, cv::Mat fim);
+    void operator()(const double wx, const double wy,
+                    const int x, const int y);
+  private:
+    cv::Mat hxr, hxi, hyr, hyi;
+    const cv::Mat data;
+    cv::Mat fr, fi;
+  };
+
+  class FilterNeighbor{
+  public:
+    FilterNeighbor(cv::Mat param_I, cv::Mat param_fr, cv::Mat param_fi);
+    void operator()(double wx, double wy, int i, int j);
+  private:
+    const cv::Mat I;
+    cv::Mat fr, fi;
+    FilterXY m_localFilter;
+  };
+}
+
 #endif

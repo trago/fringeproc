@@ -422,3 +422,55 @@ cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
   return freqs;
 
 }
+
+gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim)
+:data(dat), fr(fre), fi(fim)
+{
+}
+
+void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
+                                 const int y)
+{
+  double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
+      sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
+
+  sx = sx>8? 8:(sx<1? 1:sx);
+  sy = sy>8? 8:(sy<1? 1:sy);
+
+  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
+  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+
+  if(data.type()==CV_32F){
+    fr.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyr, x, y) -
+        convolutionAtXY<float>(data, hxi, hyi, x, y);
+    fi.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyi, x, y) +
+        convolutionAtXY<float>(data, hxi, hyr, x, y);
+  }
+  else if(data.type()==CV_64F){
+    fr.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyr, x, y) -
+        convolutionAtXY<double>(data, hxi, hyi, x, y);
+    fi.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyi, x, y) +
+        convolutionAtXY<double>(data, hxi, hyr, x, y);
+  }
+}
+
+gabor::FilterNeighbor::FilterNeighbor(cv::Mat param_I, cv::Mat param_fr,
+                                      cv::Mat param_fi)
+:I(param_I), fr(param_fr), fi(param_fi),
+ m_localFilter(param_I, param_fr, param_fi)
+{
+}
+
+void gabor::FilterNeighbor::operator()(double wx, double wy, int i, int j)
+{
+  if(i-1>=0)
+    m_localFilter(wx, wy, j, i-1);
+  else if(i+1<I.rows)
+    m_localFilter(wx, wy, j, i+1);
+  if(j-1>=0)
+    m_localFilter(wx, wy, j-1, i);
+  else if(j+1<I.cols)
+    m_localFilter(wx, wy, j+1, i);
+  
+  m_localFilter(wx, wy, j, i);
+}

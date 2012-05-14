@@ -1,6 +1,5 @@
 #include <imcore/seguidor.h>
 #include <utils/utils.h>
-#include <filters/fringeproc.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "unwrap_gears.h"
