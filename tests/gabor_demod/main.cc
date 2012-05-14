@@ -127,7 +127,7 @@ void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
 
 int main(int argc, char* argv[])
 {
-  double wx= .2, wy=.3;
+  double wx= .7, wy=.7;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_64F);
   cv::Mat phase(M,N,CV_64F);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
   if(argc==1){
     // Genera datos de entrada
     //parabola(phase, 0.0008);
-    phase = peaks(M, N)*43;
+    phase = peaks(M, N)*33;
     //phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
     I=cos<double>(phase);
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
            <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
 
   freqs[0]=.7; freqs[1]=.7;
-  //p.x=100; p.y=100;
+  p.x=100; p.y=100;
 
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
   visited = cv::Mat::zeros(I.rows, I.cols, CV_8U);
 
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.3);
+  scan.setFreqMin(.01);
   cv::Point pixel;
   do{
     pixel=scan.getPosition();
@@ -211,6 +211,7 @@ int main(int argc, char* argv[])
       freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
       std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
               <<", "<< freqs[1]<<")"<<std::endl;
+      scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
     }
     else
       demodNeighbor(I, fr, fi, ffx, ffy, visited, i,j);

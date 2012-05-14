@@ -147,8 +147,8 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
   double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
       sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
 
-  sx = sx>7? 7:(sx<1? 1:sx);
-  sy = sy>7? 7:(sy<1? 1:sy);
+  sx = sx>9? 9:(sx<1? 1:sx);
+  sy = sy>9? 9:(sy<1? 1:sy);
 
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
@@ -341,8 +341,8 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
   freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
   magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
-  if(magn < 0.04*0.04){
-    magn = 0.04/sqrt(magn);
+  if(magn < 0.03*0.03){
+    magn = 0.03/sqrt(magn);
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
   }
