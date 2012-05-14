@@ -70,14 +70,16 @@ inline
 void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
                 cv::Mat visited, int i, int j)
 {
-  cv::Vec2d freqs;
+  cv::Vec2d freqs, freq;
   freqs= peak_freqXY(fx, fy, visited, j, i);
   filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
+  freq = calc_freqXY(fr, fi, j, i);
+  double tau = 0.01;
+  freq = tau*freqs + (1-tau)*freq;
   //freqs = stima_freqXY(I, freqs, j, i);
 
-  fx.at<double>(i,j)=freqs[0];
-  fy.at<double>(i,j)=freqs[1];
+  fx.at<double>(i,j)=freq[0];
+  fy.at<double>(i,j)=freq[1];
   visited.at<char>(i,j)=1;
 }
 
@@ -147,13 +149,13 @@ int main(int argc, char* argv[])
   if(argc==1){
     // Genera datos de entrada
     //parabola(phase, 0.0008);
-    phase = peaks(M, N)*33;
+    phase = peaks(M, N)*13;
     //phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
     I=cos<double>(phase);
     
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, 1.5);
+    cv::randn(noise, 0, 1.0);
     I=I+noise;
   }
   else{
