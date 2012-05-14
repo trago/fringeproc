@@ -147,8 +147,8 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
   double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
       sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
 
-  sx = sx>8? 8:(sx<1? 1:sx);
-  sy = sy>8? 8:(sy<1? 1:sy);
+  sx = sx>9? 9:(sx<1? 1:sx);
+  sy = sy>9? 9:(sy<1? 1:sy);
 
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
