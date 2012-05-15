@@ -29,98 +29,12 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
     dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
-/**
- * Filtrates the neighborhood around (i,j) with Gabor filter.
- *
- * It applies the Gabor filter to mage I around pixel (i, j) including itself.
- * It tries to filter neighbors (i-1,j) and (i,j-1) if they are into the image
- * matrix; otherwise it filters (i+1,j) or (i,j+1).
- *
- * @param I the image
- * @param fr [output] here is stored the real part of the result at position
- *           (i,j)
- * @param fi [output] here is stored the imaginary part of the result at
- *           position (i,j)
- * @param wx the tuning frequency of the Gabor filter at x-direction.
- * @param wy the tuning frequency of the Gabor filter at y-direction.
- * @param i the i-row of the image
- * @param j the j-column of the image
- */
-inline
-void filtraNeighborhood(const cv::Mat I, cv::Mat fr, cv::Mat fi,
-                        double wx, double wy, int i, int j)
-{
-  if(i-1>=0)
-   gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
-                          j, i-1);
-  else if(i+1<I.rows)
-   gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
-                          j, i+1);
-  if(j-1>=0)
-   gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
-                          j-1, i);
-  else if(j+1<I.cols)
-   gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
-                          j+1, i);
-  gabor_adaptiveFilterXY(I, fr, fi, wx, wy,
-                         j, i);
-}
-
-inline
-void demodPixel(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
-                cv::Mat visited, int i, int j)
-{
-  cv::Vec2d freqs, freq;
-  freqs= peak_freqXY(fx, fy, visited, j, i);
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
-  freq = calc_freqXY(fr, fi, j, i);
-  double tau = 0.15;
-  freq = tau*freq + (1-tau)*freqs;
-  //freqs = stima_freqXY(I, freqs, j, i);
-
-  fx.at<double>(i,j)=freq[0];
-  fy.at<double>(i,j)=freq[1];
-  visited.at<char>(i,j)=1;
-}
-
-inline
-void demodNeighbor(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
-                   cv::Mat visited, int i, int j)
-{
-  cv::Mat_<char>& visit=(cv::Mat_<char>&)visited;
-  //if(!visit(i,j))
-    demodPixel(I, fr, fi, fx, fy, visited, i, j);
-  if(j-1>=0)
-    if(!visit(i,j-1))
-      demodPixel(I, fr, fi, fx, fy, visited, i, j-1);
-  if(j+1<I.cols)
-    if(!visit(i,j+1))
-      demodPixel(I, fr, fi, fx, fy, visited, i, j+1);
-  if(i-1>=0)
-    if(!visit(i-1,j))
-      demodPixel(I, fr, fi, fx, fy, visited, i-1, j);
-  if(i+1<I.rows)
-    if(!visit(i+1,j))
-      demodPixel(I, fr, fi, fx, fy, visited, i+1, j);
-  if(j-1>=0 && i-1>=0)
-    if(!visit(i-1,j-1))
-      demodPixel(I, fr, fi, fx, fy, visited, i-1, j-1);
-  if(j+1<I.cols && i-1>=0)
-    if(!visit(i-1,j+1))
-      demodPixel(I, fr, fi, fx, fy, visited, i-1, j+1);
-  if(j+1<I.cols && i+1<I.rows)
-    if(!visit(i+1,j+1))
-      demodPixel(I, fr, fi, fx, fy, visited, i+1, j+1);
-  if(j-1>=0 && i+1<I.rows)
-    if(!visit(i+1,j-1))
-      demodPixel(I, fr, fi, fx, fy, visited, i+1, j-1);
-}
-
 inline
 void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
                     cv::Mat visited, cv::Vec2d freqs, int i, int j)
 {
-  filtraNeighborhood (I, fr, fi, freqs[0], freqs[1], i,j);
+  gabor::FilterNeighbor filter(I, fr, fi);
+  filter.setKernelSize (7)(freqs[0], freqs[1], i,j);
   freqs = calc_freqXY(fr, fi, j, i);
   fx.at<double>(i,j)=freqs[0];
   fy.at<double>(i,j)=freqs[1];
@@ -155,7 +69,7 @@ int main(int argc, char* argv[])
     I=cos<double>(phase);
     
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, 0.5);
+    cv::randn(noise, 0, 1.2);
     I=I+noise;
   }
   else{
@@ -197,6 +111,8 @@ int main(int argc, char* argv[])
   Scanner scan(ffx, ffy, p);
   scan.setFreqMin(.01);
   cv::Point pixel;
+  gabor::DemodNeighborhood demodN(I, fr, fi, ffx, ffy, visited);
+  demodN.setKernelSize(7).setMaxFq(.7).setMinFq(0.1).setTau(0.25);
   do{
     pixel=scan.getPosition();
     i=pixel.y;
@@ -217,8 +133,9 @@ int main(int argc, char* argv[])
       scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
     }
     else
-      demodNeighbor(I, fr, fi, ffx, ffy, visited, i,j);
-
+      demodN(i,j);
+      //demodNeighbor(I, fr, fi, ffx, ffy, visited, i,j);
+    
     // Codigo para mostrar resultados en tiempo real
     if((cont++)%5000==000){
       // Genera kerneles del filtro de gabor

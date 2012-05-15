@@ -131,22 +131,86 @@ namespace gabor{
   class FilterXY{
   public:
     FilterXY(cv::Mat data, cv::Mat fre, cv::Mat fim);
+    FilterXY(const FilterXY& cpy);
     void operator()(const double wx, const double wy,
                     const int x, const int y);
+    /**
+     * Sets the maximum kernel size.
+     *
+     * @param size the maximum size
+     */
+    FilterXY& setKernelSize(double size);
   private:
     cv::Mat hxr, hxi, hyr, hyi;
     const cv::Mat data;
     cv::Mat fr, fi;
+    /** The maximum kernel size. */
+    double m_kernelN;
   };
 
+  /**
+   * Filtrates the neighborhood around (i,j) with Gabor filter.
+   *
+   * It applies the Gabor filter to mage I around pixel (i, j) including itself.
+   * It tries to filter neighbors (i-1,j) and (i,j-1) if they are into the image
+   * matrix; otherwise it filters (i+1,j) or (i,j+1).
+   *
+   * @author Julio C. Estrada
+   */
   class FilterNeighbor{
   public:
     FilterNeighbor(cv::Mat param_I, cv::Mat param_fr, cv::Mat param_fi);
     void operator()(double wx, double wy, int i, int j);
+    FilterNeighbor& setKernelSize(double size);
   private:
-    const cv::Mat I;
-    cv::Mat fr, fi;
     FilterXY m_localFilter;
+    const int M, N;
+  };
+
+  class CalcFreqXY{
+  public:
+    CalcFreqXY(cv::Mat param_fr, cv::Mat param_fi);
+
+    CalcFreqXY& setMinFq(const double w);
+    CalcFreqXY& setMaxFq(const double w);
+    cv::Vec2d operator()(const int x, const int y);
+  private:
+    const cv::Mat fr, fi;
+    double m_minf, m_maxf;
+  };
+  
+  class DemodPixel{
+  public:
+    DemodPixel(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
+               cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat parm_visited);
+
+    void operator()(const int i, const int j);
+    DemodPixel& setKernelSize(const double size);
+    DemodPixel& setTau(const double tau);
+    DemodPixel& setMinFq(const double w);
+    DemodPixel& setMaxFq(const double w);
+  private:
+    cv::Mat fx, fy, visited;
+    FilterNeighbor m_filter;
+    CalcFreqXY m_calcfreq;
+    /** Parameter of recursive filter */
+    double m_tau;
+  };
+
+  class DemodNeighborhood{
+  public:
+    DemodNeighborhood(cv::Mat param_I, cv::Mat param_fr,
+                      cv::Mat param_fi, cv::Mat param_fx,
+                      cv::Mat param_fy, cv::Mat param_visited);
+
+    DemodNeighborhood& setKernelSize(const double size);
+    DemodNeighborhood& setMinFq(const double w);
+    DemodNeighborhood& setMaxFq(const double w);
+    DemodNeighborhood& setTau(const double tau);
+    void operator()(const int i, const int j);
+  private:
+    const cv::Mat_<uchar> visit;
+    DemodPixel m_demodPixel;
   };
 }
 

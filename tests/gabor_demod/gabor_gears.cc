@@ -349,6 +349,12 @@ cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
 gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim)
 :data(dat), fr(fre), fi(fim)
 {
+  m_kernelN=7;
+}
+
+gabor::FilterXY::FilterXY(const gabor::FilterXY& cpy)
+:data(cpy.data), fr(cpy.fr), fi(cpy.fi), m_kernelN(cpy.m_kernelN)
+{
 }
 
 void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
@@ -357,8 +363,8 @@ void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
   double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
       sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
 
-  sx = sx>8? 8:(sx<1? 1:sx);
-  sy = sy>8? 8:(sy<1? 1:sy);
+  sx = sx>m_kernelN? m_kernelN:(sx<1? 1:sx);
+  sy = sy>m_kernelN? m_kernelN:(sy<1? 1:sy);
 
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
@@ -377,10 +383,16 @@ void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
   }
 }
 
+gabor::FilterXY& gabor::FilterXY::setKernelSize(double size)
+{
+  m_kernelN=size;
+  return *this;
+}
+
+
 gabor::FilterNeighbor::FilterNeighbor(cv::Mat param_I, cv::Mat param_fr,
                                       cv::Mat param_fi)
-:I(param_I), fr(param_fr), fi(param_fi),
- m_localFilter(param_I, param_fr, param_fi)
+:m_localFilter(param_I, param_fr, param_fi), M(param_I.rows), N(param_I.cols)
 {
 }
 
@@ -388,12 +400,187 @@ void gabor::FilterNeighbor::operator()(double wx, double wy, int i, int j)
 {
   if(i-1>=0)
     m_localFilter(wx, wy, j, i-1);
-  else if(i+1<I.rows)
+  else if(i+1<M)
     m_localFilter(wx, wy, j, i+1);
   if(j-1>=0)
     m_localFilter(wx, wy, j-1, i);
-  else if(j+1<I.cols)
+  else if(j+1<N)
     m_localFilter(wx, wy, j+1, i);
   
   m_localFilter(wx, wy, j, i);
 }
+
+gabor::FilterNeighbor& gabor::FilterNeighbor::setKernelSize(double size)
+{
+  m_localFilter.setKernelSize(size);
+  return *this;
+}
+
+gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
+                              cv::Mat parm_fi, cv::Mat parm_fx,
+                              cv::Mat parm_fy, cv::Mat parm_visited)
+:m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
+ fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15)
+{
+
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setKernelSize(const double size)
+{
+  m_filter.setKernelSize(size);
+  return *this;
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setTau(const double tau)
+{
+  m_tau=tau;
+  return *this;
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setMaxFq(const double w)
+{
+  m_calcfreq.setMaxFq(w);
+  return *this;
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setMinFq(const double w)
+{
+  m_calcfreq.setMinFq(w);
+}
+
+void gabor::DemodPixel::operator()(const int i, const int j)
+{
+  cv::Vec2d freqs, freq;
+  
+  freqs= peak_freqXY(fx, fy, visited, j, i);
+  m_filter(freqs[0], freqs[1], i, j);
+  freq = m_calcfreq(j, i);
+  freq = m_tau*freq + (1-m_tau)*freqs;
+  //m_filter(freqs[0], freqs[1], i, j);
+  //freq = m_calcfreq(j, i);
+  //freq = m_tau*freq + (1-m_tau)*freqs;
+
+  fx.at<double>(i,j)=freq[0];
+  fy.at<double>(i,j)=freq[1];
+  visited.at<char>(i,j)=1;
+}
+
+gabor::CalcFreqXY::CalcFreqXY(cv::Mat param_fr, cv::Mat param_fi)
+: fr(param_fr), fi(param_fi)
+{
+  m_maxf=M_PI/2;
+  m_minf=0.1;
+}
+
+gabor::CalcFreqXY& gabor::CalcFreqXY::setMaxFq(const double w)
+{
+  m_maxf=w;
+  return *this;
+}
+
+gabor::CalcFreqXY& gabor::CalcFreqXY::setMinFq(const double w)
+{
+  m_minf=w;
+  return *this;
+}
+
+cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
+{
+  cv::Vec2d freqs;
+  double imx = x-1>=0? (fi.at<double>(y,x)-fi.at<double>(y,x-1)):
+                       (fi.at<double>(y,x+1)-fi.at<double>(y,x));
+  double rex = x-1>=0? (fr.at<double>(y,x)-fr.at<double>(y,x-1)):
+                       (fr.at<double>(y,x+1)-fr.at<double>(y,x));
+  double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
+      fi.at<double>(y,x)*fi.at<double>(y,x);
+
+  freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
+
+  imx = y-1>=0? (fi.at<double>(y,x)-fi.at<double>(y-1,x)):
+                       (fi.at<double>(y+1,x)-fi.at<double>(y,x));
+  rex = y-1>=0? (fr.at<double>(y,x)-fr.at<double>(y-1,x)):
+                       (fr.at<double>(y+1,x)-fr.at<double>(y,x));
+
+  freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
+
+  magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
+  if(magn < m_minf*m_minf){
+    magn = m_minf/sqrt(magn);
+    freqs[0]=freqs[0]*magn;
+    freqs[1]=freqs[1]*magn;
+  }
+  else if(magn > m_maxf*m_maxf){
+    magn = m_maxf/sqrt(magn);
+    freqs[0]=freqs[0]*magn;
+    freqs[1]=freqs[1]*magn;
+  }
+  return freqs;
+}
+
+gabor::DemodNeighborhood::DemodNeighborhood(cv::Mat param_I, cv::Mat param_fr,
+                                            cv::Mat param_fi, cv::Mat param_fx,
+                                            cv::Mat param_fy,
+                                            cv::Mat param_visited)
+:m_demodPixel(param_I, param_fr, param_fi, param_fx, param_fy, param_visited),
+ visit(param_visited)
+{
+}
+
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::
+  setKernelSize(const double size)
+{
+  m_demodPixel.setKernelSize(size);
+  return *this;
+}
+
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setMaxFq(const double w)
+{
+  m_demodPixel.setMaxFq(w);
+  return *this;
+}
+
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setMinFq(const double w)
+{
+  m_demodPixel.setMinFq(w);
+  return *this;
+}
+
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setTau(const double tau)
+{
+  m_demodPixel.setTau(tau);
+  return *this;
+}
+
+void gabor::DemodNeighborhood::operator()(const int i, const int j)
+{
+  //if(!visit(i,j))
+    m_demodPixel(i, j);
+  if(j-1>=0)
+    if(!visit(i,j-1))
+      m_demodPixel(i, j-1);
+  if(j+1<visit.cols)
+    if(!visit(i,j+1))
+      m_demodPixel(i, j+1);
+  if(i-1>=0)
+    if(!visit(i-1,j))
+      m_demodPixel(i-1, j);
+  if(i+1<visit.rows)
+    if(!visit(i+1,j))
+      m_demodPixel(i+1, j);
+  if(j-1>=0 && i-1>=0)
+    if(!visit(i-1,j-1))
+      m_demodPixel(i-1, j-1);
+  if(j+1<visit.cols && i-1>=0)
+    if(!visit(i-1,j+1))
+      m_demodPixel(i-1, j+1);
+  if(j+1<visit.cols && i+1<visit.rows)
+    if(!visit(i+1,j+1))
+      m_demodPixel(i+1, j+1);
+  if(j-1>=0 && i+1<visit.rows)
+    if(!visit(i+1,j-1))
+      m_demodPixel(i+1, j-1);
+}
+
+
+
+
