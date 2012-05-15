@@ -140,10 +140,11 @@ namespace gabor{
      * @param size the maximum size
      */
     FilterXY& setKernelSize(double size);
-  private:
+  protected:
     cv::Mat hxr, hxi, hyr, hyi;
     const cv::Mat data;
     cv::Mat fr, fi;
+  private:
     /** The maximum kernel size. */
     double m_kernelN;
   };
@@ -162,8 +163,9 @@ namespace gabor{
     FilterNeighbor(cv::Mat param_I, cv::Mat param_fr, cv::Mat param_fi);
     void operator()(double wx, double wy, int i, int j);
     FilterNeighbor& setKernelSize(double size);
-  private:
+  protected:
     FilterXY m_localFilter;
+  private:
     const int M, N;
   };
 
@@ -174,8 +176,9 @@ namespace gabor{
     CalcFreqXY& setMinFq(const double w);
     CalcFreqXY& setMaxFq(const double w);
     cv::Vec2d operator()(const int x, const int y);
-  private:
+  protected:
     const cv::Mat fr, fi;
+  private:
     double m_minf, m_maxf;
   };
   
@@ -189,12 +192,22 @@ namespace gabor{
     DemodPixel& setTau(const double tau);
     DemodPixel& setMinFq(const double w);
     DemodPixel& setMaxFq(const double w);
-  private:
+    DemodPixel& setIters(const int iters);
+  protected:
     cv::Mat fx, fy, visited;
     FilterNeighbor m_filter;
     CalcFreqXY m_calcfreq;
+    int m_iters;
+  private:
     /** Parameter of recursive filter */
     double m_tau;
+  };
+
+  class DemodSeed:public DemodPixel{
+  public:
+    DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
+              cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat parm_visited);
+    void operator()(cv::Vec2d freqs, const int i, const int j);
   };
 
   class DemodNeighborhood{
@@ -207,8 +220,9 @@ namespace gabor{
     DemodNeighborhood& setMinFq(const double w);
     DemodNeighborhood& setMaxFq(const double w);
     DemodNeighborhood& setTau(const double tau);
+    DemodNeighborhood& setIters(const int iters);
     void operator()(const int i, const int j);
-  private:
+  protected:
     const cv::Mat_<uchar> visit;
     DemodPixel m_demodPixel;
   };

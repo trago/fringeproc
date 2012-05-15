@@ -29,18 +29,6 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
     dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
-inline
-void demodPixelSeed(cv::Mat I, cv::Mat fr, cv::Mat fi, cv::Mat fx, cv::Mat fy,
-                    cv::Mat visited, cv::Vec2d freqs, int i, int j)
-{
-  gabor::FilterNeighbor filter(I, fr, fi);
-  filter.setKernelSize (7)(freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(fr, fi, j, i);
-  fx.at<double>(i,j)=freqs[0];
-  fy.at<double>(i,j)=freqs[1];
-  visited.at<char>(i,j)=1;
-}
-
 int main(int argc, char* argv[])
 {
   double wx= .7, wy=.7;
@@ -112,21 +100,17 @@ int main(int argc, char* argv[])
   scan.setFreqMin(.01);
   cv::Point pixel;
   gabor::DemodNeighborhood demodN(I, fr, fi, ffx, ffy, visited);
-  demodN.setKernelSize(7).setMaxFq(.7).setMinFq(0.1).setTau(0.25);
+  gabor::DemodSeed demodSeed(I, fr, fi, ffx, ffy, visited);
+
+  demodN.setIters(1).setKernelSize(7).
+         setMaxFq(M_PI/4).setMinFq(0.09).setTau(0.25);
+  demodSeed.setIters(9);
   do{
     pixel=scan.getPosition();
     i=pixel.y;
     j=pixel.x;
     if((i==p.y && j==p.x)){
-      demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
-      freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
-      std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
-              <<", "<<freqs[1] <<")"<<std::endl;
-      demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
-      freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
-      std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
-              <<", "<< freqs[1]<<")"<<std::endl;
-      demodPixelSeed(I,fr,fi,ffx,ffy,visited,freqs,i,j);
+      demodSeed(freqs, i, j);
       freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
       std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
               <<", "<< freqs[1]<<")"<<std::endl;

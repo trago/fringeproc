@@ -422,7 +422,7 @@ gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
 :m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
  fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15)
 {
-
+  m_iters=1;
 }
 
 gabor::DemodPixel& gabor::DemodPixel::setKernelSize(const double size)
@@ -453,15 +453,39 @@ void gabor::DemodPixel::operator()(const int i, const int j)
   cv::Vec2d freqs, freq;
   
   freqs= peak_freqXY(fx, fy, visited, j, i);
-  m_filter(freqs[0], freqs[1], i, j);
-  freq = m_calcfreq(j, i);
-  freq = m_tau*freq + (1-m_tau)*freqs;
-  //m_filter(freqs[0], freqs[1], i, j);
-  //freq = m_calcfreq(j, i);
-  //freq = m_tau*freq + (1-m_tau)*freqs;
 
+  for(int iter=0; iter<m_iters; iter++){
+    m_filter(freqs[0], freqs[1], i, j);
+    freq = m_calcfreq(j, i);
+    freq = m_tau*freq + (1-m_tau)*freqs;
+  }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
+  visited.at<char>(i,j)=1;
+}
+
+gabor::DemodSeed::DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
+                            cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat
+                            parm_visited)
+:DemodPixel(parm_I, parm_fr, parm_fi, parm_fx, parm_fy, parm_visited)
+{
+  m_iters=1;
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setIters(const int iters)
+{
+  m_iters=iters;
+  return *this;
+}
+
+void gabor::DemodSeed::operator()(cv::Vec2d freqs, const int i, const int j)
+{
+  for(int iter=0; iter<m_iters; iter++){
+    m_filter(freqs[0], freqs[1], i,j);
+    freqs = m_calcfreq(j, i);
+  }
+  fx.at<double>(i,j)=freqs[0];
+  fy.at<double>(i,j)=freqs[1];
   visited.at<char>(i,j)=1;
 }
 
@@ -550,6 +574,13 @@ gabor::DemodNeighborhood& gabor::DemodNeighborhood::setTau(const double tau)
   m_demodPixel.setTau(tau);
   return *this;
 }
+
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setIters(const int iters)
+{
+  m_demodPixel.setIters(iters);
+  return *this;
+}
+
 
 void gabor::DemodNeighborhood::operator()(const int i, const int j)
 {
