@@ -264,8 +264,8 @@ cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
   freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
   magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
-  if(magn < 0.00005*0.00005){
-    magn = 0.00005/sqrt(magn);
+  if(magn < 0.1*0.1){
+    magn = 0.1/sqrt(magn);
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
   }
