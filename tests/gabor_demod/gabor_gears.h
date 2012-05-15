@@ -57,21 +57,6 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
 void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
                   const double wx, const double wy);
 
-/**
- * Estimates the local frequency at pixel (x,y).
- *
- * Given the real part and imaginary part of a complex data matrix, it
- * estimates the local frequency at location (x,y) using finite
- * differences.
- *
- * @param fr The real part.
- * @param fi The imaginary part.
- * @param x The x-position.
- * @param y The y-position.
- */
-cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
-                      const int x, const int y);
-
 cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
                       const int x, const int y);
 
@@ -169,6 +154,13 @@ namespace gabor{
     const int M, N;
   };
 
+  /**
+   * Estimates the local frequency at pixel (x,y).
+   *
+   * Given the real part and imaginary part of a complex data matrix, it
+   * estimates the local frequency at location (x,y) using finite
+   * differences.
+   */
   class CalcFreqXY{
   public:
     CalcFreqXY(cv::Mat param_fr, cv::Mat param_fi);

@@ -3,6 +3,7 @@
 
 /**
  */
+inline
 double dconvolutionAtXY(const double *__restrict data,
                const double *__restrict kernelx,
                const double *__restrict kernely,
@@ -29,6 +30,7 @@ double dconvolutionAtXY(const double *__restrict data,
   return sum;//weight!=0? sum/weight:0;
 }
 
+inline
 void dconvolution(const double *__restrict data,
          const double *__restrict kernelx,
          const double *__restrict kernely,
@@ -59,6 +61,7 @@ void dconvolution(const double *__restrict data,
     }
 }
 
+inline
 float sconvolutionAtXY(const float *__restrict data,
                const float *__restrict kernelx,
                const float *__restrict kernely,
@@ -85,6 +88,7 @@ float sconvolutionAtXY(const float *__restrict data,
   return sum;//weight!=0? sum/weight:0;
 }
 
+inline
 void sconvolution(const float *__restrict data,
            const float *__restrict kernelx,
            const float *__restrict kernely,
@@ -204,77 +208,6 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
                  tmp2.ptr<double>(), data.rows, data.cols, hyr.cols, hxi.cols);
     fi = tmp1 + tmp2;
   }
-}
-
-double rowConvolutionXY(cv::Mat_<float> I, cv::Mat_<float> h,
-                         const int x, const int y)
-{
-  const int kM=h.cols/2;
-  const int M=I.rows;
-  const int N=I.cols;
-  //const int LIx = (x-kN)>=0? -kN:-x;
-  //const int LSx = (x+kN)<N?  kN:N-x-1;
-  const int LIy = (y-kM)>=0? -kM:-y;
-  const int LSy = (y+kM)<M? kM:M-y-1;
-
-  double sum=0;
-  for(int i=LIy; i<=LSy; i++)
-    sum+= I(y+i,x)*h(kM+i);
-
-  return sum;
-}
-
-double colConvolutionXY(cv::Mat_<float> I, cv::Mat_<float> h,
-                         const int x, const int y)
-{
-  const int kN=h.cols/2;
-  const int kM=h.rows/2;
-  const int M=I.rows;
-  const int N=I.cols;
-  const int LIx = (x-kN)>=0? -kN:-x;
-  const int LSx = (x+kN)<N?  kN:N-x-1;
-  //const int LIy = (y-kM)>=0? -kM:-y;
-  //const int LSy = (y+kM)<M? kM:M-y-1;
-
-  double sum=0;
-  for(int i=LIx; i<=LSx; i++)
-    sum+= I(y,x+i)*h(kN+i);
-
-  return sum;
-}
-
-cv::Vec2d calc_freqXY(const cv::Mat fr, const cv::Mat fi,
-                      const int x, const int y)
-{
-  cv::Vec2d freqs;
-  double imx = x-1>=0? (fi.at<double>(y,x)-fi.at<double>(y,x-1)):
-                       (fi.at<double>(y,x+1)-fi.at<double>(y,x));
-  double rex = x-1>=0? (fr.at<double>(y,x)-fr.at<double>(y,x-1)):
-                       (fr.at<double>(y,x+1)-fr.at<double>(y,x));
-  double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
-      fi.at<double>(y,x)*fi.at<double>(y,x);
-
-  freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
-
-  imx = y-1>=0? (fi.at<double>(y,x)-fi.at<double>(y-1,x)):
-                       (fi.at<double>(y+1,x)-fi.at<double>(y,x));
-  rex = y-1>=0? (fr.at<double>(y,x)-fr.at<double>(y-1,x)):
-                       (fr.at<double>(y+1,x)-fr.at<double>(y,x));
-
-  freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
-
-  magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
-  if(magn < 0.1*0.1){
-    magn = 0.1/sqrt(magn);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
-  }
-  else if(magn > 1.57*1.57){
-    magn = 1.57/sqrt(magn);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
-  }
-  return freqs;
 }
 
 cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,

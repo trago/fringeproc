@@ -81,80 +81,6 @@ void DemodGabor::removeDC()
   m_I-=aux;
 }
 
-inline
-void DemodGabor::filtraNeighborhood(double wx, double wy, int i, int j)
-{
-  if(i-1>=0)
-   gabor_adaptiveFilterXY(m_I, m_fr, m_fi, wx, wy,
-                          j, i-1);
-  else if(i+1<m_I.rows)
-   gabor_adaptiveFilterXY(m_I, m_fr, m_fi, wx, wy,
-                          j, i+1);
-  if(j-1>=0)
-   gabor_adaptiveFilterXY(m_I, m_fr, m_fi, wx, wy,
-                          j-1, i);
-  else if(j+1<m_I.cols)
-   gabor_adaptiveFilterXY(m_I, m_fr, m_fi, wx, wy,
-                          j+1, i);
-  gabor_adaptiveFilterXY(m_I, m_fr, m_fi, wx, wy,
-                         j, i);
-}
-
-inline
-void DemodGabor::demodPixelSeed(cv::Vec2d freqs, int i, int j)
-{
-  filtraNeighborhood (freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(m_fr, m_fi, j, i);
-  m_fx(i,j)=freqs[0];
-  m_fy(i,j)=freqs[1];
-  m_visited(i,j)=1;
-}
-
-inline
-void DemodGabor::demodPixel(int i, int j)
-{
-  cv::Vec2d freqs;
-  freqs= peak_freqXY(m_fx, m_fy, m_visited, j, i);
-  filtraNeighborhood (freqs[0], freqs[1], i,j);
-  freqs = calc_freqXY(m_fr, m_fi, j, i);
-
-  m_fx(i,j)=freqs[0];
-  m_fy(i,j)=freqs[1];
-  m_visited(i,j)=1;
-}
-
-inline
-void DemodGabor::demodNeighbor(int i, int j)
-{
-  cv::Mat_<char>& visit=(cv::Mat_<char>&)m_visited;
-  
-  demodPixel(i, j);
-  if(j-1>=0)
-    if(!visit(i,j-1))
-      demodPixel(i, j-1);
-  if(j+1<m_I.cols)
-    if(!visit(i,j+1))
-      demodPixel(i, j+1);
-  if(i-1>=0)
-    if(!visit(i-1,j))
-      demodPixel(i-1, j);
-  if(i+1<m_I.rows)
-    if(!visit(i+1,j))
-      demodPixel(i+1, j);
-  if(j-1>=0 && i-1>=0)
-    if(!visit(i-1,j-1))
-      demodPixel(i-1, j-1);
-  if(j+1<m_I.cols && i-1>=0)
-    if(!visit(i-1,j+1))
-      demodPixel(i-1, j+1);
-  if(j+1<m_I.cols && i+1<m_I.rows)
-    if(!visit(i+1,j+1))
-      demodPixel(i+1, j+1);
-  if(j-1>=0 && i+1<m_I.rows)
-    if(!visit(i+1,j-1))
-      demodPixel(i+1, j-1);
-}
-
 void DemodGabor::run()
 {
   cv::Vec2d freqs;
@@ -169,20 +95,21 @@ void DemodGabor::run()
   Scanner scan(m_fx, m_fy, p);
   scan.setFreqMin(m_minf);
   cv::Point pixel;
+  gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
+  gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
+
+  demodN.setIters(1).setKernelSize(7).
+         setMaxFq(M_PI/4).setMinFq(0.09).setTau(0.25);
+  demodSeed.setIters(9);
   
   do{
     pixel=scan.getPosition();
     i=pixel.y;
     j=pixel.x;
     if((i==p.y && j==p.x)){
-      demodPixelSeed(freqs,i,j);
-      freqs[0]=m_fx(i,j); freqs[1]=m_fy(i,j);
-      demodPixelSeed(freqs,i,j);
-      freqs[0]=m_fx(i,j); freqs[1]=m_fy(i,j);
-      demodPixelSeed(freqs,i,j);
-      freqs[0]=m_fx(i,j); freqs[1]=m_fy(i,j);
+      demodSeed(freqs,i,j);
     }
     else
-      demodNeighbor(i,j);
+      demodN(i,j);
   }while(scan.next());
 }

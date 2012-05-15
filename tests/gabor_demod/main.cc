@@ -69,24 +69,15 @@ int main(int argc, char* argv[])
     I = I - tmp;
   }
 
-  // Aplica filtro y busca el pixel que esta entonado con el filtro.
-  // despues calcula su frecuencia local
-  gabor_filter(I, fr, fi, wx, wy);
-  cv::magnitude(fr, fi, magn);
-  double min, max;
-  cv::Point2i p;
-  cv::minMaxLoc(magn, &min, &max, NULL, &p);
-  std::cout<<"Puno inicial: ("<<p.x<<", "<<p.y<<")"<<std::endl;
-  //I.at<double>(p.y, p.x)=20;
-  cv::Vec2d freqs = calc_freqXY(fr, fi, p.x, p.y);
-  std::cout<<"Frecuencia local en el punto: ("<<freqs[0]<<", "<<freqs[1]
-          <<")"<<std::endl;
-  std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
-           <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
 
+  cv::Vec2d freqs;
+  cv::Point p;
   freqs[0]=.7; freqs[1]=.7;
   p.x=I.rows/2; p.y=I.cols/2;
 
+  std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
+           <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
+           
   int i=p.y, j=p.x, cont=0;
   ffx = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
   ffy = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
@@ -102,8 +93,8 @@ int main(int argc, char* argv[])
   gabor::DemodNeighborhood demodN(I, fr, fi, ffx, ffy, visited);
   gabor::DemodSeed demodSeed(I, fr, fi, ffx, ffy, visited);
 
-  demodN.setIters(1).setKernelSize(7).
-         setMaxFq(M_PI/4).setMinFq(0.09).setTau(0.25);
+  demodN.setIters(1).setKernelSize(4).
+         setMaxFq(M_PI/4).setMinFq(0.09).setTau(0.35);
   demodSeed.setIters(9);
   do{
     pixel=scan.getPosition();
@@ -118,7 +109,6 @@ int main(int argc, char* argv[])
     }
     else
       demodN(i,j);
-      //demodNeighbor(I, fr, fi, ffx, ffy, visited, i,j);
     
     // Codigo para mostrar resultados en tiempo real
     if((cont++)%5000==000){

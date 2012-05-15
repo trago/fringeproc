@@ -22,6 +22,7 @@
 #define DEMODGABOR_H
 
 #include <opencv2/core/core.hpp>
+#include "gabor_gears.h"
 
 /**
  * Implemments an adaptive Gabor filter guided by the local frequencies.
@@ -106,24 +107,7 @@ private:
   
   /** The minimum radial frequency to process */
   double m_minf;
-
   
-  void demodPixelSeed(cv::Vec2d freqs, int i, int j);
-  /**
-  * Filtrates the neighborhood around (i,j) with Gabor filter.
-  *
-  * It applies the Gabor filter to mage I around pixel (i, j) including itself.
-  * It tries to filter neighbors (i-1,j) and (i,j-1) if they are into the image
-  * matrix; otherwise it filters (i+1,j) or (i,j+1).
-  *
-  * @param wx the tuning frequency of the Gabor filter at x-direction.
-  * @param wy the tuning frequency of the Gabor filter at y-direction.
-  * @param i the i-row of the image
-  * @param j the j-column of the image
-  */
-  void filtraNeighborhood(double wx, double wy, int i, int j);
-  void demodNeighbor(int i, int j);
-  void demodPixel(int i, int j);
 };
 
 #endif // DEMODGABOR_H
