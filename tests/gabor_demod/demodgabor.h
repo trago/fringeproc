@@ -95,6 +95,7 @@ public:
   DemodGabor& setMaxfq(const double w);
   DemodGabor& setMinfq(const double w);
   DemodGabor& setTau(const double tau);
+  DemodGabor& setStartPixel(const cv::Point pixel);
 
 
   /**

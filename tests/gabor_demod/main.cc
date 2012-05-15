@@ -80,44 +80,24 @@ int main(int argc, char* argv[])
            <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
            
   int i=p.y, j=p.x, cont=0;
-  ffx = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
-  ffy = cv::Mat::ones(I.rows, I.cols, CV_64F)*M_PI/2.0;
-  fr = cv::Mat::zeros(I.rows, I.cols, CV_64F);
-  fi = cv::Mat::zeros(I.rows, I.cols, CV_64F);
-  ffx.at<double>(i,j)=freqs[0];
-  ffy.at<double>(i,j)=freqs[1];
-  visited = cv::Mat::zeros(I.rows, I.cols, CV_8U);
 
+  DemodGabor gabor(I);
+  gabor.setIters(1).setKernelSize(7).
+        setMaxfq(M_PI/4).setMinfq(0.09).setTau(0.25).setSeedIters(9).
+        setScanMinf(0.01);
+  ffx = gabor.getWx();
+  ffy = gabor.getWy();
+  fr = gabor.getFr();
+  fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
   scan.setFreqMin(.01);
   cv::Point pixel;
-  gabor::DemodNeighborhood demodN(I, fr, fi, ffx, ffy, visited);
-  gabor::DemodSeed demodSeed(I, fr, fi, ffx, ffy, visited);
 
-  demodN.setIters(1).setKernelSize(9).
-         setMaxFq(M_PI/2).setMinFq(0.09).setTau(0.35);
-  demodSeed.setIters(9);
+  //gabor.run();
 
-  DemodGabor gabor;
-  gabor.setIters(1).setKernelSize(9).
-        setMaxfq(M_PI/2).setMinfq(0.09).setTau(0.32).setSeedIters(9).
-        setScanMinf(0.01);
   do{
-    pixel=scan.getPosition();
-    i=pixel.y;
-    j=pixel.x;
-    if((i==p.y && j==p.x)){
-      demodSeed(freqs, i, j);
-      freqs[0]=ffx.at<double>(i,j); freqs[1]=ffy.at<double>(i,j);
-      std::cout<<"Frecuencia estimada local en el punto-> ("<<freqs[0]
-              <<", "<< freqs[1]<<")"<<std::endl;
-      scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
-    }
-    else
-      demodN(i,j);
-    
     // Codigo para mostrar resultados en tiempo real
-    if((cont++)%5000==000){
+    if((cont++)%5000==0){
       // Genera kerneles del filtro de gabor
       wx = ffx.at<double>(i,j);
       wy = ffy.at<double>(i,j);
@@ -139,7 +119,7 @@ int main(int argc, char* argv[])
       cv::imshow("cos(fase)", tmp);
       cv::waitKey(32);
     }
-  }while(scan.next());
+  }while(gabor.runInteractive(scan));
 
   // Calculo de la fase de salida
   fase = atan2<double>(fi,fr);

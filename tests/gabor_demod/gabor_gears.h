@@ -127,7 +127,7 @@ namespace gabor{
     FilterXY& setKernelSize(double size);
   protected:
     cv::Mat hxr, hxi, hyr, hyi;
-    const cv::Mat data;
+    cv::Mat data;
     cv::Mat fr, fi;
   private:
     /** The maximum kernel size. */
