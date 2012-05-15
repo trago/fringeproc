@@ -5,6 +5,7 @@
 #include <utils/utils.h>
 #include <iostream>
 #include "gabor_gears.h"
+#include "demodgabor.h"
 
 /**
  * Calculates the gradient differences.
@@ -93,9 +94,14 @@ int main(int argc, char* argv[])
   gabor::DemodNeighborhood demodN(I, fr, fi, ffx, ffy, visited);
   gabor::DemodSeed demodSeed(I, fr, fi, ffx, ffy, visited);
 
-  demodN.setIters(1).setKernelSize(4).
-         setMaxFq(M_PI/4).setMinFq(0.09).setTau(0.35);
+  demodN.setIters(1).setKernelSize(9).
+         setMaxFq(M_PI/2).setMinFq(0.09).setTau(0.35);
   demodSeed.setIters(9);
+
+  DemodGabor gabor;
+  gabor.setIters(1).setKernelSize(9).
+        setMaxfq(M_PI/2).setMinfq(0.09).setTau(0.32).setSeedIters(9).
+        setScanMinf(0.01);
   do{
     pixel=scan.getPosition();
     i=pixel.y;

@@ -25,6 +25,13 @@
 
 DemodGabor::DemodGabor()
 {
+  m_scanMinf = 0.03;
+  m_minfq = 0.09;
+  m_maxfq = M_PI/2;
+  m_iters = 1;
+  m_seedIters = 9;
+  m_tau = 0.25;
+  m_kernelSize = 7;
 }
 
 DemodGabor::DemodGabor(const cv::Mat I)
@@ -39,7 +46,13 @@ DemodGabor::DemodGabor(const cv::Mat I)
   m_fi.create(m_I.rows, m_I.cols);
   m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
   m_fy = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
-  m_minf = 0.03;
+  m_scanMinf = 0.03;
+  m_minfq = 0.09;
+  m_maxfq = M_PI/2;
+  m_iters = 1;
+  m_seedIters = 9;
+  m_tau = 0.25;
+  m_kernelSize = 7;
 }
 
 cv::Mat DemodGabor::getFi()
@@ -67,9 +80,9 @@ cv::Mat DemodGabor::getWy()
   return m_fy;
 }
 
-void DemodGabor::setMinf(double minf)
+DemodGabor& DemodGabor::setScanMinf(double minf)
 {
-  m_minf=minf;
+  m_scanMinf=minf;
 }
 
 void DemodGabor::removeDC()
@@ -90,10 +103,9 @@ void DemodGabor::run()
 
   m_fx(i,j)=freqs[0];
   m_fy(i,j)=freqs[1];
-  m_visited = cv::Mat_<uchar>::zeros(m_I.rows, m_I.cols);
 
   Scanner scan(m_fx, m_fy, p);
-  scan.setFreqMin(m_minf);
+  scan.setFreqMin(m_scanMinf);
   cv::Point pixel;
   gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
   gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
@@ -108,8 +120,60 @@ void DemodGabor::run()
     j=pixel.x;
     if((i==p.y && j==p.x)){
       demodSeed(freqs,i,j);
+      scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
     }
     else
       demodN(i,j);
   }while(scan.next());
+}
+
+bool DemodGabor::runInteractive(Scanner& scan)
+{
+  cv::Vec2d freqs;
+
+  cv::Point pixel;
+  gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
+  gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
+
+  pixel=scan.getPosition();
+  const int i=pixel.y;
+  const int j=pixel.x;
+  if((i==m_startPixel.y && j==m_startPixel.x)){
+    demodSeed(freqs,i,j);
+  }
+  else
+    demodN(i,j);
+
+  return scan.next();
+}
+
+DemodGabor& DemodGabor::setIters(const int iters)
+{
+  m_iters=iters;
+  return *this;
+}
+DemodGabor& DemodGabor::setSeedIters(const int iters)
+{
+  m_seedIters=iters;
+  return *this;
+}
+DemodGabor& DemodGabor::setKernelSize(const double size)
+{
+  m_kernelSize=size;
+  return *this;
+}
+DemodGabor& DemodGabor::setMaxfq(const double w)
+{
+  m_maxfq=w;
+  return *this;
+}
+DemodGabor& DemodGabor::setMinfq(const double w)
+{
+  m_minfq=w;
+  return *this;
+}
+DemodGabor& DemodGabor::setTau(const double tau)
+{
+  m_tau=tau;
+  return *this;
 }

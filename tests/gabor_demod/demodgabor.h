@@ -24,6 +24,8 @@
 #include <opencv2/core/core.hpp>
 #include "gabor_gears.h"
 
+class Scanner;
+
 /**
  * Implemments an adaptive Gabor filter guided by the local frequencies.
  *
@@ -78,7 +80,7 @@ public:
    *
    * @param minf the minimum radial frequency to be processed.
    */
-  void setMinf(double minf);
+  DemodGabor& setScanMinf(double minf);
 
   /**
    * Removes the background component from the input data.
@@ -87,10 +89,20 @@ public:
    */
   void removeDC();
 
+  DemodGabor& setIters(const int iters);
+  DemodGabor& setSeedIters(const int iters);
+  DemodGabor& setKernelSize(const double size);
+  DemodGabor& setMaxfq(const double w);
+  DemodGabor& setMinfq(const double w);
+  DemodGabor& setTau(const double tau);
+
+
   /**
    * Executes the filtering operation.
    */
   void run();
+
+  bool runInteractive(Scanner& scan);
 private:
   /** The image matrix being processed */
   cv::Mat_<double> m_I;
@@ -104,9 +116,16 @@ private:
   cv::Mat_<double> m_fy;
   /** Label field marking the pixels already visited */
   cv::Mat_<uchar> m_visited;
+  cv::Point m_startPixel;
   
   /** The minimum radial frequency to process */
-  double m_minf;
+  double m_scanMinf;
+  int m_iters;
+  int m_seedIters;
+  double m_kernelSize;
+  double m_maxfq;
+  double m_minfq;
+  double m_tau;
   
 };
 
