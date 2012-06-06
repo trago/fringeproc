@@ -73,6 +73,20 @@ public:
    */
   void setFreqMin(double freq);
 
+  /**
+   * Spesifies if the minimum frequency to scan can be updated.
+   *
+   * The minimum freqeuncy to update can be updated automatically when all
+   * points having less than the minimum frequency were scanned. When this
+   * is the case, the minimum freqeuncy to scan is updated to the first
+   * frequency that belongs to the first border point found. A border point is
+   * in the edge of the scannen and not scanned points.
+   *
+   * @param update true if the minimum frequency to scann should
+   *        be updated.
+   */
+  void updateFreqMin(bool update);
+
 private:
   /** The frequencies or differences in x-direction */
   cv::Mat_<double> m_matu;
@@ -86,6 +100,8 @@ private:
   std::vector<cv::Point> m_path;
   /** The minimum frequency to scan*/
   double m_freqmin;
+  /** Indicates if the minimum frequency to scan is updated*/
+  bool m_updateMinFreq;
 
   /** Inserts the pixel to the path and marks it as visited*/
   void insertPixelToPath(const cv::Point& pixel);

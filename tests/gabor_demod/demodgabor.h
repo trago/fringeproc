@@ -89,8 +89,32 @@ public:
    */
   void removeDC();
 
+  /**
+    Sets the number of iterations that the convolution is applied in each point.
+
+    When the convolution is applied, the local frequencies are estimated.
+    Given the nuew local frequencies, we can appliy the Gabor filter againg
+    iteratively. Here we say how many iterations we whant to apply in each
+    scanned pixel.
+
+    @param iters the number of iterations.
+    */
   DemodGabor& setIters(const int iters);
+  /**
+    Sets the number of iterations for the first pixel to process.
+
+    It is usefull to iterate more than once in the first pixel to refine the
+    local frequency estimation in this pixel called the seed pixel.
+
+    @param iters the number of iterations.
+    */
   DemodGabor& setSeedIters(const int iters);
+  /**
+    Setes the kernel size of the gabor filter.
+
+    Actually, this is the maximum size that the gabor filtar can have in both
+    directions while it is adapted.
+    */
   DemodGabor& setKernelSize(const double size);
   DemodGabor& setMaxfq(const double w);
   DemodGabor& setMinfq(const double w);
@@ -118,7 +142,7 @@ private:
   /** Label field marking the pixels already visited */
   cv::Mat_<uchar> m_visited;
   cv::Point m_startPixel;
-  
+
   /** The minimum radial frequency to process */
   double m_scanMinf;
   int m_iters;
@@ -127,7 +151,7 @@ private:
   double m_maxfq;
   double m_minfq;
   double m_tau;
-  
+
 };
 
 #endif // DEMODGABOR_H

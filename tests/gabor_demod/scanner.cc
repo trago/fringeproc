@@ -4,6 +4,10 @@
 
 Scanner::Scanner()
 {
+  m_freqmin=0.6;
+  m_pixel.x=0;
+  m_pixel.y=0;
+  m_updateMinFreq=true;
 }
 
 Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
@@ -17,6 +21,7 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
   m_pixel.y=0;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;
+  m_updateMinFreq=true;
 }
 Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
 {
@@ -28,6 +33,7 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;
+  m_updateMinFreq=true;
 }
 
 void Scanner::setFreqMin(double freq)
@@ -39,7 +45,7 @@ bool Scanner::next()
 {
   if(!next(m_freqmin*m_freqmin)){
     m_pixel=findPixel();
-    if(m_pixel.x>=0 && m_pixel.y>=0){
+    if(m_pixel.x>=0 && m_pixel.y>=0 && m_updateMinFreq){
       std::cout<<"Frequencia actual: "<<m_freqmin;
       m_freqmin=sqrt(m_matu(m_pixel.y,m_pixel.x)*m_matu(m_pixel.y,m_pixel.x)
         + m_matv(m_pixel.y,m_pixel.x)*m_matv(m_pixel.y,m_pixel.x));
@@ -191,4 +197,9 @@ void Scanner::insertPixelToPath(const cv::Point& pixel)
 {
   m_visited(pixel.y, pixel.x)=true;
   m_path.push_back(pixel);
+}
+
+void Scanner::updateFreqMin(bool update)
+{
+  m_updateMinFreq=update;
 }

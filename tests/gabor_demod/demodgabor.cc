@@ -129,7 +129,7 @@ void DemodGabor::run()
     if((i==m_startPixel.y && j==m_startPixel.x)){
       demodSeed(freqs,i,j);
       freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
-      scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
+      //scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
     }
     else
       demodN(i,j);
@@ -154,7 +154,7 @@ bool DemodGabor::runInteractive(Scanner& scan)
   if((i==m_startPixel.y && j==m_startPixel.x)){
     demodSeed(freqs,i,j);
     freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
-    scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
+    //scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
   }
   else
     demodN(i,j);
