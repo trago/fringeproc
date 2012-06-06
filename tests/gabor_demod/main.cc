@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     //phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
     I=cos<double>(phase);
-    
+
     gradient(phase, fx, fy);
     cv::randn(noise, 0, 1.2);
     I=I+noise;
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
            <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
-           
+
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
@@ -125,16 +125,6 @@ int main(int argc, char* argv[])
   fase = atan2<double>(fi,fr);
   cv::magnitude(fr, fi, magn);
   //cv::threshold(ffx, magn, 0, 1, cv::THRESH_BINARY);
-
-  cv::namedWindow("I");
-  cv::namedWindow("real");
-  cv::namedWindow("imag");
-  //cv::namedWindow("fx");
-  //cv::namedWindow("fy");
-  cv::namedWindow("ffy");
-  cv::namedWindow("ffy");
-  cv::namedWindow("cos(fase)");
-  cv::namedWindow("fase");
 
   cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("I", tmp);
