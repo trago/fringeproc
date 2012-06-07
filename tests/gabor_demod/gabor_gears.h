@@ -193,6 +193,8 @@ namespace gabor{
   private:
     /** Parameter of recursive filter */
     double m_tau;
+
+    cv::Vec2d combFreq(cv::Vec2d freqs, const int i, const int j);
   };
 
   class DemodSeed:public DemodPixel{

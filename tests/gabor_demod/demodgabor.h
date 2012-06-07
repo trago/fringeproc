@@ -73,6 +73,14 @@ public:
   cv::Mat getInput();
 
   /**
+    Resets the internal state of the object.
+
+    This can be usefull when we whant to reinitialize the demodulation
+    process.
+    */
+  void reset();
+
+  /**
    * Sets the minimum local frequency to be processed.
    *
    * This is a radial frequency, that is, it is the maximum frequency magnitud
@@ -120,6 +128,7 @@ public:
   DemodGabor& setMinfq(const double w);
   DemodGabor& setTau(const double tau);
   DemodGabor& setStartPixel(const cv::Point pixel);
+  cv::Point getStartPixel();
 
 
   /**

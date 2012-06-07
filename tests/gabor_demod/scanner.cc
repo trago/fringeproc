@@ -46,13 +46,13 @@ bool Scanner::next()
   if(!next(m_freqmin*m_freqmin)){
     m_pixel=findPixel();
     if(m_pixel.x>=0 && m_pixel.y>=0 && m_updateMinFreq){
-      std::cout<<"Frequencia actual: "<<m_freqmin;
+      //std::cout<<"Frequencia actual: "<<m_freqmin;
       m_freqmin=sqrt(m_matu(m_pixel.y,m_pixel.x)*m_matu(m_pixel.y,m_pixel.x)
         + m_matv(m_pixel.y,m_pixel.x)*m_matv(m_pixel.y,m_pixel.x));
       //m_freqmin-=0.01;
-      std::cout<<", Frecuencia ajustada: "<<m_freqmin<<std::endl;
-      std::cout<<"Nuevo punto inicial: (" << m_pixel.x << ", " <<m_pixel.y
-               << ")" << std::endl;
+      //std::cout<<", Frecuencia ajustada: "<<m_freqmin<<std::endl;
+      //std::cout<<"Nuevo punto inicial: (" << m_pixel.x << ", " <<m_pixel.y
+      //         << ")" << std::endl;
       insertPixelToPath(m_pixel);
       return true;//next(m_freqmin*m_freqmin);
     }

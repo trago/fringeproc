@@ -192,3 +192,18 @@ DemodGabor& DemodGabor::setTau(const double tau)
   m_tau=tau;
   return *this;
 }
+
+void DemodGabor::reset()
+{
+  m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
+  m_fy = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
+  m_visited = cv::Mat_<uchar>::zeros(m_I.rows, m_I.cols);
+  m_fr =  cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
+  m_fi =  cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
+}
+
+
+cv::Point DemodGabor::getStartPixel()
+{
+  return m_startPixel;
+}

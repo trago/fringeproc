@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "gabor_gears.h"
 
 /**
@@ -391,10 +392,36 @@ void gabor::DemodPixel::operator()(const int i, const int j)
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
     freq = m_tau*freq + (1-m_tau)*freqs;
+    freq = combFreq(freq,i,j);
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
   visited.at<char>(i,j)=1;
+}
+
+cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
+				      const int i, const int j)
+{
+  const int N = 11;
+  const float p=0.5;//Probabilidad de cambio
+
+  int cont=0, right=0;
+  double sum1=0;
+  for(int m=i-N/2; m<=i+N/2; m++)
+    for(int n=j-N/2; n<=j+N/2; n++)
+      if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
+	if(visited.at<char>(m,n)){
+	  sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
+	  cont++;
+	  right+= (sum1>=0? 1:0);
+	}
+  float cp = (float)right/(float)cont;
+  if(cp<p){
+    std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
+    freqs[0]=-freqs[0];
+    freqs[1]=-freqs[1];
+  }
+  return freqs;
 }
 
 gabor::DemodSeed::DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
