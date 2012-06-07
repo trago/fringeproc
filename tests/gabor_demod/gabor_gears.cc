@@ -339,7 +339,7 @@ void gabor::FilterNeighbor::operator()(double wx, double wy, int i, int j)
     m_localFilter(wx, wy, j-1, i);
   else if(j+1<N)
     m_localFilter(wx, wy, j+1, i);
-  
+
   m_localFilter(wx, wy, j, i);
 }
 
@@ -384,7 +384,7 @@ gabor::DemodPixel& gabor::DemodPixel::setMinFq(const double w)
 void gabor::DemodPixel::operator()(const int i, const int j)
 {
   cv::Vec2d freqs, freq;
-  
+
   freqs= peak_freqXY(fx, fy, visited, j, i);
 
   for(int iter=0; iter<m_iters; iter++){
@@ -451,6 +451,8 @@ cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
   double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
       fi.at<double>(y,x)*fi.at<double>(y,x);
 
+  if(magn<0.0001) magn=0.0001; //Evitar devision entre 0
+
   freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
   imx = y-1>=0? (fi.at<double>(y,x)-fi.at<double>(y-1,x)):
@@ -461,6 +463,7 @@ cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
   freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
   magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
+  if(magn<0.0001) magn=0.0001; //Evitar division entre 0
   if(magn < m_minf*m_minf){
     magn = m_minf/sqrt(magn);
     freqs[0]=freqs[0]*magn;

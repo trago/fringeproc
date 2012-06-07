@@ -63,10 +63,10 @@ int main(int argc, char* argv[])
   }
   else{
     I=cv::imread(argv[1], 0);
-    I.convertTo(tmp, CV_64F);
-    I=tmp.clone();
-    cv::GaussianBlur(I, I, cv::Size(0,0), 1);
-    cv::GaussianBlur(I, tmp, cv::Size(0,0), 13);
+    I.convertTo(I, CV_64F);
+    cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
+    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1);
+    cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
     I = I - tmp;
   }
 
@@ -82,16 +82,17 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(5).
-        setMaxfq(M_PI/4).setMinfq(0.05).setTau(0.25).setSeedIters(9).
+  gabor.setIters(1).setKernelSize(7).
+        setMaxfq(M_PI/4).setMinfq(0.03).setTau(0.58).setSeedIters(9).
         setScanMinf(.5);
+  gabor.setStartPixel(p);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.35);
-  scan.updateFreqMin(false);
+  scan.setFreqMin(.13);
+  scan.updateFreqMin(true);
   cv::Point pixel;
 
   //gabor.run();
@@ -124,7 +125,7 @@ int main(int argc, char* argv[])
 
   // Calculo de la fase de salida
   fase = atan2<double>(fi,fr);
-  cv::magnitude(fr, fi, magn);
+  cv::magnitude(ffx, ffy, magn);
   //cv::threshold(ffx, magn, 0, 1, cv::THRESH_BINARY);
 
   cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
@@ -135,16 +136,15 @@ int main(int argc, char* argv[])
   cv::imshow("imag", tmp);
   cv::normalize(fase,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("fase", tmp);
-  //cv::normalize(fx,tmp,1,0,cv::NORM_MINMAX);
-  //cv::imshow("fx", tmp);
-  //cv::normalize(fy,tmp,1,0,cv::NORM_MINMAX);
-  //cv::imshow("fy", tmp);
   cv::normalize(ffx,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffx", tmp);
   cv::normalize(ffy,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("ffy", tmp);
   cv::normalize(cos<double>(fase),tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("cos(fase)", tmp);
+  cv::normalize(magn,tmp,1,0,cv::NORM_MINMAX);
+  cv::imshow("magn", tmp);
+
 
   cv::waitKey(0);
 
