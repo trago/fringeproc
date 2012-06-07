@@ -82,8 +82,8 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(9).
-        setMaxfq(M_PI/4).setMinfq(0.03).setTau(0.55).setSeedIters(11).
+  gabor.setIters(1).setKernelSize(7).
+        setMaxfq(M_PI/4).setMinfq(0.03).setTau(0.25).setSeedIters(11).
         setScanMinf(.5);
   gabor.setStartPixel(p);
   ffx = gabor.getWx();
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.13);
+  scan.setFreqMin(.5);
   scan.updateFreqMin(true);
   cv::Point pixel;
 
