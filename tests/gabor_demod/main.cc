@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     I=cv::imread(argv[1], 0);
     I.convertTo(I, CV_64F);
     cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
-    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1);
+    cv::GaussianBlur(tmp, I, cv::Size(0,0), 2);
     cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
     I = I - tmp;
   }
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
   cv::Vec2d freqs;
   cv::Point p;
   freqs[0]=.7; freqs[1]=.7;
-  p.x=I.rows/3; p.y=I.cols/3;
+  p.x=I.rows/2; p.y=I.cols/2;
 
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
            <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
   DemodGabor gabor(I);
   gabor.setIters(1).setKernelSize(7).
-        setMaxfq(M_PI/4).setMinfq(0.03).setTau(0.25).setSeedIters(11).
+        setMaxfq(M_PI/2).setMinfq(0.03).setTau(0.75).setSeedIters(11).
         setScanMinf(.5);
   gabor.setStartPixel(p);
   ffx = gabor.getWx();

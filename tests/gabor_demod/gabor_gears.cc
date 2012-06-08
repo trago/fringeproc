@@ -402,7 +402,7 @@ void gabor::DemodPixel::operator()(const int i, const int j)
 cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
 				      const int i, const int j)
 {
-  const int N = 13;
+  const int N = 15;
   const float p=0.4;//Probabilidad de cambio
 
   int cont=0, right=0;
@@ -416,7 +416,7 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 	  right+= (sum1>=0? 1:0);
 	}
   float cp = (float)right/(float)cont;
-  if(cp<p){
+  if((1-cp)>p){
     std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
     freqs[0]=-freqs[0];
     freqs[1]=-freqs[1];
