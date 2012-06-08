@@ -280,6 +280,11 @@ cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
 
 }
 
+gabor::FilterXY::FilterXY()
+{
+  m_kernelN=7;
+}
+
 gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim)
 :data(dat), fr(fre), fi(fim)
 {
@@ -289,6 +294,13 @@ gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim)
 gabor::FilterXY::FilterXY(const gabor::FilterXY& cpy)
 :data(cpy.data), fr(cpy.fr), fi(cpy.fi), m_kernelN(cpy.m_kernelN)
 {
+}
+
+void gabor::FilterXY::operator()(cv::Mat dat, cv::Mat fre, cv::Mat fim)
+{
+  data=dat;
+  fr=fre;
+  fi=fi;
 }
 
 void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
@@ -354,7 +366,8 @@ gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
                               cv::Mat parm_fi, cv::Mat parm_fx,
                               cv::Mat parm_fy, cv::Mat parm_visited)
 :m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
- fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15)
+ fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15), 
+ m_combFreqs(true), m_combN(7)
 {
   m_iters=1;
 }
@@ -392,7 +405,8 @@ void gabor::DemodPixel::operator()(const int i, const int j)
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
     freq = m_tau*freq + (1-m_tau)*freqs;
-    freq = combFreq(freq,i,j);
+    if(m_combFreqs)
+      freq = combFreq(freq,i,j);
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
@@ -402,7 +416,7 @@ void gabor::DemodPixel::operator()(const int i, const int j)
 cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
 				      const int i, const int j)
 {
-  const int N = 15;
+  const int N = m_combN;
   const float p=0.4;//Probabilidad de cambio
 
   int cont=0, right=0;
@@ -433,6 +447,16 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 	  }
   }
   return freqs;
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setCombFreqs(bool flag)
+{
+  m_combFreqs=flag;
+}
+
+gabor::DemodPixel& gabor::DemodPixel::setCombNsize(const int Nsize)
+{
+  m_combN=Nsize;
 }
 
 gabor::DemodSeed::DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,

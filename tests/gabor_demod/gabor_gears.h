@@ -115,10 +115,13 @@ namespace gabor{
    */
   class FilterXY{
   public:
+    FilterXY();
     FilterXY(cv::Mat data, cv::Mat fre, cv::Mat fim);
     FilterXY(const FilterXY& cpy);
-    void operator()(const double wx, const double wy,
-                    const int x, const int y);
+
+    virtual void operator()(cv::Mat data, cv::Mat fre, cv::Mat fim);
+    virtual void operator()(const double wx, const double wy,
+			    const int x, const int y);
     /**
      * Sets the maximum kernel size.
      *
@@ -174,8 +177,25 @@ namespace gabor{
     double m_minf, m_maxf;
   };
   
+  /**
+   * Applies the gabor filter to a given pixel.
+   * 
+   * It filters the neighborhood around the given pixel and estimates the
+   * local frequency and stores the local frequency.
+   */
   class DemodPixel{
   public:
+    /**
+     * Constructor.
+     * 
+     * @param parm_I The fringe patern intensity
+     * @param parm_fr The real part of the gabor filter output
+     * @param parm_fi The imaginary part of the gabor filter output
+     * @param parm_fx The estimated local frequencies at x-direction
+     * @param parm_fy The estimated local frequencies at y-direction
+     * @param parm_visited Indicates with ones the already processed
+     * pixels
+     */
     DemodPixel(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
                cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat parm_visited);
 
@@ -185,6 +205,20 @@ namespace gabor{
     DemodPixel& setMinFq(const double w);
     DemodPixel& setMaxFq(const double w);
     DemodPixel& setIters(const int iters);
+    /**
+     * Sets if the estimated frequencies are combed.
+     * 
+     * @param flag True if the estimated frequencies will be combed,
+     * false otherwise. Default is true
+     */
+    DemodPixel& setCombFreqs(bool flag);
+    /**
+     * Sets the neighborhood comb size for combing the frequencies.
+     * 
+     * @param Nsize the comb size. Default is 7
+     */
+    DemodPixel& setCombNsize(const int Nsize);
+
   protected:
     cv::Mat fx, fy, visited;
     FilterNeighbor m_filter;
@@ -193,6 +227,10 @@ namespace gabor{
   private:
     /** Parameter of recursive filter */
     double m_tau;
+    /** Indicates if the frequencies are combed*/
+    bool m_combFreqs;
+    /** The neighborhood size of the combing function */
+    char m_combN;
 
     cv::Vec2d combFreq(cv::Vec2d freqs, const int i, const int j);
   };

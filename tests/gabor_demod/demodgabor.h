@@ -81,7 +81,7 @@ public:
   void reset();
 
   /**
-   * Sets the minimum local frequency to be processed.
+   * Sets the minimum local frequency to be processed by the scanner.
    *
    * This is a radial frequency, that is, it is the maximum frequency magnitud
    * that is going to be processed by the filter.
@@ -98,7 +98,8 @@ public:
   void removeDC();
 
   /**
-    Sets the number of iterations that the convolution is applied in each point.
+    Sets the number of iterations that the gabor filter is applied in each 
+    point.
 
     When the convolution is applied, the local frequencies are estimated.
     Given the nuew local frequencies, we can appliy the Gabor filter againg
@@ -118,11 +119,11 @@ public:
     */
   DemodGabor& setSeedIters(const int iters);
   /**
-    Setes the kernel size of the gabor filter.
+    Sets the kernel size of the gabor filter.
 
     Actually, this is the maximum size that the gabor filtar can have in both
     directions while it is adapted.
-    */
+  */
   DemodGabor& setKernelSize(const double size);
   DemodGabor& setMaxfq(const double w);
   DemodGabor& setMinfq(const double w);
