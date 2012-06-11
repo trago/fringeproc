@@ -1,9 +1,13 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#ifndef SWIG
+
 #include <opencv2/core/core.hpp>
 #include <list>
 #include <vector>
+
+#endif
 
 /**
  * Scans sequentially the matrix pixels folloging the magnitude of the gradient.
@@ -27,6 +31,7 @@ public:
    * Default constructor.
    */
   Scanner();
+#ifndef SWIG
   /**
    * Builds the scanner with the given differences in x- and y-direction.
    *
@@ -43,7 +48,7 @@ public:
    * @param pixel the starting pixel point
    */
   Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel);
-
+#endif
   /**
    * Determines the next pixel point in the sequence.
    *
@@ -56,7 +61,7 @@ public:
    * @return the actual pixel point
    */
   cv::Point getPosition();
-  /**
+   /**
    * Sets the starting pixel point.
    *
    * @param pixel the starting pixel point
@@ -120,25 +125,6 @@ private:
    */
   bool checkNeighbor(cv::Point pixel);
 
-};
-
-class CompPoints{
-public:
-  CompPoints(const cv::Mat_<float>& matu, const cv::Mat_<float>& matv)
-    :m_matu(matu), m_matv(matv){}
-
-  bool operator()(cv::Point p1, cv::Point p2){
-    double m1 = m_matu(p1.y,p1.x)*m_matu(p1.y,p1.x) +
-        m_matv(p1.y,p1.x)*m_matv(p1.y,p1.x);
-    double m2 = m_matu(p2.y,p1.x)*m_matu(p2.y,p2.x) +
-        m_matv(p2.y,p2.x)*m_matv(p2.y,p2.x);
-
-    return m1<=m2;
-  }
-
-private:
-  const cv::Mat_<float>& m_matu;
-  const cv::Mat_<float>& m_matv;
 };
 
 #endif // SCANNER_H

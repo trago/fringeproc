@@ -32,6 +32,10 @@ DemodGabor::DemodGabor()
   m_seedIters = 9;
   m_tau = 0.25;
   m_kernelSize = 7;
+  m_combSize=7;
+  m_combFreqs=true;
+  m_startPixel.x=0;
+  m_startPixel.y=0;
 }
 
 DemodGabor::DemodGabor(const cv::Mat I)
@@ -42,8 +46,8 @@ DemodGabor::DemodGabor(const cv::Mat I)
     I.convertTo(m_I, CV_64F);
   else
     m_I = I.clone();
-  m_fr.create(m_I.rows, m_I.cols);
-  m_fi.create(m_I.rows, m_I.cols);
+  m_fr = cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
+  m_fi = cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
   m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
   m_fy = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
   m_visited = cv::Mat_<uchar>::zeros(m_I.rows, m_I.cols);
@@ -54,6 +58,8 @@ DemodGabor::DemodGabor(const cv::Mat I)
   m_seedIters = 9;
   m_tau = 0.25;
   m_kernelSize = 7;
+  m_combSize=7;
+  m_combFreqs=true;
   m_startPixel.x=I.cols/2;
   m_startPixel.y=I.rows/2;
 }
@@ -118,9 +124,10 @@ void DemodGabor::run()
   gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
 
   demodN.setIters(m_iters).setKernelSize(m_kernelSize).
-         setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
+    setCombFreqs(m_combFreqs).setCombSize(m_combSize).
+    setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
   demodSeed.setIters(m_seedIters).setKernelSize(m_kernelSize).
-         setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
+    setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
 
   do{
     pixel=scan.getPosition();
@@ -144,9 +151,10 @@ bool DemodGabor::runInteractive(Scanner& scan)
   gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
   gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
   demodN.setIters(m_iters).setKernelSize(m_kernelSize).
-         setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
+    setCombFreqs(m_combFreqs).setCombSize(m_combSize).
+    setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
   demodSeed.setIters(m_seedIters).setKernelSize(m_kernelSize).
-         setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
+    setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
 
   pixel=scan.getPosition();
   const int i=pixel.y;
@@ -191,6 +199,15 @@ DemodGabor& DemodGabor::setTau(const double tau)
 {
   m_tau=tau;
   return *this;
+}
+
+DemodGabor& DemodGabor::setCombFreqs(const bool comb)
+{
+  m_combFreqs=comb;
+}
+DemodGabor& DemodGabor::setCombSize(const int size)
+{
+  m_combSize=size;
 }
 
 void DemodGabor::reset()

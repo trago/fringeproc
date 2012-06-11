@@ -187,6 +187,12 @@ bool Scanner::next(double fpow)
   return false;
 }
 
+void Scanner::setInitPosition(cv::Point pixel)
+{
+  m_pixel=pixel;
+  insertPixelToPath(m_pixel);
+}
+
 cv::Point2i Scanner::getPosition()
 {
   return m_pixel;

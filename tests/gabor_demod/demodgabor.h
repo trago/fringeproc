@@ -21,8 +21,10 @@
 #ifndef DEMODGABOR_H
 #define DEMODGABOR_H
 
+#ifndef SWIG
 #include <opencv2/core/core.hpp>
 #include "gabor_gears.h"
+#endif
 
 class Scanner;
 
@@ -44,6 +46,8 @@ public:
    *
    * @param I the image to process
    */
+
+#ifndef SWIG
   DemodGabor(const cv::Mat I);
 
   /**
@@ -71,6 +75,7 @@ public:
    * @return the image data
    */
   cv::Mat getInput();
+#endif
 
   /**
     Resets the internal state of the object.
@@ -129,6 +134,8 @@ public:
   DemodGabor& setMinfq(const double w);
   DemodGabor& setTau(const double tau);
   DemodGabor& setStartPixel(const cv::Point pixel);
+  DemodGabor& setCombFreqs(const bool comb);
+  DemodGabor& setCombSize(const int size);
   cv::Point getStartPixel();
 
 
@@ -157,6 +164,8 @@ private:
   double m_scanMinf;
   int m_iters;
   int m_seedIters;
+  int m_combSize;
+  bool m_combFreqs;
   double m_kernelSize;
   double m_maxfq;
   double m_minfq;
