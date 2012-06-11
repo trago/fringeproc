@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
         setMaxfq(M_PI/2).setMinfq(0.03).setTau(0.75).setSeedIters(11).
         setScanMinf(.5);
   gabor.setStartPixel(p);
+  gabor.setCombFreqs(true).setCombSize(5);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
   fr = gabor.getFr();

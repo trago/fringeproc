@@ -204,10 +204,12 @@ DemodGabor& DemodGabor::setTau(const double tau)
 DemodGabor& DemodGabor::setCombFreqs(const bool comb)
 {
   m_combFreqs=comb;
+  return *this;
 }
 DemodGabor& DemodGabor::setCombSize(const int size)
 {
   m_combSize=size;
+  return *this;
 }
 
 void DemodGabor::reset()

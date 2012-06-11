@@ -253,6 +253,8 @@ namespace gabor{
     DemodNeighborhood& setMaxFq(const double w);
     DemodNeighborhood& setTau(const double tau);
     DemodNeighborhood& setIters(const int iters);
+    DemodNeighborhood& setCombFreqs(bool flag);
+    DemodNeighborhood& setCombSize(int size);
     void operator()(const int i, const int j);
   protected:
     const cv::Mat_<uchar> visit;

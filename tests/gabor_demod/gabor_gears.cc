@@ -393,6 +393,7 @@ gabor::DemodPixel& gabor::DemodPixel::setMaxFq(const double w)
 gabor::DemodPixel& gabor::DemodPixel::setMinFq(const double w)
 {
   m_calcfreq.setMinFq(w);
+  return *this;
 }
 
 void gabor::DemodPixel::operator()(const int i, const int j)
@@ -424,11 +425,11 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
   for(int m=i-N/2; m<=i+N/2; m++)
     for(int n=j-N/2; n<=j+N/2; n++)
       if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-	if(visited.at<char>(m,n)){
-	  sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
-	  cont++;
-	  right+= (sum1>=0? 1:0);
-	}
+        if(visited.at<char>(m,n)){
+          sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
+          cont++;
+          right+= (sum1>=0? 1:0);
+        }
   float cp = (float)right/(float)cont;
   if((1-cp)>p){
     std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
@@ -452,11 +453,13 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 gabor::DemodPixel& gabor::DemodPixel::setCombFreqs(bool flag)
 {
   m_combFreqs=flag;
+  return *this;
 }
 
 gabor::DemodPixel& gabor::DemodPixel::setCombNsize(const int Nsize)
 {
   m_combN=Nsize;
+  return *this;
 }
 
 gabor::DemodSeed::DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
@@ -579,6 +582,17 @@ gabor::DemodNeighborhood& gabor::DemodNeighborhood::setIters(const int iters)
   return *this;
 }
 
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setCombFreqs(bool flag)
+{
+  m_demodPixel.setCombFreqs(flag);
+  return *this;
+}
+
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setCombSize(int size)
+{
+  m_demodPixel.setCombNsize(size);
+  return *this;
+}
 
 void gabor::DemodNeighborhood::operator()(const int i, const int j)
 {
