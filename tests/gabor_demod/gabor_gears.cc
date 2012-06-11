@@ -418,7 +418,7 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 				      const int i, const int j)
 {
   const int N = m_combN;
-  const float p=0.4;//Probabilidad de cambio
+  const float p=0.5;//Probabilidad de cambio
 
   int cont=0, right=0;
   double sum1=0;
@@ -431,21 +431,34 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
           right+= (sum1>=0? 1:0);
         }
   float cp = (float)right/(float)cont;
-  if((1-cp)>p){
+  if(cp<p){
     std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
     freqs[0]=-freqs[0];
     freqs[1]=-freqs[1];
 
     for(int m=i-N/2; m<=i+N/2; m++)
       for(int n=j-N/2; n<=j+N/2; n++)
-	if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-	  if(visited.at<char>(m,n)){
-	    sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
-	    if(sum1<0){
-	      fx.at<double>(m,n)=-fx.at<double>(m,n);
-	      fy.at<double>(m,n)=-fy.at<double>(m,n);
-	    }
-	  }
+        if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
+          if(visited.at<char>(m,n)){
+            sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
+            if(sum1<0){
+              fx.at<double>(m,n)=-fx.at<double>(m,n);
+              fy.at<double>(m,n)=-fy.at<double>(m,n);
+            }
+          }
+  }
+  else if(cp<1){
+    std::cout<<"Corregimos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
+    for(int m=i-N/2; m<=i+N/2; m++)
+      for(int n=j-N/2; n<=j+N/2; n++)
+        if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
+          if(visited.at<char>(m,n)){
+            sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
+            if(sum1<0){
+              fx.at<double>(m,n)=-fx.at<double>(m,n);
+              fy.at<double>(m,n)=-fy.at<double>(m,n);
+            }
+          }
   }
   return freqs;
 }

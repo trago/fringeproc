@@ -30,6 +30,11 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
     dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
+void combFreqs(cv::Mat_<double> u, cv::Mat_<double> v, int N)
+{
+
+}
+
 int main(int argc, char* argv[])
 {
   double wx= .7, wy=.7;
@@ -65,7 +70,7 @@ int main(int argc, char* argv[])
     I=cv::imread(argv[1], 0);
     I.convertTo(I, CV_64F);
     cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
-    cv::GaussianBlur(tmp, I, cv::Size(0,0), 2);
+    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1);
     cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
     I = I - tmp;
   }
@@ -83,16 +88,16 @@ int main(int argc, char* argv[])
 
   DemodGabor gabor(I);
   gabor.setIters(1).setKernelSize(7).
-        setMaxfq(M_PI/2).setMinfq(0.03).setTau(0.75).setSeedIters(11).
+        setMaxfq(M_PI/3).setMinfq(0.05).setTau(0.35).setSeedIters(11).
         setScanMinf(.5);
   gabor.setStartPixel(p);
-  gabor.setCombFreqs(true).setCombSize(5);
+  gabor.setCombFreqs(false).setCombSize(3);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.5);
+  scan.setFreqMin(.1);
   scan.updateFreqMin(true);
   cv::Point pixel;
 
