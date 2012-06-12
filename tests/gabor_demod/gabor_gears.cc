@@ -214,63 +214,18 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
 cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
                       const int x, const int y)
 {
+  const int N=9;
   cv::Vec2d freqs=0;
   int cont=0;
-  if(x-1>=0)
-    if(visited.at<char>(y,x-1)){
-      freqs[0]+=fx.at<double>(y,x-1);
-      freqs[1]+=fy.at<double>(y,x-1);
-      cont++;
-      //return freqs;
-    }
-  if(x+1<fx.cols)
-    if(visited.at<char>(y,x+1)){
-      freqs[0]+=fx.at<double>(y,x+1);
-      freqs[1]+=fy.at<double>(y,x+1);
-      cont++;
-      //return freqs;
-    }
-  if(y-1>=0)
-    if(visited.at<char>(y-1,x)){
-      freqs[0]+=fx.at<double>(y-1,x);
-      freqs[1]+=fy.at<double>(y-1,x);
-      cont++;
-      //return freqs;
-    }
-  if(y+1<fx.rows)
-    if(visited.at<char>(y+1,x)){
-      freqs[0]+=fx.at<double>(y+1,x);
-      freqs[1]+=fy.at<double>(y+1,x);
-      cont++;
-      //return freqs;
-    }
-  if(x-1>=0 && y-1>=0)
-    if(visited.at<char>(y-1,x-1)){
-      freqs[0]+=fx.at<double>(y-1,x-1);
-      freqs[1]+=fy.at<double>(y-1,x-1);
-      cont++;
-      //return freqs;
-    }
-  if(x+1<fx.cols && y-1>=0)
-    if(visited.at<char>(y-1,x+1)){
-      freqs[0]+=fx.at<double>(y-1,x+1);
-      freqs[1]+=fy.at<double>(y-1,x+1);
-      cont++;
-      //return freqs;
-    }
-  if(x+1<fx.cols && y+1<fx.rows)
-    if(visited.at<char>(y+1,x+1)){
-      freqs[0]+=fx.at<double>(y+1,x+1);
-      freqs[1]+=fy.at<double>(y+1,x+1);
-      cont++;
-      //return freqs;
-    }
-  if(x-1>=0 && y+1<fx.rows)
-    if(visited.at<char>(y+1,x-1)){
-      freqs[0]+=fx.at<double>(y+1,x-1);
-      freqs[1]+=fy.at<double>(y+1,x-1);
-      cont++;
-      //return freqs;
+
+  for(int i=y-N/2; i<=y+N/2; i++)
+    for(int j=x-N/2; j<=x+N/2; j++){
+      if(j>=0 && j<fx.cols && i>=0 && i<fx.rows)
+        if(visited.at<char>(i,j)){
+          freqs[0]+=fx.at<double>(i,j);
+          freqs[1]+=fy.at<double>(i,j);
+          cont++;
+        }
     }
 
   freqs[0]=cont>=0? freqs[0]/cont:0;
