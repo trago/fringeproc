@@ -356,17 +356,18 @@ void gabor::DemodPixel::operator()(const int i, const int j)
   cv::Vec2d freqs, freq;
 
   freqs= peak_freqXY(fx, fy, visited, j, i);
+  visited.at<char>(i,j)=1;
 
   for(int iter=0; iter<m_iters; iter++){
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
+    freq = (!m_calcfreq.changed())? freq:0.;
     freq = m_tau*freq + (1-m_tau)*freqs;
+    fx.at<double>(i,j)=freq[0];
+    fy.at<double>(i,j)=freq[1];
     if(m_combFreqs)
       freq = combFreq(freq,i,j);
   }
-  fx.at<double>(i,j)=freq[0];
-  fy.at<double>(i,j)=freq[1];
-  visited.at<char>(i,j)=1;
 }
 
 cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
@@ -472,7 +473,8 @@ cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
   double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
       fi.at<double>(y,x)*fi.at<double>(y,x);
 
-  if(magn<0.0001) magn=0.0001; //Evitar devision entre 0
+  if(magn<0.0001)
+    magn=0.0001; //Evitar devision entre 0
 
   freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 
@@ -482,20 +484,26 @@ cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
                        (fr.at<double>(y+1,x)-fr.at<double>(y,x));
 
   freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
+  m_changed=false;
 
   magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
-  if(magn<0.0001) magn=0.0001; //Evitar division entre 0
   if(magn < m_minf*m_minf){
     magn = m_minf/sqrt(magn);
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
+    m_changed=true;
   }
   else if(magn > m_maxf*m_maxf){
     magn = m_maxf/sqrt(magn);
     freqs[0]=freqs[0]*magn;
     freqs[1]=freqs[1]*magn;
+    m_changed=true;
   }
   return freqs;
+}
+bool gabor::CalcFreqXY::changed()
+{
+  return m_changed;
 }
 
 gabor::DemodNeighborhood::DemodNeighborhood(cv::Mat param_I, cv::Mat param_fr,

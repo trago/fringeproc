@@ -171,10 +171,12 @@ namespace gabor{
     CalcFreqXY& setMinFq(const double w);
     CalcFreqXY& setMaxFq(const double w);
     cv::Vec2d operator()(const int x, const int y);
+    bool changed();
   protected:
     const cv::Mat fr, fi;
   private:
     double m_minf, m_maxf;
+    bool m_changed;
   };
   
   /**
