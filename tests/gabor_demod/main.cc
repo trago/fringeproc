@@ -65,8 +65,8 @@ int main(int argc, char* argv[])
     I=cv::imread(argv[1], 0);
     I.convertTo(I, CV_64F);
     cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
-    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1.);
-    cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
+    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1.7);
+    cv::GaussianBlur(I, tmp, cv::Size(0,0), 17);
     I = I - tmp;
   }
 
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
   DemodGabor gabor(I);
   gabor.setIters(1).setKernelSize(7).
-        setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.37).setSeedIters(11).
+        setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.97).setSeedIters(11).
         setScanMinf(.5);
   gabor.setCombFreqs(false).setCombSize(3);
   gabor.setStartPixel(p);
