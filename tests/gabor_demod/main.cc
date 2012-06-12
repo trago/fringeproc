@@ -30,60 +30,6 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
     dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
-void combFreqs(cv::Mat_<double> fx, cv::Mat_<double> fy, int N)
-{
-  const float p=0.5;//Probabilidad de cambio
-  int cont, right;
-  cv::Vec2d freqs;
-  for(int i=0; i<fx.rows; i++)
-    for(int j=0; j<fx.cols; j++){
-      freqs[0]= fx(i,j);
-      freqs[1]= fy(i,j);
-      cont=0; right=0;
-      double sum1=0;
-
-      for(int m=i-N/2; m<=i+N/2; m++)
-        for(int n=j-N/2; n<=j+N/2; n++)
-          if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-            if(m!=i && n!=j){
-              sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
-              cont++;
-              right+= (sum1>=0? 1:0);
-            }
-      float cp = (float)right/(float)cont;
-      if(cp<p){
-        std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
-        freqs[0]=-freqs[0];
-        freqs[1]=-freqs[1];
-        for(int m=i-N/2; m<=i+N/2; m++)
-          for(int n=j-N/2; n<=j+N/2; n++)
-            if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-              if(m!=i && n!=j){
-                sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
-                if(sum1<0){
-                  fx(i,j)=-fx(i,j);
-                  fy(i,j)=-fy(i,j);
-                }
-              }
-        fx(i,j)=freqs[0];
-        fy(i,j)=freqs[1];
-      }
-      else if(cp<1){
-        std::cout<<"Corregimos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
-        for(int m=i-N/2; m<=i+N/2; m++)
-          for(int n=j-N/2; n<=j+N/2; n++)
-            if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-              if(m!=i && n!=j){
-                sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
-                if(sum1<0){
-                  fx(i,j)=-fx(i,j);
-                  fy(i,j)=-fy(i,j);
-                }
-              }
-      }
-    }
-}
-
 int main(int argc, char* argv[])
 {
   double wx= .7, wy=.7;
@@ -137,10 +83,10 @@ int main(int argc, char* argv[])
 
   DemodGabor gabor(I);
   gabor.setIters(1).setKernelSize(7).
-        setMaxfq(M_PI/3).setMinfq(0.05).setTau(0.35).setSeedIters(11).
+        setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.30).setSeedIters(11).
         setScanMinf(.5);
+  gabor.setCombFreqs(false).setCombSize(21);
   gabor.setStartPixel(p);
-  gabor.setCombFreqs(true).setCombSize(7);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
   fr = gabor.getFr();
@@ -181,7 +127,6 @@ int main(int argc, char* argv[])
   // Calculo de la fase de salida
   fase = atan2<double>(fi,fr);
   cv::magnitude(ffx, ffy, magn);
-  combFreqs(ffx, ffy, 3);
   //cv::threshold(ffx, magn, 0, 1, cv::THRESH_BINARY);
 
   cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
