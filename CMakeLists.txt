@@ -4,7 +4,7 @@ project(fringeproc)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_C_FLAGS_RELEASE "-fPIC -std=gnu99 -O2 -mfpmath=sse -msse2 -funroll-loops")
-set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O3 -mfpmath=sse -msse2 -funroll-loops")
+set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O2 -mfpmath=sse -msse2 -funroll-loops")
 set(CMAKE_C_FLAGS_DEBUG "-fPIC -std=gnu99 -ggdb3 -DBZ_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -ggdb3 -DBZ_DEBUG")
 

@@ -58,14 +58,14 @@ int main(int argc, char* argv[])
     I=cos<double>(phase);
 
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, 0.2);
+    cv::randn(noise, 0, 1.2);
     I=I+noise;
   }
   else{
     I=cv::imread(argv[1], 0);
     I.convertTo(I, CV_64F);
     cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
-    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1);
+    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1.);
     cv::GaussianBlur(I, tmp, cv::Size(0,0), 15);
     I = I - tmp;
   }
@@ -83,9 +83,9 @@ int main(int argc, char* argv[])
 
   DemodGabor gabor(I);
   gabor.setIters(1).setKernelSize(7).
-        setMaxfq(M_PI/2).setMinfq(0.03).setTau(0.3).setSeedIters(11).
+        setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.37).setSeedIters(11).
         setScanMinf(.5);
-  gabor.setCombFreqs(false).setCombSize(21);
+  gabor.setCombFreqs(false).setCombSize(3);
   gabor.setStartPixel(p);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
