@@ -367,7 +367,7 @@ gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
                               cv::Mat parm_fy, cv::Mat parm_visited)
 :m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
  fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15), 
- m_combFreqs(true), m_combN(7)
+  m_combFreqs(false), m_combN(7)
 {
   m_iters=1;
 }
@@ -418,7 +418,7 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 				      const int i, const int j)
 {
   const int N = m_combN;
-  const float p=0.5;//Probabilidad de cambio
+  const float p=0.3;//Probabilidad de cambio
 
   int cont=0, right=0;
   double sum1=0;

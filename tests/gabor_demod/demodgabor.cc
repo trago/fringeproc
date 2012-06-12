@@ -33,7 +33,7 @@ DemodGabor::DemodGabor()
   m_tau = 0.25;
   m_kernelSize = 7;
   m_combSize=7;
-  m_combFreqs=true;
+  m_combFreqs=false;
   m_startPixel.x=0;
   m_startPixel.y=0;
 }
@@ -59,7 +59,7 @@ DemodGabor::DemodGabor(const cv::Mat I)
   m_tau = 0.25;
   m_kernelSize = 7;
   m_combSize=7;
-  m_combFreqs=true;
+  m_combFreqs=false;
   m_startPixel.x=I.cols/2;
   m_startPixel.y=I.rows/2;
 }
