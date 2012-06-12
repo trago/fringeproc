@@ -100,9 +100,29 @@ cv::Point Scanner::findPixel()
 {
   cv::Point pixel;
   int &x=pixel.x, &y=pixel.y;
+  m_pixel.x=(m_pixel.x>=0 && m_pixel.x<m_visited.cols)? m_pixel.x:0;
+  m_pixel.y=(m_pixel.y>=0 && m_pixel.y<m_visited.rows)? m_pixel.y:0;
 
-  for(y=0; y<m_visited.rows; y++)
-    for(x=0; x<m_visited.cols; x++){
+  for(y=m_pixel.y; y<m_visited.rows; y++)
+    for(x=m_pixel.x; x<m_visited.cols; x++){
+      if(checkNeighbor(pixel)){
+        return pixel;
+      }
+    }
+  for(y=m_pixel.y; y>=0; y--)
+    for(x=m_pixel.x; x<m_visited.cols; x++){
+      if(checkNeighbor(pixel)){
+        return pixel;
+      }
+    }
+  for(y=m_pixel.y; y>=0; y--)
+    for(x=m_pixel.x; x>=0; x--){
+      if(checkNeighbor(pixel)){
+        return pixel;
+      }
+    }
+  for(y=m_pixel.y; y<m_visited.rows; y++)
+    for(x=m_pixel.x; x>=0; x--){
       if(checkNeighbor(pixel)){
         return pixel;
       }
