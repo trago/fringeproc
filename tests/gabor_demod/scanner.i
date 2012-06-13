@@ -14,7 +14,6 @@
  public:
   %apply (int DIM1, int DIM2, double* IN_ARRAY2) 
      {(int M1, int N1, double* dat1), (int M2, int N2, double* dat2)};
-  %apply cv::Point {cv::Point pixel};
 
   Scanner(int M1, int N1, double* dat1, 
 	  int M2, int N2, double* dat2){

@@ -9,8 +9,8 @@
       PyObject *pyX = PySequence_GetItem(obj, 0);
       PyObject *pyY = PySequence_GetItem(obj, 1);
       if(PyNumber_Check(pyX) && PyNumber_Check(pyY)){
-	point.x=PyInt_AsLong(pyX);
-	point.y=PyInt_AsLong(pyY);
+        point.x=PyInt_AsLong(pyX);
+        point.y=PyInt_AsLong(pyY);
       }
       else{
 	PyErr_SetString(PyExc_TypeError, 
@@ -38,5 +38,22 @@
   aux = PyInt_FromLong(($1).y);
   PyTuple_SetItem($result, 1, aux);
  }
+
+%typemap(typecheck) cv::Point{
+  PyObject* obj = $input;
+  if(PySequence_Check(obj))
+    if(PySequence_Size(obj)==2){
+      PyObject *pyX = PySequence_GetItem(obj, 0);
+      PyObject *pyY = PySequence_GetItem(obj, 1);
+      if(PyNumber_Check(pyX) && PyNumber_Check(pyY))
+        $1 = 1;
+      else
+        $1 =0;
+    }
+    else
+      $1=0;
+  else
+    $1=0;
+}
 
 #endif
