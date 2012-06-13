@@ -2,6 +2,39 @@
 #include <cmath>
 #include <opencv2/imgproc/imgproc.hpp>
 
+void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
+{
+  if((I.depth()!=CV_32F || I.depth()!=CV_64F) && I.channels()!=1){
+    cv::Exception e(1000, "The matrix must be float or double with channel=1",
+                    "parabola", std::string(__FILE__), __LINE__);
+    throw(e);
+  }
+  dx.create(I.rows, I.cols, I.type());
+  dy.create(I.rows, I.cols, I.type());
+
+  for(int i=0; i<I.rows-1; i++)
+    for(int j=0; j<I.cols-1; j++){
+      if(I.depth()==CV_32F){
+	dx.at<float>(i,j) = I.at<float>(i,j+1)-I.at<float>(i,j);
+	dy.at<float>(i,j) = I.at<float>(i+1,j)-I.at<float>(i,j);
+      }
+      else{
+	dx.at<double>(i,j) = I.at<double>(i,j+1)-I.at<double>(i,j);
+	dy.at<double>(i,j) = I.at<double>(i+1,j)-I.at<double>(i,j);
+      }
+    }
+  for(int i=0; i<I.rows; i++)
+    if(I.depth()==CV_32F)
+      dy.at<float>(i,I.cols-1)=dy.at<float>(i,I.cols-2);
+    else
+      dy.at<double>(i,I.cols-1)=dy.at<double>(i,I.cols-2);
+  for(int i=0; i<I.cols; i++)
+    if(I.depth()==CV_32F)
+      dx.at<float>(I.rows-1,i)=dx.at<float>(I.rows-2,i);
+    else
+      dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
+}
+
 void parabola(cv::Mat mat, float A) throw(cv::Exception)
 {
   if((mat.depth()!=CV_32F || mat.depth()!=CV_64F) && mat.channels()!=1){

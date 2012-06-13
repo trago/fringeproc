@@ -1,4 +1,4 @@
-#include <imcore/seguidor.h>
+#include <imcore/scanner.h>
 #include <utils/utils.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -83,30 +83,37 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
 {
   const int M=wphase.rows, N=wphase.cols;
   cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
-  cv::Mat path;
+  cv::Mat path, dx, dy;
 
   if(wphase.type()==CV_32F)
     path = sin<float>(wphase);
   else
     sin<double>(wphase).convertTo(path, CV_32F);
 
-  if(smooth_path>0)
-    cv::GaussianBlur(path, path, cv::Size(0,0), smooth_path, smooth_path);
+  if(smooth_path>0){
+    gradient(path, dx, dy);
+    cv::GaussianBlur(dx, dx, cv::Size(0,0), smooth_path, smooth_path);
+    cv::GaussianBlur(dy, dy, cv::Size(0,0), smooth_path, smooth_path);
+  }
 
-  Seguidor scan(path, 28); //Discretizes the dynamic rango in 128 levels
+  cv::Point pixel;
+  pixel.x = N/2;
+  pixel.y = M/2;
+  Scanner scan(dx, dy, pixel); //Discretizes the dynamic rango in 128 levels
   int i,j, iter=0;
   if(wphase.type()==CV_32F)
     do{
-      i=scan.get_r();
-      j=scan.get_c();
+      pixel = scan.getPosition();
+      i=pixel.y;
+      j=pixel.x;
       sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
-    }while(scan.siguiente());
+    }while(scan.next());
   else
     do{
-      i=scan.get_r();
-      j=scan.get_c();
+      i=pixel.y;
+      j=pixel.x;
       dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
-    }while(scan.siguiente());
+    }while(scan.next());
 
 }
 
@@ -136,7 +143,7 @@ int main(int argc, char* argv[])
   cv::Mat wphase;
   cv::Mat uphase;
   cv::Mat visited;
-  cv::Mat path;
+  cv::Mat path, dx, dy;
 
   if(argc != 5){
     cout<<"Phase unwrapping method." <<endl
@@ -158,29 +165,35 @@ int main(int argc, char* argv[])
   float tao = atof(argv[2]);
   float sigma = atof(argv[3]);
   int N = atoi(argv[4]);
-  wphase.create(image.rows, image.cols, CV_32F);
-  image.convertTo(wphase, CV_32F);
+  wphase.create(image.rows, image.cols, CV_64F);
+  image.convertTo(wphase, CV_64F);
   cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
   visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
-  uphase = cv::Mat::zeros(image.rows, image.cols, CV_32F);
-  path = sin<float>(wphase);
-  cv::GaussianBlur(path, path, cv::Size(0,0), sigma, sigma);
+  uphase = cv::Mat::zeros(image.rows, image.cols, CV_64F);
+  path = sin<double>(wphase);
+  gradient(path, dx, dy);
+  cv::GaussianBlur(dx, dx, cv::Size(0,0), sigma, sigma);
+  cv::GaussianBlur(dy, dy, cv::Size(0,0), sigma, sigma);
 
   //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
-  Seguidor scan(path, 15);
+  cv::Point pixel;
+  pixel.x=wphase.cols/2;
+  pixel.y=wphase.rows/2;
+  Scanner scan(dx, dy, pixel);
   int i,j, iter=0;
   do{
-    i=scan.get_r();
-    j=scan.get_c();
-    sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, N);
+    pixel=scan.getPosition();
+    i=pixel.y;
+    j=pixel.x;
+    dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, N);
     //uphase.at<float>(i,j)=10;
     if(iter++ % 9000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
     }
-  }while(scan.siguiente());
+  }while(scan.next());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
 
   cv::namedWindow("phase");
@@ -188,7 +201,7 @@ int main(int argc, char* argv[])
   cv::namedWindow("path");
   imshow("phase", uphase);
   imshow("wphase", wphase);
-  imshow("path", cos<float>(uphase));
+  imshow("path", cos<double>(uphase));
 
   cv::waitKey();
   return 0;

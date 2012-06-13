@@ -1,34 +1,9 @@
+#include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <imcore/seguidor.h>
-#include "scanner.h"
+#include <imcore/scanner.h>
 #include <utils/utils.h>
-#include <iostream>
-#include "gabor_gears.h"
-#include "demodgabor.h"
-
-/**
- * Calculates the gradient differences.
- *
- * @param I is the image.
- * @param dx [output] the differences along x-direction (columns)
- * @param dy [output] the differences along y-direction (rows)
- */
-void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
-{
-  dx.create(I.rows, I.cols, I.type());
-  dy.create(I.rows, I.cols, I.type());
-
-  for(int i=0; i<I.rows-1; i++)
-    for(int j=0; j<I.cols-1; j++){
-      dx.at<double>(i,j) = I.at<double>(i,j+1)-I.at<double>(i,j);
-      dy.at<double>(i,j) = I.at<double>(i+1,j)-I.at<double>(i,j);
-    }
-  for(int i=0; i<I.rows; i++)
-    dy.at<double>(i,I.cols-1)=dy.at<double>(i,I.cols-2);
-  for(int i=0; i<I.cols; i++)
-    dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
-}
+#include <imcore/demodgabor.h>
 
 int main(int argc, char* argv[])
 {

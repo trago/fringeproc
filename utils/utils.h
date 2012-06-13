@@ -73,6 +73,15 @@ cv::Mat ramp(float wx, float wy, const int M, const int N);
 cv::Mat speckle_peaks(const int M, const int N, const float magn,
                       const int speckle_size);
 
+/**
+ * Calculates the gradient differences.
+ *
+ * @param I is the image.
+ * @param dx [output] the differences along x-direction (columns)
+ * @param dy [output] the differences along y-direction (rows)
+ */
+void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy);
+
 cv::Mat wphase(const cv::Mat p);
 cv::Mat mapRange(const cv::Mat mat, float a, float b);
 
