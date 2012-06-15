@@ -136,6 +136,23 @@ void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
     unwrap2D_engine<double>(wphase, uphase, tao, smooth_path, N);
 }
 
+void takeGradient(cv::Mat_<double> p, cv::Mat_<double> dx,
+                  cv::Mat_<double> dy, cv::Point pixel)
+{
+  for(int i=pixel.y-1; i<=pixel.y+1; i++)
+    for(int j=pixel.x-1; j<=pixel.x+1; j++){
+      if(i>=1 && i<p.rows && j>=0 && j<p.cols)
+        dy(i,j)=p(i,j)-p(i-1,j);
+      if(j>=1 && j<p.cols && i>=0 && i<p.rows)
+        dx(i,j)=p(i,j)-p(i,j-1);
+      if(j==0 && j<p.cols && i>=0 && i<p.rows)
+        dx(i,j)=p(i,j+1)-p(i,j);
+      if(i==0 && i<p.rows && j>=0 && j<p.cols)
+        dy(i,j)=p(i+1,j)-p(i,j);
+    }
+
+}
+
 int main(int argc, char* argv[])
 {
   using namespace std;
@@ -170,17 +187,18 @@ int main(int argc, char* argv[])
   cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
   visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
   uphase = cv::Mat::zeros(image.rows, image.cols, CV_64F);
+  dx = cv::Mat::zeros(image.rows, image.cols, CV_64F);
+  dy = cv::Mat::zeros(image.rows, image.cols, CV_64F);
   path = sin<double>(wphase);
+  cv::GaussianBlur(path, path, cv::Size(0,0), sigma);
   gradient(path, dx, dy);
-  cv::GaussianBlur(dx, dx, cv::Size(0,0), sigma, sigma);
-  cv::GaussianBlur(dy, dy, cv::Size(0,0), sigma, sigma);
 
   //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
   cv::Point pixel;
-  pixel.x=wphase.cols/2;
-  pixel.y=wphase.rows/2;
+  pixel.x=wphase.cols-20;
+  pixel.y=wphase.rows-20;
   Scanner scan(dx, dy, pixel);
   int i,j, iter=0;
   do{
@@ -202,6 +220,8 @@ int main(int argc, char* argv[])
   imshow("phase", uphase);
   imshow("wphase", wphase);
   imshow("path", cos<double>(uphase));
+  imshow("dx", dx);
+  imshow("dy", dy);
 
   cv::waitKey();
   return 0;
