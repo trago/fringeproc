@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from ui_mainwin import Ui_UnwrapGUI
+from unwrapimage import UnwrapImage
 from PySide import QtCore, QtGui
+import numpy as np
+import cv2
 
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   def __init__(self, parent=None):
@@ -16,10 +19,26 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self.mnuFileQuit.triggered.connect(self._onQuit)
     self.mnuFileSave.triggered.connect(self._onSave)
     
+    self._image = None # Los datos de la imagen que se abrio
+    
     
   def _onOpen(self):
-    pass
-  
+    fileFilters = ["Image files (*.png *.jpg *.tif *.bmp)",
+                   "Flt files (*.flt)"]
+    fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
+                                              QtCore.QDir.currentPath(),
+                                              fileFilters[0]+';;'+fileFilters[1])
+    if(fname[0]!=''):
+      pass
+    
+  def _openImage(self, fname):
+    image = cv2.imread(fname,0)
+    if(image.size!=0):
+      qimage = UnwrapImage(image)
+      self._image = qimage
+    else:
+      self._image = None
+      
   def _onOpenMask(self):
     pass
   
