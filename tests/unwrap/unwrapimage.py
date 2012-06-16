@@ -4,6 +4,7 @@ import numpy as np
 class UnwrapImage(QImage):
   def __init__(self, np_array):
     self.array = np_array.copy()
+    self.mdata = np_array
     self._data = None
     self._fromC1(self.array)
     

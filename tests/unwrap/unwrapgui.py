@@ -89,7 +89,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   def _onImageCursorOver(self, pos):
     x = int(pos.x())
     y = int(pos.y())
-    text = "(" + str(x) + ", " + str(y) + ") = " + str(self._image.array[y,x])
+    text = "(" + str(x) + ", " + str(y) + ") = " + str(self._image.mdata[y,x])
     stBar = self.statusBar()
     stBar.showMessage(text)
     
