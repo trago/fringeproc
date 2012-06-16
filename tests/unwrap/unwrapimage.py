@@ -15,7 +15,7 @@ class UnwrapImage(QImage):
       if(a==0 and b==1):
         array=array*255
       else:
-        array = 255*(b-array)/(b-a)
+        array = 255*(array-a)/(b-a)
 
     array = array.astype(np.uint32)
     h,w = array.shape
@@ -27,7 +27,4 @@ class UnwrapImage(QImage):
     self._data = data
     
     super(UnwrapImage, self).__init__(data, w, h, self.Format_RGB32)
-    
-  def getArray(self):
-    return self._array/255.0
     

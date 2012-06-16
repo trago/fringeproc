@@ -75,7 +75,27 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
       self._image = None
       
   def _onOpenMask(self):
-    pass
+    fileFilters = "Image files (*.png *.jpg *.tif *.bmp)"
+    fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
+                                              QtCore.QDir.currentPath(),
+                                              fileFilters)
+    if(fname[0]!=''):
+      image = self._image
+      self._openImage(fname[0])
+      if self._image != None:
+        mask = self._image.mdata/255
+        data = image.mdata*mask
+        self._image = UnwrapImage(data)
+        if len(self._scene.items())!=0:
+          self._scene = QtGui.QGraphicsScene()
+          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+          pitem.setMoveEventHandler(self._onImageCursorOver)
+          self._scene.addItem(pitem)
+          self.graphicsView.setScene(self._scene)
+        else:
+          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+          pitem.setMoveEventHandler(self._onImageCursorOver)
+          self._scene.addItem(pitem)
   
   def _onClose(self):
     pass
