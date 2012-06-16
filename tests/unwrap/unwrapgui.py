@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ui_mainwin import Ui_UnwrapGUI
 from unwrapimage import UnwrapImage
+from unwrappixmapitem import UnwrapPixmapItem
 from PySide import QtCore, QtGui
 from PySide.QtCore import Qt
 import numpy as np
@@ -38,11 +39,12 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
       if self._image != None:
         if len(self._scene.items())!=0:
           self._scene = QtGui.QGraphicsScene()
-          self._scene.addPixmap(QtGui.QPixmap.fromImage(self._image))
+          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+          self._scene.addItem(pitem)
           self.graphicsView.setScene(self._scene)
         else:
-          self._scene.addPixmap(QtGui.QPixmap.fromImage(self._image))
-          
+          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+          self._scene.addItem(pitem)
 
     
   def _openImage(self, fname):
@@ -81,3 +83,6 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   
   def _onQuit(self):
     self.close()
+    
+  def _onImageCursorOver():
+    pass
