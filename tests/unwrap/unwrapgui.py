@@ -2,6 +2,7 @@
 from ui_mainwin import Ui_UnwrapGUI
 from unwrapimage import UnwrapImage
 from PySide import QtCore, QtGui
+from PySide.QtCore import Qt
 import numpy as np
 import cv2
 
@@ -29,13 +30,43 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
                                               QtCore.QDir.currentPath(),
                                               fileFilters[0]+';;'+fileFilters[1])
     if(fname[0]!=''):
-      pass
+      if(fname[1]==fileFilters[0]):
+        self._openImage(fname[0])
+      elif fname[1]==fileFilters[1]:
+        self._openFlt(fname[0])
+        
+      if self._image != None:
+        if len(self._scene.items())!=0:
+          self._scene = QtGui.QGraphicsScene()
+          self._scene.addPixmap(QtGui.QPixmap.fromImage(self._image))
+          self.graphicsView.setScene(self._scene)
+        else:
+          self._scene.addPixmap(QtGui.QPixmap.fromImage(self._image))
+          
+
     
   def _openImage(self, fname):
+    self.setCursor(Qt.BusyCursor)    
     image = cv2.imread(fname,0)
+    self.setCursor(Qt.ArrowCursor)
+
     if(image.size!=0):
       qimage = UnwrapImage(image)
       self._image = qimage
+    else:
+      self._image = None
+  
+  def _openFlt(self, fname):
+    self.setCursor(Qt.BusyCursor)
+    image = np.loadtxt(fname)
+    self.setCursor(Qt.ArrowCursor)
+
+    if(image !=None):
+      M,N=(int(image[0]), int(image[1]))
+      image = image[2:image.shape[0]]
+      image = image.reshape((M,N))
+      
+      self._image = UnwrapImage(image)
     else:
       self._image = None
       
