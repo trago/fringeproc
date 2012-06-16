@@ -3,9 +3,9 @@ import numpy as np
 
 class UnwrapImage(QImage):
   def __init__(self, np_array):
-    self._array = np_array.copy()
+    self.array = np_array.copy()
     self._data = None
-    self._fromC1(self._array)
+    self._fromC1(self.array)
     
   def _fromC1(self, array):
     if(array.dtype == np.float32 or array.dtype == np.float64):
@@ -22,7 +22,7 @@ class UnwrapImage(QImage):
     (rgbarray[:,:,0], rgbarray[:,:,1], rgbarray[:,:,2]) = (array, array, array)
     data = (255 << 24 | rgbarray[:,:,0] << 16 
             | rgbarray[:,:,1] << 8 | rgbarray[:,:,2])
-    self._array = array
+    self.array = array
     self._data = data
     
     super(UnwrapImage, self).__init__(data, w, h, self.Format_RGB32)

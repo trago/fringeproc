@@ -40,10 +40,12 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         if len(self._scene.items())!=0:
           self._scene = QtGui.QGraphicsScene()
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+          pitem.setMoveEventHandler(self._onImageCursorOver)
           self._scene.addItem(pitem)
           self.graphicsView.setScene(self._scene)
         else:
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+          pitem.setMoveEventHandler(self._onImageCursorOver)
           self._scene.addItem(pitem)
 
     
@@ -84,5 +86,10 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   def _onQuit(self):
     self.close()
     
-  def _onImageCursorOver():
-    pass
+  def _onImageCursorOver(self, pos):
+    x = int(pos.x())
+    y = int(pos.y())
+    text = "(" + str(x) + ", " + str(y) + ") = " + str(self._image.array[y,x])
+    stBar = self.statusBar()
+    stBar.showMessage(text)
+    
