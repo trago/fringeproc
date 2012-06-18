@@ -24,6 +24,7 @@ public:
   cv::Mat getOutput();
   cv::Mat getInput();
   void setPixel(cv::Point pixel);
+  void processPixel(cv::Point pixel);
 
 private:
   cv::Mat_<char> _visited;

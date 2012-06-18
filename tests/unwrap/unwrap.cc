@@ -159,9 +159,17 @@ bool Unwrap::runInteractive()
   _pixel = _scanner->getPosition();
   int i= _pixel.y, j=_pixel.x;
   dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
+  _visited(i,j)=1;
 
   return _scanner->next();
 }
+
+void Unwrap::processPixel(cv::Point pixel)
+{
+  int i=pixel.y, j=pixel.x;
+  dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
+}
+
 
 void Unwrap::setPixel(cv::Point pixel)
 {
