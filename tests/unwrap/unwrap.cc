@@ -148,17 +148,32 @@ void Unwrap::run()
 bool Unwrap::runInteractive()
 {
   cv::Mat_<double> dx, dy;
-  cv::Mat path = cos<double>(_wphase);
-  cv::GaussianBlur(path, path, cv::Size(0,0), _smooth);
-  gradient(path, dx, dy);
 
-  if (_scanner==NULL) 
+  if (_scanner==NULL) {
+    cv::Mat path = cos<double>(_wphase);
+    cv::GaussianBlur(path, path, cv::Size(0,0), _smooth, _smooth);
+    gradient(path, dx, dy);
     _scanner = new Scanner(dx, dy, _pixel);
+  }
 
   _pixel = _scanner->getPosition();
   int i= _pixel.y, j=_pixel.x;
   dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
 
   return _scanner->next();
+}
+
+void Unwrap::setPixel(cv::Point pixel)
+{
+  _pixel=pixel;
+}
+
+cv::Mat Unwrap::getOutput()
+{
+  return _uphase;
+}
+cv::Mat Unwrap::getInput()
+{
+  return _wphase;
 }
 

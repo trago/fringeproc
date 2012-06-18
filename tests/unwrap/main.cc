@@ -2,7 +2,7 @@
 #include <utils/utils.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "unwrap_gears.h"
+#include "unwrap.h"
 #include <iostream>
 #include <cstdlib>
 
@@ -15,126 +15,6 @@ void imshow(const char* wn, cv::Mat im)
   cv::imshow(wn, tmp);
 }
 
-inline
-void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-                         cv::Mat& pp, cv::Mat& visited, float tao, const int N)
-{
-  int low_i = (ii-N/2)>=0? (ii-N/2):0;
-  int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
-  int low_j = (jj-N/2)>=0? (jj-N/2):0;
-  int hig_j = (jj+N/2)<(wp.cols-1)? (jj+N/2):(wp.cols-1);
-
-  for(int i=low_i; i<hig_i; i++){
-    if(i%2==0)
-      for(int j=low_j; j<hig_j; j++){
-        pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-                                           wp.ptr<float>(),
-                                           pp.ptr<float>(),
-                                           visited.ptr<uchar>(),
-                                           tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
-      }
-    else
-      for(int j=hig_j-1; j>=low_j; j--){
-        pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-                                        wp.ptr<float>(),
-                                        pp.ptr<float>(),
-                                        visited.ptr<uchar>(),
-                                        tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
-      }
-  }
-}
-
-inline
-void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-                         cv::Mat& pp, cv::Mat& visited, double tao, const int N)
-{
-  int low_i = (ii-N/2)>=0? (ii-N/2):0;
-  int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
-  int low_j = (jj-N/2)>=0? (jj-N/2):0;
-  int hig_j = (jj+N/2)<(wp.cols-1)? (jj+N/2):(wp.cols-1);
-
-  for(int i=low_i; i<hig_i; i++){
-    if(i%2==0)
-      for(int j=low_j; j<hig_j; j++){
-        pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-                                           wp.ptr<double>(),
-                                           pp.ptr<double>(),
-                                           visited.ptr<uchar>(),
-                                           tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
-      }
-    else
-      for(int j=hig_j-1; j>=low_j; j--){
-        pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-                                        wp.ptr<double>(),
-                                        pp.ptr<double>(),
-                                        visited.ptr<uchar>(),
-                                        tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
-      }
-  }
-}
-
-template<typename T>
-void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
-                double smooth_path, int n)
-{
-  const int M=wphase.rows, N=wphase.cols;
-  cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
-  cv::Mat path, dx, dy;
-
-  if(wphase.type()==CV_32F)
-    path = sin<float>(wphase);
-  else
-    sin<double>(wphase).convertTo(path, CV_32F);
-
-  if(smooth_path>0){
-    gradient(path, dx, dy);
-    cv::GaussianBlur(dx, dx, cv::Size(0,0), smooth_path, smooth_path);
-    cv::GaussianBlur(dy, dy, cv::Size(0,0), smooth_path, smooth_path);
-  }
-
-  cv::Point pixel;
-  pixel.x = N/2;
-  pixel.y = M/2;
-  Scanner scan(dx, dy, pixel); //Discretizes the dynamic rango in 128 levels
-  int i,j, iter=0;
-  if(wphase.type()==CV_32F)
-    do{
-      pixel = scan.getPosition();
-      i=pixel.y;
-      j=pixel.x;
-      sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
-    }while(scan.next());
-  else
-    do{
-      i=pixel.y;
-      j=pixel.x;
-      dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
-    }while(scan.next());
-
-}
-
-void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
-              double smooth_path=0.0, int N=7) throw(cv::Exception)
-{
-  if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
-    cv::Exception e(1000,
-                    "Type not supported, must be single or double precision.",
-                    "unwrap2D", std::string(__FILE__), __LINE__);
-    throw(e);
-  }
-  if(uphase.rows!=wphase.rows && uphase.cols!=wphase.cols &&
-     uphase.type()!=wphase.type())
-    uphase.create(wphase.rows, wphase.cols, wphase.type());
-
-  if(wphase.type()==CV_32F)
-    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path, N);
-  else
-    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path, N);
-}
 
 void takeGradient(cv::Mat_<double> p, cv::Mat_<double> dx,
                   cv::Mat_<double> dy, cv::Point pixel)
@@ -197,21 +77,20 @@ int main(int argc, char* argv[])
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
   cv::Point pixel;
-  pixel.x=wphase.cols-20;
-  pixel.y=wphase.rows-20;
-  Scanner scan(dx, dy, pixel);
-  int i,j, iter=0;
+  pixel.x=362;
+  pixel.y=201;
+  Unwrap unwrap(wphase, tao, sigma, N);
+  unwrap.setPixel(pixel);
+  uphase = unwrap.getOutput();
+
+  int iter=0;
+  unwrap.runInteractive();
   do{
-    pixel=scan.getPosition();
-    i=pixel.y;
-    j=pixel.x;
-    dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, N);
-    //uphase.at<float>(i,j)=10;
     if(iter++ % 9000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
     }
-  }while(scan.next());
+  }while(unwrap.runInteractive());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
 
   cv::namedWindow("phase");
