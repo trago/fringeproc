@@ -1,4 +1,5 @@
 #include <utils/utils.h>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "unwrap.h"
 #include "unwrap_gears.h"
 
@@ -78,12 +79,11 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
   if(wphase.type()==CV_32F)
     path = sin<float>(wphase);
   else
-    sin<double>(wphase).convertTo(path, CV_32F);
+    path = sin<double>(wphase);
 
   if(smooth_path>0){
+    cv::GaussianBlur(path, path, cv::Size(0,0), smooth_path, smooth_path);
     gradient(path, dx, dy);
-    cv::GaussianBlur(dx, dx, cv::Size(0,0), smooth_path, smooth_path);
-    cv::GaussianBlur(dy, dy, cv::Size(0,0), smooth_path, smooth_path);
   }
 
   Scanner scan(dx, dy, pixel); 
@@ -105,7 +105,7 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
 }
 
 void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
-              double smooth_path=0.0, int N=7) throw(cv::Exception)
+              double smooth_path, int N, cv::Point pixel) throw(cv::Exception)
 {
   if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
     cv::Exception e(1000,
@@ -118,9 +118,9 @@ void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
     uphase.create(wphase.rows, wphase.cols, wphase.type());
 
   if(wphase.type()==CV_32F)
-    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path, N);
+    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path, N, pixel);
   else
-    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path, N);
+    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path, N, pixel);
 }
 
 Unwrap::Unwrap(cv::Mat_<double> wphase, double tau, double smooth, int N)
@@ -142,22 +142,22 @@ Unwrap::~Unwrap()
 
 void Unwrap::run()
 {
-  unwrap2D_engine(_wphase, _uphase, _tau, _smooth, _N, _pixel);
+  unwrap2D(_wphase, _uphase, _tau, _smooth, _N, _pixel);
 }
 
 bool Unwrap::runInteractive()
 {
   cv::Mat_<double> dx, dy;
-  path = cos<double>(_wphase);
+  cv::Mat path = cos<double>(_wphase);
   cv::GaussianBlur(path, path, cv::Size(0,0), _smooth);
   gradient(path, dx, dy);
 
   if (_scanner==NULL) 
-    _scanner = new Scanner(dx, dy, pixel);
+    _scanner = new Scanner(dx, dy, _pixel);
 
-  pixel = _scanner->getPosition();
-  int i= pixel.y, j=pixel.x;
-  dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tao, _N);
+  _pixel = _scanner->getPosition();
+  int i= _pixel.y, j=_pixel.x;
+  dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
 
   return _scanner->next();
 }
