@@ -121,7 +121,6 @@ int main(int argc, char* argv[])
   cv::normalize(magn,tmp,1,0,cv::NORM_MINMAX);
   cv::imshow("magn", tmp);
 
-
   cv::waitKey(0);
 
   return 0;

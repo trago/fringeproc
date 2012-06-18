@@ -76,7 +76,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
       
   def _onOpenMask(self):
     fileFilters = "Image files (*.png *.jpg *.tif *.bmp)"
-    fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
+    fname = QtGui.QFileDialog.getOpenFileName(self, "Open mask image", 
                                               QtCore.QDir.currentPath(),
                                               fileFilters)
     if(fname[0]!=''):
@@ -98,10 +98,14 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
           self._scene.addItem(pitem)
   
   def _onClose(self):
-    pass
-  
+    pass  
   def _onSave(self):
-    pass
+    fileFilters = "Image files (*.png *.jpg *.tif)"
+    fname = QtGui.QFileDialog.getSaveFileName(self, "Save data", 
+                                              QtCore.QDir.currentPath(),
+                                              fileFilters)
+    if(fname[0]!=''):
+      self._image.save(fname[0])
   
   def _onQuit(self):
     self.close()
