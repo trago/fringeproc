@@ -1,5 +1,6 @@
 set(unwrap_SRC main.cc
-    unwrap_gears.c)
+    unwrap_gears.c
+    unwrap.cc)
 set(unwrap_LIBS imcore utils ${OpenCV_LIBS})
 
 add_executable(unwrap ${unwrap_SRC})
