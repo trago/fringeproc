@@ -1,5 +1,5 @@
 # The imcore library
-include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS})
 
 set(imcore_SRCS
   seguidor.cc

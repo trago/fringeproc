@@ -8,5 +8,5 @@ set(gabor_SWIG fringeproc.i
 
 SET_SOURCE_FILES_PROPERTIES(${gabor_SWIG} PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(${gabor_SWIG} PROPERTIES SWIG_FLAGS "-includeall")
-SWIG_ADD_MODULE(gabor python ${gabor_SWIG} ${gabor_SRC})
-SWIG_LINK_LIBRARIES(gabor ${PYTHON_LIBRARIES} ${gabor_LIBS})
+SWIG_ADD_MODULE(fringeproc python ${gabor_SWIG} ${gabor_SRC})
+SWIG_LINK_LIBRARIES(fringeproc ${PYTHON_LIBRARIES} ${gabor_LIBS})

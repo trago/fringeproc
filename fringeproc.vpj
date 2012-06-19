@@ -204,10 +204,20 @@
     <Folder
       Name="improc"
       Filters="">
-      <F N="imcore/demodgabor.h"/>
-      <F N="imcore/gabor_gears.h"/>
-      <F N="imcore/scanner.h"/>
-      <F N="imcore/seguidor.h"/>
+      <Folder
+        Name="headers"
+        Filters="">
+        <F N="imcore/demodgabor.h"/>
+        <F N="imcore/gabor_gears.h"/>
+        <F N="imcore/scanner.h"/>
+        <F N="imcore/unwrap.h"/>
+        <F N="imcore/unwrap_gears.h"/>
+      </Folder>
+      <F N="imcore/demodgabor.cc"/>
+      <F N="imcore/gabor_gears.cc"/>
+      <F N="imcore/scanner.cc"/>
+      <F N="imcore/seguidor.cc"/>
+      <F N="imcore/unwrap.cc"/>
     </Folder>
     <Folder
       Name="tests"
@@ -224,8 +234,6 @@
         <F N="tests/unwrap/unwrap.cc"/>
         <F N="tests/unwrap/unwrap.h"/>
         <F N="tests/unwrap/unwrap.py"/>
-        <F N="tests/unwrap/unwrap_gears.c"/>
-        <F N="tests/unwrap/unwrap_gears.h"/>
       </Folder>
     </Folder>
     <Folder
