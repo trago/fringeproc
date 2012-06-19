@@ -10,7 +10,7 @@ set(imcore_SRCS
   unwrap.cc
   )
 
-add_library(imcore SHARED ${imcore_SRCS})
+add_library(imcore STATIC ${imcore_SRCS})
 target_link_libraries(imcore ${OpenCV_LIBS})
 
 
