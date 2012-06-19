@@ -237,5 +237,6 @@
     <Folder
       Name="python"
       Filters=""/>
+    <F N="python/imcore/unwrap.i"/>
   </Files>
 </Project>

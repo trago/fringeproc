@@ -21,8 +21,11 @@ public:
   void run();
   bool runInteractive();
   
+#ifndef SWIG
   cv::Mat getOutput();
   cv::Mat getInput();
+#endif
+
   void setPixel(cv::Point pixel);
   void processPixel(cv::Point pixel);
 

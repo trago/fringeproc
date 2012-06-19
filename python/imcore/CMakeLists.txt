@@ -3,7 +3,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 SET(CMAKE_SWIG_FLAGS "")
-set(gabor_SWIG gabor.i
+set(gabor_SWIG fringeproc.i
 )
 
 SET_SOURCE_FILES_PROPERTIES(${gabor_SWIG} PROPERTIES CPLUSPLUS ON)

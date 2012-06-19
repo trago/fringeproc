@@ -1,5 +1,5 @@
 /* -*- C -*-  (not really, but good for syntax highlighting) */
-%module gabor
+%module fringeproc
 
 %{
   #define SWIG_FILE_WITH_INIT
@@ -11,5 +11,5 @@
 
 %include "demodgabor.i"
 %include "scanner.i"
-%include "unwrap.i"
+
 
