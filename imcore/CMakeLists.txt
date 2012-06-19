@@ -6,6 +6,8 @@ set(imcore_SRCS
   demodgabor.cc
   gabor_gears.cc
   scanner.cc
+  unwrap_gears.c
+  unwrap.cc
   )
 
 add_library(imcore SHARED ${imcore_SRCS})
