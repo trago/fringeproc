@@ -11,5 +11,6 @@
 
 %include "demodgabor.i"
 %include "scanner.i"
+%include "unwrap.i"
 
 

@@ -1,8 +1,10 @@
 #ifndef UNWRAP_H
 #define UNWRAP_H
 
+#ifndef SWIG
 #include <opencv2/core/core.hpp>
-#include <imcore/scanner.h>
+#include "scanner.h"
+#endif
 
 /** 
  * Phase unwrapping system. 
