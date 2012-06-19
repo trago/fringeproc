@@ -22,9 +22,9 @@
       };
 
   Unwrap(double* I, int M, int N, double tau=0.09, 
-         double smooth=9, int N=15){
-    cv::Mat dat(M1, N1, CV_64F, dat1);
-    return new Unwrap(dat, tau, smooth, N);
+         double smooth=9, int Nsize=15){
+    cv::Mat dat(M, N, CV_64F, I);
+    return new Unwrap(dat, tau, smooth, Nsize);
   }
 
   void getOutput(double** data, int* M, int *N){
