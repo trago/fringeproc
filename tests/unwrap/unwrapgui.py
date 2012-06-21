@@ -2,6 +2,7 @@
 from ui_mainwin import Ui_UnwrapGUI
 from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
+from dlgunwrap import DlgUnwrap
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 import fringeproc as fringes
@@ -37,8 +38,16 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     
   def _onPhaseUnwrapping(self):
     if self._image is not None:
-      unwrap = fringes.Unwrap(self._image.getDataF()*2*np.pi-np.pi)
-      print "Hay la llevo"
+      dlg = DlgUnwrap(self)
+      resp = dlg.exec_()
+      
+      if resp == 1:
+        params = dlg.getParameters()
+        data_input = self._image.getDataF()*2*np.pi-np.pi
+        unwrap = fringes.Unwrap(data_input, params['tau'], params['smooth'],
+                                params['nSize'])
+        unwrap.setPixel(params['pixel'])
+        print dlg.getParameters()
   
   def _onPhaseDemodulation(self):
     pass
@@ -59,14 +68,10 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
       if self._image != None:
         if len(self._scene.items())!=0:
           self._scene = QtGui.QGraphicsScene()
-          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
-          pitem.setMoveEventHandler(self._onImageCursorOver)
-          self._scene.addItem(pitem)
           self._graphicsView.setScene(self._scene)
-        else:
-          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
-          pitem.setMoveEventHandler(self._onImageCursorOver)
-          self._scene.addItem(pitem)
+        pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
+        self._scene.addItem(pitem)
+        pitem.setMoveEventHandler(self._onImageCursorOver)
 
   def _openImage(self, fname):
     self.setCursor(Qt.BusyCursor)    

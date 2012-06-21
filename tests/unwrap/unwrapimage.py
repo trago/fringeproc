@@ -32,9 +32,9 @@ class UnwrapImage(QImage):
     self._image = np_array.copy()
     self._array = np_array.copy()
     
-    self._fromC1(self._array)
+    self._fromC1()
    
-  def _fromC1(self, array):
+  def _fromC1(self):
     """
     _fromC1(array)
     Creates the QImage using an array representing gray scaled values.
@@ -42,24 +42,24 @@ class UnwrapImage(QImage):
     Parameters:
      - array, is the array data
     """
-    if(array.dtype == np.float32 or array.dtype == np.float64):
-      a = array.min()
-      b = array.max()
+    if(self._array.dtype == np.float32 or self._array.dtype == np.float64):
+      a = self._array.min()
+      b = self._array.max()
       if(a==0 and b==1):
-        array=array*255
+        self._array=self._array*255
       else:
-        array = 255*(array-a)/(b-a)
+        self._array = 255*(self._array-a)/(b-a)
 
-    array = array.astype(np.uint32)
-    h,w = array.shape
+    self._array = self._array.astype(np.uint32)
+    h,w = self._array.shape
     rgbarray = np.zeros((h,w,3),dtype=np.uint32)
-    (rgbarray[:,:,0], rgbarray[:,:,1], rgbarray[:,:,2]) = (array, array, array)
-    data = (255 << 24 | rgbarray[:,:,0] << 16 
-            | rgbarray[:,:,1] << 8 | rgbarray[:,:,2])
-    self._array = array
-    self._data = data
+    (rgbarray[:,:,0], rgbarray[:,:,1], rgbarray[:,:,2]) = (self._array, 
+                                                           self._array, 
+                                                           self._array)
+    self._data = (255 << 24 | rgbarray[:,:,0] << 16 
+                  | rgbarray[:,:,1] << 8 | rgbarray[:,:,2])
     
-    super(UnwrapImage, self).__init__(data, w, h, self.Format_RGB32)
+    super(UnwrapImage, self).__init__(self._data, w, h, self.Format_RGB32)
     
   def getDataF(self, min=0, max=1):
     """
