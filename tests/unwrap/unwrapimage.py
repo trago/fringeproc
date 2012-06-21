@@ -10,6 +10,14 @@ class UnwrapImage(QImage):
   
   Author Julio C. Estrada
   """
+  
+  # Keeps a copy of the original data
+  _mdata = None
+  # Keeps the image data that is maped to unsigned integers
+  _array = None
+  # The three chanels image data obtained from _array
+  _data = None
+  
   def __init__(self, np_array):
     """
     UnwrapImage(numpy_array).
@@ -20,11 +28,10 @@ class UnwrapImage(QImage):
      
     Author: Julio C. Estrada.
     """
-    self.array = np_array.copy()
-    self.mdata = np_array
-    self._data = None
-    self._fromC1(self.array)
-    
+    self._array = np_array.copy()
+    self._mdata = np_array.copy()
+    self._fromC1(self._array)
+   
   def _fromC1(self, array):
     """
     _fromC1(array)
@@ -47,8 +54,27 @@ class UnwrapImage(QImage):
     (rgbarray[:,:,0], rgbarray[:,:,1], rgbarray[:,:,2]) = (array, array, array)
     data = (255 << 24 | rgbarray[:,:,0] << 16 
             | rgbarray[:,:,1] << 8 | rgbarray[:,:,2])
-    self.array = array
+    self._array = array
     self._data = data
     
     super(UnwrapImage, self).__init__(data, w, h, self.Format_RGB32)
     
+  def getImageF(self):
+    """
+    getImageF()
+    Returns the image data as real values.
+    
+    Author: Julio C. Estrada
+    """
+    a = self._mdata.min()
+    b = self._mdata.max()
+    return (self._mdata-a)/(b-a)
+  
+  def getImageU(self):
+    """
+    getImageU()
+    Returns the image data as unsigned integers.
+    
+    Author: Julio C. Estrada
+    """
+    return self._array
