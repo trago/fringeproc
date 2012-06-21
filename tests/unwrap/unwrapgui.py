@@ -37,7 +37,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     
   def _onPhaseUnwrapping(self):
     if self._image is not None:
-      unwrap = fringes.Unwrap(self._image.getImageF())
+      unwrap = fringes.Unwrap(self._image.getDataF()*2*np.pi-np.pi)
       print "Hay la llevo"
   
   def _onPhaseDemodulation(self):
