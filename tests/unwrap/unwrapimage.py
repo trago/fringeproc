@@ -1,4 +1,4 @@
-from PySide.QtGui import QImage
+from PyQt4.QtGui import QImage
 import numpy as np
 
 class UnwrapImage(QImage):

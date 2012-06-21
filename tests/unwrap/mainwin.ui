@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QGraphicsView" name="graphicsView">
+     <widget class="QGraphicsView" name="_graphicsView">
       <property name="autoFillBackground">
        <bool>false</bool>
       </property>
@@ -51,43 +51,61 @@
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="mnuFile">
+   <widget class="QMenu" name="_mnuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="mnuFileOpen"/>
-    <addaction name="mnuFileOpenMask"/>
-    <addaction name="mnuFileSave"/>
-    <addaction name="mnuFileClose"/>
+    <addaction name="_mnuFileOpen"/>
+    <addaction name="_mnuFileOpenMask"/>
+    <addaction name="_mnuFileSave"/>
+    <addaction name="_mnuFileClose"/>
     <addaction name="separator"/>
-    <addaction name="mnuFileQuit"/>
+    <addaction name="_mnuFileQuit"/>
    </widget>
-   <addaction name="mnuFile"/>
+   <widget class="QMenu" name="_mnuSystems">
+    <property name="title">
+     <string>&amp;Systems</string>
+    </property>
+    <addaction name="_mnuPhaseUnwrapping"/>
+    <addaction name="_mnuPhaseDemodulation"/>
+   </widget>
+   <addaction name="_mnuFile"/>
+   <addaction name="_mnuSystems"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="mnuFileOpen">
+  <action name="_mnuFileOpen">
    <property name="text">
     <string>&amp;Open</string>
    </property>
   </action>
-  <action name="mnuFileSave">
+  <action name="_mnuFileSave">
    <property name="text">
     <string>&amp;Save</string>
    </property>
   </action>
-  <action name="mnuFileQuit">
+  <action name="_mnuFileQuit">
    <property name="text">
     <string>&amp;Quit</string>
    </property>
   </action>
-  <action name="mnuFileClose">
+  <action name="_mnuFileClose">
    <property name="text">
     <string>&amp;Close</string>
    </property>
   </action>
-  <action name="mnuFileOpenMask">
+  <action name="_mnuFileOpenMask">
    <property name="text">
     <string>Open &amp;mask</string>
+   </property>
+  </action>
+  <action name="_mnuPhaseUnwrapping">
+   <property name="text">
+    <string>Phase &amp;unwrapping</string>
+   </property>
+  </action>
+  <action name="_mnuPhaseDemodulation">
+   <property name="text">
+    <string>Phase &amp;demodulation</string>
    </property>
   </action>
  </widget>

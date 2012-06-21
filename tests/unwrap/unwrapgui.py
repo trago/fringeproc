@@ -2,27 +2,42 @@
 from ui_mainwin import Ui_UnwrapGUI
 from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
-from PySide import QtCore, QtGui
-from PySide.QtCore import Qt
+from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import Qt
 import numpy as np
 import cv2
 
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
+  """
+  Graphic user interface for fringeproc.
+  """
+  # Datos de la imagen que se esta trabajando
+  _image = None
+  # The graphics scene used to show the image
+  _scene = None
+  
   def __init__(self, parent=None):
     super(UnwrapGUI,self).__init__(parent)
     self.setupUi(self)
+    self._connectActions()
     
     self._scene = QtGui.QGraphicsScene()
-    self.graphicsView.setScene(self._scene)
+    self._graphicsView.setScene(self._scene)
     
-    self.mnuFileClose.triggered.connect(self._onClose)
-    self.mnuFileOpen.triggered.connect(self._onOpen)
-    self.mnuFileOpenMask.triggered.connect(self._onOpenMask)
-    self.mnuFileQuit.triggered.connect(self._onQuit)
-    self.mnuFileSave.triggered.connect(self._onSave)
+  def _connectActions(self):
+    self._mnuFileClose.triggered.connect(self._onClose)
+    self._mnuFileOpen.triggered.connect(self._onOpen)
+    self._mnuFileOpenMask.triggered.connect(self._onOpenMask)
+    self._mnuFileQuit.triggered.connect(self._onQuit)
+    self._mnuFileSave.triggered.connect(self._onSave)
+    self._mnuPhaseUnwrapping.triggered.connect(self._onPhaseUnwrapping)
+    self._mnuPhaseDemodulation.triggered.connect(self._onPhaseDemodulation)
     
-    self._image = None # Los datos de la imagen que se abrio
-    
+  def _onPhaseUnwrapping(self):
+    pass
+  
+  def _onPhaseDemodulation(self):
+    pass
     
   def _onOpen(self):
     fileFilters = ["Image files (*.png *.jpg *.tif *.bmp)",
@@ -42,11 +57,13 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
           pitem.setMoveEventHandler(self._onImageCursorOver)
           self._scene.addItem(pitem)
-          self.graphicsView.setScene(self._scene)
+          self._graphicsView.setScene(self._scene)
         else:
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
           pitem.setMoveEventHandler(self._onImageCursorOver)
           self._scene.addItem(pitem)
+        
+        self._scene.show()
 
     
   def _openImage(self, fname):
@@ -82,7 +99,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     if(fname[0]!=''):
       image = self._image
       self._openImage(fname[0])
-      if self._image != None:
+      if self._image != None and image != None:
         mask = self._image.mdata/255
         data = image.mdata*mask
         self._image = UnwrapImage(data)
@@ -91,7 +108,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
           pitem.setMoveEventHandler(self._onImageCursorOver)
           self._scene.addItem(pitem)
-          self.graphicsView.setScene(self._scene)
+          self._graphicsView.setScene(self._scene)
         else:
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
           pitem.setMoveEventHandler(self._onImageCursorOver)

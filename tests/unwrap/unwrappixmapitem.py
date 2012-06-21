@@ -1,6 +1,5 @@
-from PySide.QtGui import QGraphicsPixmapItem
-from PySide.QtCore import QEvent
-from PySide.QtCore import Qt
+from PyQt4.QtGui import QGraphicsPixmapItem
+from PyQt4.QtCore import Qt
 
 class UnwrapPixmapItem(QGraphicsPixmapItem):
   """

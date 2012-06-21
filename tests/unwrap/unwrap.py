@@ -1,6 +1,12 @@
+import sip
+api2_classes = [
+  'QData', 'QDateTime', 'QString', 'QTextStream',
+  'QTime', 'QUrl', 'QVariant']
+for cl in api2_classes:
+  sip.setapi(cl, 2)
+
 import sys
-from PySide import QtCore
-from PySide import QtGui
+from PyQt4 import QtGui
 from unwrapgui import UnwrapGUI
 
 def main(argv):
@@ -13,5 +19,3 @@ def main(argv):
 
 if __name__ == "__main__":
   main(sys.argv)
-
-
