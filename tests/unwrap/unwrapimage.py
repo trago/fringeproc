@@ -11,12 +11,13 @@ class UnwrapImage(QImage):
   Author Julio C. Estrada
   """
   
-  # Keeps a copy of the original data
-  _mdata = None
   # Keeps the image data that is maped to unsigned integers
   _array = None
   # The three chanels image data obtained from _array
   _data = None
+  # The original data
+  _image = None
+  
   
   def __init__(self, np_array):
     """
@@ -28,8 +29,9 @@ class UnwrapImage(QImage):
      
     Author: Julio C. Estrada.
     """
+    self._image = np_array.copy()
     self._array = np_array.copy()
-    self._mdata = np_array.copy()
+    
     self._fromC1(self._array)
    
   def _fromC1(self, array):
@@ -59,22 +61,39 @@ class UnwrapImage(QImage):
     
     super(UnwrapImage, self).__init__(data, w, h, self.Format_RGB32)
     
-  def getImageF(self):
+  def getDataF(self, min=0, max=1):
     """
-    getImageF()
+    getDataF()
     Returns the image data as real values.
     
     Author: Julio C. Estrada
     """
-    a = self._mdata.min()
-    b = self._mdata.max()
-    return (self._mdata-a)/(b-a)
+    if self._image.dtype != np.float:
+      data = self._image.astype(np.float)
+    a = data.min()
+    b = data.max()
+    return (data-a)/(b-a)
   
-  def getImageU(self):
+  def getDataU(self):
     """
-    getImageU()
+    getDataU()
     Returns the image data as unsigned integers.
     
     Author: Julio C. Estrada
     """
-    return self._array
+    return self._array.copy()
+
+  def getData(self, flag=''):
+    """
+    getData(flag='')
+    Returns the original image data.
+    
+    If flag=='reference' it returns the reference to the image data. It returns
+    a copy by default.
+    
+    Author: Julio C. Estrada
+    """
+    if flag=='':
+      return self._image.coy()
+    if flag=='reference':
+      return self._image

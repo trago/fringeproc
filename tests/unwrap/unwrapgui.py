@@ -4,8 +4,10 @@ from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
+import fringeproc as fringes
 import numpy as np
 import cv2
+import os
 
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   """
@@ -34,7 +36,9 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self._mnuPhaseDemodulation.triggered.connect(self._onPhaseDemodulation)
     
   def _onPhaseUnwrapping(self):
-    pass
+    if self._image is not None:
+      unwrap = fringes.Unwrap(self._image.getImageF())
+      print "Hay la llevo"
   
   def _onPhaseDemodulation(self):
     pass
@@ -45,11 +49,12 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
                                               QtCore.QDir.currentPath(),
                                               fileFilters[0]+';;'+fileFilters[1])
-    if(fname[0]!=''):
-      if(fname[1]==fileFilters[0]):
-        self._openImage(fname[0])
-      elif fname[1]==fileFilters[1]:
-        self._openFlt(fname[0])
+    ftype = os.path.splitext(fname)[1]
+    if(fname!=''):
+      if(ftype!='.flt'):
+        self._openImage(fname)
+      elif ftype=='.flt':
+        self._openFlt(fname)
         
       if self._image != None:
         if len(self._scene.items())!=0:
@@ -62,10 +67,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
           pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
           pitem.setMoveEventHandler(self._onImageCursorOver)
           self._scene.addItem(pitem)
-        
-        self._scene.show()
 
-    
   def _openImage(self, fname):
     self.setCursor(Qt.BusyCursor)    
     image = cv2.imread(fname,0)
@@ -130,7 +132,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   def _onImageCursorOver(self, pos):
     x = int(pos.x())
     y = int(pos.y())
-    text = "(" + str(x) + ", " + str(y) + ") = " + str(self._image.mdata[y,x])
+    text = "(" + str(x) + ", " + str(y) + ") = " + \
+      str(self._image.getData('reference')[y,x])
     stBar = self.statusBar()
     stBar.showMessage(text)
     
