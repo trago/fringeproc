@@ -29,10 +29,12 @@ class UnwrapImage(QImage):
      
     Author: Julio C. Estrada.
     """
-    self._image = np_array.copy()
+    self._image = np_array
     self._array = np_array.copy()
-    
     self._fromC1()
+    h,w = self._array.shape
+    super(UnwrapImage, self).__init__(self._data, w, h, self.Format_RGB32)
+     
    
   def _fromC1(self):
     """
@@ -58,8 +60,6 @@ class UnwrapImage(QImage):
                                                            self._array)
     self._data = (255 << 24 | rgbarray[:,:,0] << 16 
                   | rgbarray[:,:,1] << 8 | rgbarray[:,:,2])
-    
-    super(UnwrapImage, self).__init__(self._data, w, h, self.Format_RGB32)
     
   def getDataF(self, min=0, max=1):
     """
@@ -94,6 +94,6 @@ class UnwrapImage(QImage):
     Author: Julio C. Estrada
     """
     if flag=='':
-      return self._image.coy()
+      return self._image.copy()
     if flag=='reference':
       return self._image

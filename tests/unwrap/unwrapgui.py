@@ -15,7 +15,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   Graphic user interface for fringeproc.
   """
   # Datos de la imagen que se esta trabajando
-  _image = None
+  _image = object
   # The graphics scene used to show the image
   _scene = None
   
@@ -69,9 +69,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         if len(self._scene.items())!=0:
           self._scene = QtGui.QGraphicsScene()
           self._graphicsView.setScene(self._scene)
-        pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
-        self._scene.addItem(pitem)
-        pitem.setMoveEventHandler(self._onImageCursorOver)
+        self._scene.addItem(self._image)
+        self._image.setMoveEventHandler(self._onImageCursorOver)
 
   def _openImage(self, fname):
     self.setCursor(Qt.BusyCursor)    
@@ -79,8 +78,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self.setCursor(Qt.ArrowCursor)
 
     if(image.size!=0):
-      qimage = UnwrapImage(image)
-      self._image = qimage
+      self._image = UnwrapPixmapItem(image)
     else:
       self._image = None
   
@@ -93,8 +91,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
       M,N=(int(image[0]), int(image[1]))
       image = image[2:image.shape[0]]
       image = image.reshape((M,N))
-      
       self._image = UnwrapImage(image)
+      self._image.m_pixmap = QtGui.QPixmap.fromImage(self._image)
     else:
       self._image = None
       
@@ -138,7 +136,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     x = int(pos.x())
     y = int(pos.y())
     text = "(" + str(x) + ", " + str(y) + ") = " + \
-      str(self._image.getData('reference')[y,x])
+      str(self._image.getImage().getData('reference')[y,x])
     stBar = self.statusBar()
     stBar.showMessage(text)
     
