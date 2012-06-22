@@ -21,8 +21,10 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   Properties:
    * _image: A reference to the PixmapItem that contains the image data
      being shown in the application scene.
+     :type: UnwrapPixmapItem
    * _scene: The graphics scene that shows the graphic elements in the user
      interface.
+     :type: QGraphicsScene
      
   Author: Julio C. Estrada <julio@cio.mx>
   """
@@ -118,11 +120,11 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         self._openFlt(fname)
         
       if self._image != None:
-        if len(self._scene.items())!=0:
-          self._scene = QtGui.QGraphicsScene()
-          self._graphicsView.setScene(self._scene)
+        for item in self._scene.items():
+          self._scene.removeItem(item)
         self._scene.addItem(self._image)
         self._image.setMoveEventHandler(self._onImageCursorOver)
+        self._graphicsView.setSceneRect(self._scene.itemsBoundingRect())
 
   def _openImage(self, fname, flag='new'):
     """ _openImage(fname, flag='new')
@@ -227,3 +229,15 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     stBar = self.statusBar()
     stBar.showMessage(text)
     
+  def getScene(self):
+    """ getScene()
+    Returns the graphics scene of the user interface.
+    
+    The graphics scene is where al data to be processed is shown in a graphics
+    view. Use this graphics scene to implement user interactions when needed.
+    
+    Return:
+     * scene: The graphics scene
+       :type: QGraphicsScene
+    """
+    return self._scene
