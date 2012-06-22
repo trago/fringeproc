@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Main graphic user interface of fringeproc application.
+
+Author: Julio C. Estrada
+"""
 from ui_mainwin import Ui_UnwrapGUI
 from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
@@ -11,15 +16,34 @@ import cv2
 import os
 
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
+  """ Graphic user interface for fringeproc.
+  
+  Properties:
+   * _image: A reference to the PixmapItem that contains the image data
+     being shown in the application scene.
+   * _scene: The graphics scene that shows the graphic elements in the user
+     interface.
+     
+  Author: Julio C. Estrada <julio@cio.mx>
   """
-  Graphic user interface for fringeproc.
-  """
-  # Datos de la imagen que se esta trabajando
+  # PixmapItem having the image data
   _image = object
   # The graphics scene used to show the image
   _scene = None
   
   def __init__(self, parent=None):
+    """ UnwrapGUI(parent=None)
+    Constructs the graphic user interface.
+    
+    Initializes the scene and the graphics view.
+    
+    Parameters:
+     * parent: A widge parent. If it is `None` it means that it is the
+       principal widget.
+       :type: QWidget
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     super(UnwrapGUI,self).__init__(parent)
     self.setupUi(self)
     self._connectActions()
@@ -28,6 +52,12 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self._graphicsView.setScene(self._scene)
     
   def _connectActions(self):
+    """
+    _connectActions()
+    Connects the signals and slots of menu actions.
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     self._mnuFileClose.triggered.connect(self._onClose)
     self._mnuFileOpen.triggered.connect(self._onOpen)
     self._mnuFileOpenMask.triggered.connect(self._onOpenMask)
@@ -37,6 +67,12 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self._mnuPhaseDemodulation.triggered.connect(self._onPhaseDemodulation)
     
   def _onPhaseUnwrapping(self):
+    """
+    _onPhaseUnwrapping()
+    Called when the user selects 'Phase unwrapping' from the system menu.
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     if self._image is not None:
       dlg = DlgUnwrap(self)
       resp = dlg.exec_()
@@ -50,9 +86,25 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         print dlg.getParameters()
   
   def _onPhaseDemodulation(self):
+    """
+    _onPhaseDemodulation()
+    Called when the user selects 'Phase demodulation' from the system menu.
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     pass
     
   def _onOpen(self):
+    """
+    _onOpen()
+    Called when the user selects 'Open' from file menu.
+    
+    It launches a dialog for the user in order to select the file to open.
+    When the file is opened it is created a QPixmapItem that holds the image
+    data as a numpy array.
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     fileFilters = ["Image files (*.png *.jpg *.tif *.bmp)",
                    "Flt files (*.flt)"]
     fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
@@ -72,17 +124,53 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         self._scene.addItem(self._image)
         self._image.setMoveEventHandler(self._onImageCursorOver)
 
-  def _openImage(self, fname):
+  def _openImage(self, fname, flag='new'):
+    """ _openImage(fname, flag='new')
+    Opens the image file and loads its data.
+    
+    It opens an image file in format png, jpg, tif or bmp and loads its data
+    creating the PixmapItem or setting the image data to an already created
+    PixmapItem.
+    
+    Parameters:
+     * fname: Is the fale name to be opened.
+       :type: str
+     * flag: if flag='new' indicates that a PixmapItem is going to be created,
+       otherwise the image data is set to the current PixmapItem.
+       :type: str
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     self.setCursor(Qt.BusyCursor)    
     image = cv2.imread(fname,0)
     self.setCursor(Qt.ArrowCursor)
 
     if(image.size!=0):
-      self._image = UnwrapPixmapItem(image)
+      if flag=='new':
+        self._image = UnwrapPixmapItem(image)
+      else:
+        self._image.setImage(image)
     else:
       self._image = None
   
-  def _openFlt(self, fname):
+  def _openFlt(self, fname, flag='new'):
+    """ _openFlt(fname, flag='new')
+    Opens a file having floating point data.
+    
+    It opens a text file with extension .flt having floating point data and loads
+    these into an array to bi used as image data. The format for this text file
+    is one value by line and the first two lines have the number of rows
+    and number of columns of the image.
+    
+    Parameters:
+     * fname: Is the file name to be opened.
+       :type: str
+     * flag: if flag='new' indicates that a PixmapItem is going to be created,
+       otherwise the image data is set to the current PixmapItem.
+       :type: str
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     self.setCursor(Qt.BusyCursor)
     image = np.loadtxt(fname)
     self.setCursor(Qt.ArrowCursor)
@@ -91,36 +179,35 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
       M,N=(int(image[0]), int(image[1]))
       image = image[2:image.shape[0]]
       image = image.reshape((M,N))
-      self._image = UnwrapImage(image)
-      self._image.m_pixmap = QtGui.QPixmap.fromImage(self._image)
+      if flag=='new':
+        self._image = UnwrapPixmapItem(image)
+      else:
+        self._image.setImage(image)
     else:
       self._image = None
       
   def _onOpenMask(self):
+    """ _onOpenMask()
+    Called when user selects 'Open mask' from file menu in order to apply this
+    mask to an already loaded image data.
+    
+    Author: Julio C. Estrada <julio@cio.mx>
+    """
     fileFilters = "Image files (*.png *.jpg *.tif *.bmp)"
     fname = QtGui.QFileDialog.getOpenFileName(self, "Open mask image", 
                                               QtCore.QDir.currentPath(),
                                               fileFilters)
-    if(fname[0]!=''):
-      image = self._image
-      self._openImage(fname[0])
-      if self._image != None and image != None:
-        mask = self._image.mdata/255
-        data = image.mdata*mask
-        self._image = UnwrapImage(data)
-        if len(self._scene.items())!=0:
-          self._scene = QtGui.QGraphicsScene()
-          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
-          pitem.setMoveEventHandler(self._onImageCursorOver)
-          self._scene.addItem(pitem)
-          self._graphicsView.setScene(self._scene)
-        else:
-          pitem = UnwrapPixmapItem(QtGui.QPixmap.fromImage(self._image))
-          pitem.setMoveEventHandler(self._onImageCursorOver)
-          self._scene.addItem(pitem)
-  
+    if(fname!='' and self._image!=None):
+      image = self._image.getImage().getData('reference')
+      self._openImage(fname, 'keep')
+      if self._image != None:
+        mask = self._image.getImage().getData('reference')/255
+        data = image*mask
+        self._image.setImage(data)
+
   def _onClose(self):
     pass  
+
   def _onSave(self):
     fileFilters = "Image files (*.png *.jpg *.tif)"
     fname = QtGui.QFileDialog.getSaveFileName(self, "Save data", 

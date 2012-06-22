@@ -85,7 +85,7 @@ class UnwrapImage(QImage):
 
   def getData(self, flag=''):
     """
-    getData(flag='')
+    array = getData(flag='')
     Returns the original image data.
     
     If flag=='reference' it returns the reference to the image data. It returns
