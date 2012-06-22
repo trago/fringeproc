@@ -2,7 +2,7 @@ from unwrapimage import UnwrapImage
 
 import numpy as np
 from PyQt4.QtGui import QGraphicsPixmapItem
-from PyQt4.QtGui import QPixmap
+from PyQt4.QtGui import QPixmap, QImage
 from PyQt4.QtCore import Qt
 
 class UnwrapPixmapItem(QGraphicsPixmapItem):
@@ -71,3 +71,15 @@ class UnwrapPixmapItem(QGraphicsPixmapItem):
     
   def getImage(self):
     return self._image
+  
+  def setImage(self, data):
+    if isinstance(data, np.ndarray):
+      self._image = UnwrapImage(data)
+    elif isinstance(data, QImage):
+      self._image = data
+    else:
+      raise TypeError('Only numpy array or QImage is accepted')
+    
+    pixmap = QPixmap.fromImage(self._image)
+    self.setPixmap(pixmap)
+      
