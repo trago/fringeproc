@@ -234,8 +234,12 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     """
     x = int(pos.x())
     y = int(pos.y())
-    text = "(" + str(x) + ", " + str(y) + ") = " + \
-      str(self._image.getImage().getData('reference')[y,x])
+    data = self._image.getImage().getData('reference')
+    try:
+      text = "(" + str(x) + ", " + str(y) + ") = " + \
+        str(data[y,x])
+    except IndexError:
+      text = "Out of range!"
     stBar = self.statusBar()
     stBar.showMessage(text)
     
