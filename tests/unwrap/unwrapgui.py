@@ -9,12 +9,65 @@ from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
 from dlgunwrap import DlgUnwrap
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt, pyqtSlot
+from PyQt4.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
 import fringeproc as fringes
 import numpy as np
 import cv2
 import os
 
+class Constrains(QObject):
+  init_state = 0
+  data_loaded = 1
+  data_unloaded = 2
+  data_saved = 3
+  data_processing = 4
+  data_processed = 5
+  data_invalid = 6
+  
+  action_canceled = 7
+  action_executed = 8
+  action_accepted = 9
+  
+  file_open = 10
+  file_closed = 11
+  file_saved = 12
+  
+  user_interacting = 13
+  
+  _constrains = set([init_state, data_loaded, data_saved, data_unloaded,
+                     data_processing, data_processed, data_processed,
+                     action_accepted, action_canceled, action_canceled,
+                     file_closed, file_open, file_saved,
+                     user_interacting])
+  _state = set([init_state])
+  
+  stateChanged = pyqtSignal(int)
+    
+  def __init__(self, parent=None):
+    super(Constrains, self).__init__(parent)
+    
+  
+  def setState(self, uistate):
+    if isinstance(uistate, list):
+      state = set(uistate)
+    elif isinstance(uistate, int):
+      state = set([uistate])
+    else:
+      raise TypeError, "Argument must be int or list"
+    
+    if len(state & self._constrains) > 0:
+      self._state = state
+    else:
+      raise KeyError, "Attemptinng to ser an unknown state"
+    
+    self.stateChanged.emit(self._constrains)
+        
+  def getState(self):
+    return self._state
+  
+  def All(self):
+    return Constrains._constrains.copy()
+    
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   """ Graphic user interface for fringeproc.
 
@@ -37,6 +90,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   _scene = None
   # The current istance of the system's dialog
   _system_dlg = None
+  # Mantains the interface state
+  _actionState = Constrains()
   
   def __init__(self, parent=None):
     """ UnwrapGUI(parent=None)
@@ -54,6 +109,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     super(UnwrapGUI,self).__init__(parent)
     self.setupUi(self)
     self._connectActions()
+    
+    self._actionState.setState(Constrains.init_state)
     
     self._scene = QtGui.QGraphicsScene()
     self._graphicsView.setScene(self._scene)
@@ -73,6 +130,20 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self._mnuPhaseUnwrapping.triggered.connect(self._onPhaseUnwrapping)
     self._mnuPhaseDemodulation.triggered.connect(self._onPhaseDemodulation)
     
+    self._mnuFileClose.constrainedTo = set([Constrains.data_loaded, 
+                                           Constrains.file_open])
+    self._mnuFileOpen.constrainedTo = self._actionState.All()
+    self._mnuFileOpenMask.constrainedTo = set([Constrains.data_loaded,
+                                              Constrains.file_open])
+    self._mnuFileQuit.constrainedTo = self._actionState.All()
+    self._mnuFileSave.constrainedTo = set([Constrains.data_loaded,
+                                          Constrains.file_open])
+    self._mnuPhaseUnwrapping.constrainedTo = set([Constrains.data_loaded])
+    self._mnuPhaseDemodulation.constrainedTo = set([Constrains.data_loaded])
+
+
+    self._actionState.stateChanged.connect(self._onUpdateInterface)
+    
   def _onPhaseUnwrapping(self):
     """
     _onPhaseUnwrapping()
@@ -80,11 +151,20 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     
     Author: Julio C. Estrada <julio@cio.mx>
     """
+    self._guiState.setState(Constrains.action_executed)
+
     if self._image is not None:
+      self._guiState.setState(Constrains.action_accepted)
+      self._guiState.setState(Constrains.data_processing)
+      
       self._system_dlg = DlgUnwrap(self)
       dlg = self._system_dlg
       dlg.exec_()
-        
+      
+      self._guiState.setState(Constrains.data_processed)
+    
+    self._guiState.setState(Constrains.action_canceled)
+              
   def _onPhaseDemodulation(self):
     """
     _onPhaseDemodulation()
@@ -92,7 +172,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     
     Author: Julio C. Estrada <julio@cio.mx>
     """
-    pass
+    self._actionState.setState(Constrains.data_processed)
     
   def _onOpen(self):
     """
@@ -123,6 +203,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         self._scene.addItem(self._image)
         self._image.setMoveEventHandler(self._onImageCursorOver)
         self._graphicsView.setSceneRect(self._scene.itemsBoundingRect())
+        
+        self._actionState.setState([Constrains.file_open, Constrains.data_loaded])
 
   def _openImage(self, fname, flag='new'):
     """ _openImage(fname, flag='new')
@@ -204,9 +286,11 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         mask = self._image.getImage().getData('reference')/255
         data = image*mask
         self._image.setImage(data)
+        self._actionState.setState(Constrains.data_loaded)
 
   def _onClose(self):
-    pass  
+    self._actionState.setState([Constrains.file_closed, 
+                                Constrains.data_unloaded])
 
   def _onSave(self):
     fileFilters = "Image files (*.png *.jpg *.tif)"
@@ -214,7 +298,10 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
                                               QtCore.QDir.currentPath(),
                                               fileFilters)
     if(fname[0]!=''):
-      self._image.save(fname[0])
+      #self._image.save(fname[0])
+      self._actionState.setState([Constrains.data_loaded, 
+                                  Constrains.file_saved])
+      
   
   def _onQuit(self):
     self.close()
@@ -255,3 +342,18 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
        :type: QGraphicsScene
     """
     return self._scene
+  
+  @pyqtSlot(int)
+  def _onUpdateInterface(self, state):
+    print "Update interface with state " + str(self._actionState.getState())
+    
+    for atribute in dir(self):
+      if hasattr(getattr(self, atribute), 'constrainedTo'):
+        self._constrainsOk(getattr(self, atribute))
+    
+  def _constrainsOk(self, obj):
+    state = self._actionState.getState()
+    if len(obj.constrainedTo & state)>0:
+      obj.setEnabled(True)
+      return
+    obj.setEnabled(False)
