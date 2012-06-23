@@ -145,7 +145,7 @@ void Unwrap::run()
   unwrap2D(_wphase, _uphase, _tau, _smooth, _N, _pixel);
 }
 
-bool Unwrap::runInteractive()
+bool Unwrap::runInteractive(int iters)
 {
   cv::Mat_<double> dx, dy;
 
@@ -156,12 +156,15 @@ bool Unwrap::runInteractive()
     _scanner = new Scanner(dx, dy, _pixel);
   }
 
-  _pixel = _scanner->getPosition();
-  int i= _pixel.y, j=_pixel.x;
-  dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
-  _visited(i,j)=1;
+  int iter=0;
+  do{
+    _pixel = _scanner->getPosition();
+    int i= _pixel.y, j=_pixel.x;
+    dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
+    _visited(i,j)=1;
+  }while(_scanner->next() && (++iter)<iters);
 
-  return _scanner->next();
+  return iter==iters;
 }
 
 void Unwrap::processPixel(cv::Point pixel)

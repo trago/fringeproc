@@ -21,7 +21,7 @@ public:
   virtual ~Unwrap();
 
   void run();
-  bool runInteractive();
+  bool runInteractive(int iters=1);
   
 #ifndef SWIG
   cv::Mat getOutput();
