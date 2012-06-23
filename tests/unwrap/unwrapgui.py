@@ -9,7 +9,7 @@ from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
 from dlgunwrap import DlgUnwrap
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, pyqtSlot
 import fringeproc as fringes
 import numpy as np
 import cv2
@@ -17,6 +17,8 @@ import os
 
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   """ Graphic user interface for fringeproc.
+
+  This user interface offers menus to interact with the user. 
   
   Properties:
    * _image: A reference to the PixmapItem that contains the image data
@@ -25,6 +27,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
    * _scene: The graphics scene that shows the graphic elements in the user
      interface.
      :type: QGraphicsScene
+   * _system_dlg: Instance of the current system dialog.
      
   Author: Julio C. Estrada <julio@cio.mx>
   """
@@ -32,6 +35,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   _image = object
   # The graphics scene used to show the image
   _scene = None
+  # The current istance of the system's dialog
+  _system_dlg = None
   
   def __init__(self, parent=None):
     """ UnwrapGUI(parent=None)
@@ -76,17 +81,10 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     Author: Julio C. Estrada <julio@cio.mx>
     """
     if self._image is not None:
-      dlg = DlgUnwrap(self)
-      resp = dlg.exec_()
-      
-      if resp == 1:
-        params = dlg.getParameters()
-        data_input = self._image.getDataF()*2*np.pi-np.pi
-        unwrap = fringes.Unwrap(data_input, params['tau'], params['smooth'],
-                                params['nSize'])
-        unwrap.setPixel(params['pixel'])
-        print dlg.getParameters()
-  
+      self._system_dlg = DlgUnwrap(self)
+      dlg = self._system_dlg
+      dlg.exec_()
+        
   def _onPhaseDemodulation(self):
     """
     _onPhaseDemodulation()
@@ -222,6 +220,18 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     self.close()
     
   def _onImageCursorOver(self, pos):
+    """_onImageCursosOver(pos)
+    Called when the cursor pases over the image.
+
+    Parameters:
+     * pos is the (x,y) position
+       :type: QPointF
+    
+    Notes:
+     * This is not an slot, this is a callback function.
+     
+    Author: Julio C. Estrada
+    """
     x = int(pos.x())
     y = int(pos.y())
     text = "(" + str(x) + ", " + str(y) + ") = " + \

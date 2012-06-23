@@ -3,7 +3,23 @@ from unwrapimage import UnwrapImage
 import numpy as np
 from PyQt4.QtGui import QGraphicsPixmapItem
 from PyQt4.QtGui import QPixmap, QImage
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import QObject, Qt, pyqtSignal
+
+class ObjectPixmapItem(QObject):
+  """
+  Combenient class created to emit signals.
+  
+  Signals:
+   * clicked: Emited when user clicks over a item.
+     :arguments:
+       * pos: A tuple representing the position (x,y)
+         :type: tuple
+  """
+  clicked = pyqtSignal(tuple)
+  
+  def __init__(self, parent=None):
+    super(ObjectPixmapItem, self).__init__(parent)
+  
 
 class UnwrapPixmapItem(QGraphicsPixmapItem):
   """
@@ -18,6 +34,8 @@ class UnwrapPixmapItem(QGraphicsPixmapItem):
   _moveEventHandler = None
   # The QImage asociated to this PixmapItem
   _image = None
+  # Object to manage signals in this Pixmap item
+  signals = ObjectPixmapItem()
   
   def __init__(self, obj, parent=None):
     """
@@ -35,9 +53,17 @@ class UnwrapPixmapItem(QGraphicsPixmapItem):
       super(UnwrapPixmapItem, self).__init__(obj, parent)
       
     self.setAcceptHoverEvents(True)
+    #self.setAcceptedMouseButtons(Qt.LeftButton)
     self.setCursor(Qt.CrossCursor)
     
   def __del__(self):
+    """
+    Destructor.
+    
+    Notes:
+     * I implemented this function only to avoid a crash when the application
+       is closed. I do not know if this is a bug from PyQt4.
+    """
     pass
     
   def hoverMoveEvent(self, event):
@@ -82,4 +108,8 @@ class UnwrapPixmapItem(QGraphicsPixmapItem):
     
     pixmap = QPixmap.fromImage(self._image)
     self.setPixmap(pixmap)
-      
+    
+  def mouseReleaseEvent(self, event):
+    self.signals.clicked.emit((int(event.pos().x()), int(event.pos().y())))
+    #super(UnwrapPixmapItem, self).mouseReleaseEvent(event)
+    
