@@ -10,6 +10,7 @@ from unwrappixmapitem import UnwrapPixmapItem
 from dlgunwrap import DlgUnwrap
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
+from readimage import Image
 import fringeproc as fringes
 import numpy as np
 import cv2
@@ -33,12 +34,14 @@ class Constrains(QObject):
   file_saved = 12
   
   user_interacting = 13
+
+  busy_state = 14
   
   _constrains = set([init_state, data_loaded, data_saved, data_unloaded,
                      data_processing, data_processed, data_processed,
                      action_accepted, action_canceled, action_canceled,
                      file_closed, file_open, file_saved,
-                     user_interacting])
+                     user_interacting, busy_state])
   _state = set([init_state])
   
   stateChanged = pyqtSignal(int)
@@ -92,6 +95,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   _system_dlg = None
   # Mantains the interface state
   _actionState = Constrains()
+  # A reference to the current process
+  _process = None
   
   def __init__(self, parent=None):
     """ UnwrapGUI(parent=None)
@@ -132,7 +137,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     
     self._mnuFileClose.constrainedTo = set([Constrains.data_loaded, 
                                            Constrains.file_open])
-    self._mnuFileOpen.constrainedTo = self._actionState.All()
+    self._mnuFileOpen.constrainedTo = self._actionState.All() - set([self._actionState.busy_state])
     self._mnuFileOpenMask.constrainedTo = set([Constrains.data_loaded,
                                               Constrains.file_open])
     self._mnuFileQuit.constrainedTo = self._actionState.All()
@@ -174,6 +179,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     """
     self._actionState.setState(Constrains.data_processed)
     
+  @pyqtSlot()
   def _onOpen(self):
     """
     _onOpen()
@@ -190,84 +196,31 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
                                               QtCore.QDir.currentPath(),
                                               fileFilters[0]+';;'+fileFilters[1])
-    ftype = os.path.splitext(fname)[1]
-    if(fname!=''):
-      if(ftype!='.flt'):
-        self._openImage(fname)
-      elif ftype=='.flt':
-        self._openFlt(fname)
-        
-      if self._image != None:
-        for item in self._scene.items():
-          self._scene.removeItem(item)
-        self._scene.addItem(self._image)
-        self._image.setMoveEventHandler(self._onImageCursorOver)
-        self._graphicsView.setSceneRect(self._scene.itemsBoundingRect())
-        
-        self._actionState.setState([Constrains.file_open, Constrains.data_loaded])
-
-  def _openImage(self, fname, flag='new'):
-    """ _openImage(fname, flag='new')
-    Opens the image file and loads its data.
-    
-    It opens an image file in format png, jpg, tif or bmp and loads its data
-    creating the PixmapItem or setting the image data to an already created
-    PixmapItem.
-    
-    Parameters:
-     * fname: Is the fale name to be opened.
-       :type: str
-     * flag: if flag='new' indicates that a PixmapItem is going to be created,
-       otherwise the image data is set to the current PixmapItem.
-       :type: str
-    
-    Author: Julio C. Estrada <julio@cio.mx>
-    """
-    self.setCursor(Qt.BusyCursor)    
-    image = cv2.imread(fname,0)
-    self.setCursor(Qt.ArrowCursor)
-
-    if(image.size!=0):
-      if flag=='new':
-        self._image = UnwrapPixmapItem(image)
-      else:
-        self._image.setImage(image)
-    else:
-      self._image = None
-  
-  def _openFlt(self, fname, flag='new'):
-    """ _openFlt(fname, flag='new')
-    Opens a file having floating point data.
-    
-    It opens a text file with extension .flt having floating point data and loads
-    these into an array to bi used as image data. The format for this text file
-    is one value by line and the first two lines have the number of rows
-    and number of columns of the image.
-    
-    Parameters:
-     * fname: Is the file name to be opened.
-       :type: str
-     * flag: if flag='new' indicates that a PixmapItem is going to be created,
-       otherwise the image data is set to the current PixmapItem.
-       :type: str
-    
-    Author: Julio C. Estrada <julio@cio.mx>
-    """
     self.setCursor(Qt.BusyCursor)
-    image = np.loadtxt(fname)
-    self.setCursor(Qt.ArrowCursor)
+    self._process = Image()
+    self._process.finished.connect(self._onProcessOpen)
+    self._process.openFile(fname)
+    self.statusBar().showMessage("Loading image file!!!")
 
-    if(image !=None):
-      M,N=(int(image[0]), int(image[1]))
-      image = image[2:image.shape[0]]
-      image = image.reshape((M,N))
-      if flag=='new':
-        self._image = UnwrapPixmapItem(image)
-      else:
-        self._image.setImage(image)
-    else:
-      self._image = None
+    self._actionState.setState(Constrains.busy_state)
+    
+  @pyqtSlot(int)
+  def _onProcessOpen(self, state):
+    if self._process.getState() == self._process.image_loaded:
+      for item in self._scene.items():
+        self._scene.removeItem(item)
+      self._image = UnwrapPixmapItem(self._process.getData())
+      self._scene.addItem(self._image)
+      self._image.setMoveEventHandler(self._onImageCursorOver)
+      self._graphicsView.setSceneRect(self._scene.itemsBoundingRect())
+        
+      self._process.finished.disconnect(self._onProcessOpen)
+      self.setCursor(Qt.ArrowCursor)
+      self.statusBar().showMessage("")
+
+      self._actionState.setState([Constrains.file_open, Constrains.data_loaded])
       
+  @pyqtSlot()
   def _onOpenMask(self):
     """ _onOpenMask()
     Called when user selects 'Open mask' from file menu in order to apply this
