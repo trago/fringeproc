@@ -2,55 +2,103 @@
 """
 Main graphic user interface of fringeproc application.
 
-Author: Julio C. Estrada
+.. :moduleauthor: Julio C. Estrada <julio@cio.mx>
 """
+from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
 from ui_mainwin import Ui_UnwrapGUI
 from unwrapimage import UnwrapImage
 from unwrappixmapitem import UnwrapPixmapItem
 from dlgunwrap import DlgUnwrap
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
 from readimage import Image
-import fringeproc as fringes
-import numpy as np
 import cv2
 import os
 
 class Constrains(QObject):
-  init_state = 0
-  data_loaded = 1
-  data_unloaded = 2
-  data_saved = 3
-  data_processing = 4
-  data_processed = 5
-  data_invalid = 6
+  """
+  Manages constrains for the actions presented in the user interface.
   
-  action_canceled = 7
-  action_executed = 8
-  action_accepted = 9
+  There is a set of constrains and a set of current constrains that here
+  we refer as state. We can set the constrains as a single constrain or
+  by passing a lis of constrains. If we set a constrain that is not registered
+  here, a `KeyError` exception is raised.
   
-  file_open = 10
-  file_closed = 11
-  file_saved = 12
+     :attribute init_state: Initial state.
+     :attribute data_loaded: The data has been loaded.
+     :attribute data_unloaded: The data has been unloaded.
+     :attribute data_saved: The data has been saved.
+     :attribute data_processing: The data is being processed.
+     :attribute data_processed: The data has been processed.
+     :attribute data_invalid: The data is invalid.
+     :attribute action_canceled: The action was canceled.
+     :attribute action_executed: The action was excetude.
+     :attribute action_accepted: The action was accepted.
+     :attribute file_open: The file is open.
+     :attribute file_closed: The file is close.
+     :attribute file_saved: The file is saved.
+     :attribute user_interacting: The user is interaction.
+     :attribute busy_state: The application is busy.
   
-  user_interacting = 13
+     :attribute _constrain: The set of registered constrains
+  
+     :author: Julio C. Estrada <julio@cio.mx>
+  """
+  
+  init_state = 0 # Initial state
+  data_loaded = 1 # The data has been loaded
+  data_unloaded = 2 # The data has been unloaded
+  data_saved = 3 # The data has been saved
+  data_processing = 4 # The data is being processed
+  data_processed = 5 # The data has been processed
+  data_invalid = 6 # The data is invalid
+  
+  action_canceled = 7 # The action was canceled
+  action_executed = 8 # The action was excetude
+  action_accepted = 9 # The action was accepted
+  
+  file_open = 10 # The file is open
+  file_closed = 11 # The file is close
+  file_saved = 12 # The file is saved
+  
+  user_interacting = 13 # The user is interaction
 
-  busy_state = 14
+  busy_state = 14 # The application is busy
   
+  # The set of constrains.
   _constrains = set([init_state, data_loaded, data_saved, data_unloaded,
                      data_processing, data_processed, data_processed,
-                     action_accepted, action_canceled, action_canceled,
+                     action_accepted, action_canceled, action_executed,
                      file_closed, file_open, file_saved,
                      user_interacting, busy_state])
+  # The current state
   _state = set([init_state])
   
+  # Signal to notify that the state has been changed
   stateChanged = pyqtSignal(int)
     
   def __init__(self, parent=None):
+    """
+    Initializes the QObject.
+    
+       :author: Julio C. Estrada <julio@cio.mx>
+    """
     super(Constrains, self).__init__(parent)
     
   
   def setState(self, uistate):
+    """
+    Sets the current state.
+    
+    The current state can be set as a single constrain or a list of constrains.
+    
+       :param uistate: The constrain or constrains to be set in the current state.
+       :type uistate: int or str.
+       :raises:
+          - KeyError if the constrains given are not registered in `Constrains`
+          - TypeError if is not passed an integer or a list of integers
+       
+    :author: Julio C. Estrada <julio@cio.mx>
+    """
     if isinstance(uistate, list):
       state = set(uistate)
     elif isinstance(uistate, int):
@@ -66,25 +114,70 @@ class Constrains(QObject):
     self.stateChanged.emit(self._constrains)
         
   def getState(self):
+    """
+    Gives the current state.
+    
+      :returns: int or list, the constrain or list of constrains
+                of the current state.
+      :author: Julio C. Estrada <julio@cio.mx>
+    """
     return self._state
   
   def All(self):
+    """
+    Gives the set of all registered constrains.
+
+    :returns: set, the set of all constrains.
+    :author: Julio C. Estrada <julio@cio.mx>
+    """
     return Constrains._constrains.copy()
     
 class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   """ Graphic user interface for fringeproc.
 
-  This user interface offers menus to interact with the user. 
+  This user interface offers menus to interact with the user. The user
+  interface has actions an presents data to the user.
+    
+  Logical design
+  ==============
+  This application is a tool for fringe pattern analysis and signal processing.
+  Then, the main data that this application uses is *image data*. The user 
+  interface has an area where the *image data* is shown to the user as an image.
+  This area is a `QtGui.QGraphicsView`. The image data is wrapped in a
+  `unwrappixmapitem.UnwrapPixmapItem` which is a `QtGui.QPixmapItem` and is
+  presented in the scene of the `QtGui.QGraphicsView`.
   
-  Properties:
-   * _image: A reference to the PixmapItem that contains the image data
-     being shown in the application scene.
-     :type: UnwrapPixmapItem
-   * _scene: The graphics scene that shows the graphic elements in the user
-     interface.
-     :type: QGraphicsScene
-   * _system_dlg: Instance of the current system dialog.
+   Actions
+   -------
+   In this context, an action is any object in the user interface that executes
+   a command. For example: the *File* menu may has the following actions:
+     - *Open*
+     - *Save*
+     - *Close*
+     - *Quit*
      
+   Each of these is an action. Each action has attached a constrain that enables
+   or disables this action only if one of its constrains matches the current 
+   state of constrains. Then, to manage this, each user action must set the 
+   current constrain state to one of the defined in `Constrains`.
+   
+   Actions that process data are called systems. Each system has its dialog for
+   the user. In the system's dialog the user sets the paremeters of the system
+   being executed. This user interface mantains a reference to the current
+   system's dialog and implements methods and operations that responds to the
+   system's dialog. Also, the user interface mantains a reference to the
+   constrains to mantain the current state of constrains set by the user action.
+     
+    :attribute _image: A reference to the `unwrappixmapitem.UnwrapPixmapItem` that 
+                       wraps the image data and tha is show in the application 
+                       *graphics view*.
+    :type _image: unwrappixmapitem.UnwrapPixmapItem
+    :attribute _scene: The graphics scene that shows the graphic elements (*image 
+                       data*) graphics view of the user interface.
+    :type _scene: QtGui.QGraphicsScene
+    :attribute _system_dlg: Instance of the current system dialog.
+    :type _system_dlg: classes extended from QtGui.QDialog
+
   Author: Julio C. Estrada <julio@cio.mx>
   """
   # PixmapItem having the image data
@@ -99,17 +192,16 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
   _process = None
   
   def __init__(self, parent=None):
-    """ UnwrapGUI(parent=None)
+    """
     Constructs the graphic user interface.
     
     Initializes the scene and the graphics view.
     
-    Parameters:
-     * parent: A widge parent. If it is `None` it means that it is the
-       principal widget.
-       :type: QWidget
+     :param parent: A widge parent. If it is `None` it means that it is the
+                    principal widget.
+     :type parent: QtGui.QWidget
     
-    Author: Julio C. Estrada <julio@cio.mx>
+     :author: Julio C. Estrada <julio@cio.mx>
     """
     super(UnwrapGUI,self).__init__(parent)
     self.setupUi(self)
@@ -122,10 +214,9 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     
   def _connectActions(self):
     """
-    _connectActions()
-    Connects the signals and slots of menu actions.
+    Connects the signals and slots of menu actions and defines its constrains.
     
-    Author: Julio C. Estrada <julio@cio.mx>
+      :author: Julio C. Estrada <julio@cio.mx>
     """
     self._mnuFileClose.triggered.connect(self._onClose)
     self._mnuFileOpen.triggered.connect(self._onOpen)
@@ -148,27 +239,30 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
 
 
     self._actionState.stateChanged.connect(self._onUpdateInterface)
-    
+  
+  @pyqtSlot()  
   def _onPhaseUnwrapping(self):
     """
-    _onPhaseUnwrapping()
-    Called when the user selects 'Phase unwrapping' from the system menu.
+    Slot called when the user selects 'Phase unwrapping' from the system menu.
     
+    While is being executed, this sets the following states:
+      - `Constrains.busy_state`
+      - `Constrains.data_processing`
+      - `Constrains.action_executed`
+    On canseled state is
+      - `Constrains.action_canceled`
     Author: Julio C. Estrada <julio@cio.mx>
     """
-    self._guiState.setState(Constrains.action_executed)
 
     if self._image is not None:
-      self._guiState.setState(Constrains.action_accepted)
-      self._guiState.setState(Constrains.data_processing)
-      
       self._system_dlg = DlgUnwrap(self)
       dlg = self._system_dlg
-      dlg.exec_()
       
-      self._guiState.setState(Constrains.data_processed)
-    
-    self._guiState.setState(Constrains.action_canceled)
+      self._actionState.setState([Constrains.busy_state,
+                                  Constrains.data_processing,
+                                  Constrains.action_executed])
+      dlg.exec_()
+      self._actionState.setState(Constrains.action_canceled)
               
   def _onPhaseDemodulation(self):
     """
