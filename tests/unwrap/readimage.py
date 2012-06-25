@@ -6,6 +6,7 @@ import fringeprocess as fringep
 class Image(fringep.Process):
     image_loaded = 100
     image_notloaded = 101
+    image_mask_loaded=102
 
     _fname = None
     _format = None
@@ -22,6 +23,17 @@ class Image(fringep.Process):
             self.start()
         else:
             raise IOError, "No file name given"
+        self._state = self.image_loaded
+
+    def openMask(self, fname):
+        self._fname = fname
+        if(fname!=''):
+            ftype = os.path.splitext(fname)[1]
+            self._format = ftype
+            self.start()
+        else:
+            raise IOError, "No file name given"
+        self._state = self.image_mask_loaded
 
     def getData(self):
         return self._data
@@ -33,7 +45,6 @@ class Image(fringep.Process):
                     self._data=self._openFlt(self._fname)
                 else:
                     self._data=self._openImage(self._fname)
-                self._state = self.image_loaded
             except IOError:
                 self._state = self.image_notloaded
         self.emitFinished()

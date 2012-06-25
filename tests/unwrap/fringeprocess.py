@@ -1,9 +1,10 @@
 from PyQt4.QtCore import QThread, QMutex,\
-     QMutexLocker, QReadLocker, pyqtSignal
+     QMutexLocker, QReadWriteLock, QReadLocker, QWriteLocker, pyqtSignal
+from PyQt4.QtGui import QDialog
 
 class Process(QThread):
     _mutex = QMutex()
-    _lock = None
+    _rwLock = QReadWriteLock(QReadWriteLock.Recursive)
 
     process_stopped = 0
     process_finished = 1
@@ -12,6 +13,7 @@ class Process(QThread):
     _state = process_finished
 
     finished = pyqtSignal(int)
+    progress = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super(Process, self).__init__(parent)
@@ -21,7 +23,7 @@ class Process(QThread):
             _state = stopped
 
     def getState(self):
-        with QMutexLocker(self._mutex):
+        with QReadLocker(self._rwLock):
             return self._state
 
     def emitFinished(self):
@@ -31,3 +33,4 @@ class Process(QThread):
         with QMutexLocker(self._mutex):
             _state = self.process_finished;
         self.emitFinished()
+        

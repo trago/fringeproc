@@ -229,7 +229,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         self._mnuFileClose.constrainedTo = set([Constrains.data_loaded, 
                                                 Constrains.file_open])
         self._mnuFileOpen.constrainedTo = self._actionState.All() - \
-            set([self._actionState.busy_state])
+            set([self._actionState.busy_state, self._actionState.data_processing])
         self._mnuFileOpenMask.constrainedTo = set([Constrains.data_loaded,
                                                    Constrains.file_open])
         self._mnuFileQuit.constrainedTo = self._actionState.All()
@@ -254,16 +254,34 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
           - `Constrains.action_canceled`
         Author: Julio C. Estrada <julio@cio.mx>
         """
-
+        
         if self._image is not None:
             self._system_dlg = DlgUnwrap(self)
             dlg = self._system_dlg
 
-            self._actionState.setState([Constrains.busy_state,
-                                        Constrains.data_processing,
-                                        Constrains.action_executed])
-            dlg.exec_()
-            self._actionState.setState(Constrains.action_canceled)
+            dlg.process_done.connect(self._onUnwrappingFinished)
+            self._actionState.setState([Constrains.user_interacting])
+            dlg.setModal(True)
+            dlg.show()
+    
+    def _onUnwrappingFinished(self, result):
+        """
+        Called when the phase unwrapping processing has done.
+        
+        :param result: Result code
+        "type result: int
+        """
+        if result == 0:
+            print "Phase unwrapping canceled"
+            self._actionState.setState([Constrains.action_canceled,
+                                        Constrains.data_loaded])
+        elif result == 1:
+            print "Phase unwrapping executed"
+            self._actionState.setState(Constrains.data_processing)
+        else:
+            print "Phase unwrapping done"    
+            self._actionState.setState(Constrains.data_processed)
+        
 
     def _onPhaseDemodulation(self):
         """
@@ -301,19 +319,35 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
 
     @pyqtSlot(int)
     def _onProcessOpen(self, state):
-        if self._process.getState() == self._process.image_loaded:
+        if state == self._process.image_loaded:
             for item in self._scene.items():
                 self._scene.removeItem(item)
             self._image = UnwrapPixmapItem(self._process.getData())
             self._scene.addItem(self._image)
             self._image.setMoveEventHandler(self._onImageCursorOver)
             self._graphicsView.setSceneRect(self._scene.itemsBoundingRect())
-
-            self._process.finished.disconnect(self._onProcessOpen)
-            self.setCursor(Qt.ArrowCursor)
-            self.statusBar().showMessage("")
-
-            self._actionState.setState([Constrains.file_open, Constrains.data_loaded])
+        elif state == self._process.image_mask_loaded:
+            image = self._image.getImage().getData('reference')
+            mask = self._process.getData()/255
+            if mask.shape != image.shape:
+                msg = \
+                """
+                Mask dimensions do no match the imade data dimensions.
+                
+                Image data dimensions are %dx%d while mask dimensions are %dx%d.
+                """ % (image.shape[0], image.shape[1], mask.shape[0],
+                       mask.shape[1])
+                QtGui.QMessageBox.information(self, "While opening mask file",
+                                              msg)
+            else:
+                data = image*mask
+                self._image.setImage(data)
+        self._process.finished.disconnect(self._onProcessOpen)
+        self.setCursor(Qt.ArrowCursor)
+        self.statusBar().showMessage("")
+        
+        self._actionState.setState([Constrains.file_open, 
+                                    Constrains.data_loaded])
 
     @pyqtSlot()
     def _onOpenMask(self):
@@ -327,15 +361,13 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         fname = QtGui.QFileDialog.getOpenFileName(self, "Open mask image", 
                                                   QtCore.QDir.currentPath(),
                                                   fileFilters)
-        if(fname!='' and self._image!=None):
-            image = self._image.getImage().getData('reference')
-            self._openImage(fname, 'keep')
-            if self._image != None:
-                mask = self._image.getImage().getData('reference')/255
-                data = image*mask
-                self._image.setImage(data)
-                self._actionState.setState(Constrains.data_loaded)
 
+        self.setCursor(Qt.BusyCursor)
+        self._process = Image()
+        self._process.finished.connect(self._onProcessOpen)
+        self._process.openMask(fname)
+        self.statusBar().showMessage("Loading image file!!!")
+        
     def _onClose(self):
         self._actionState.setState([Constrains.file_closed, 
                                     Constrains.data_unloaded])
@@ -405,3 +437,13 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
             obj.setEnabled(True)
             return
         obj.setEnabled(False)
+        
+    def setProcess(self, process):
+        """
+        Sets the current process being executed.
+        
+          :param process" The process object to bee set as the current process
+          
+          :author: Julio C. Estrada <julio@cio.mx>
+        """
+        self._process = process
