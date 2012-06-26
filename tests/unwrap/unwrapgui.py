@@ -16,12 +16,13 @@ import os
 
 class Constrains(QObject):
     """
-    Manages constrains for the actions presented in the user interface.
+    Manages constrains for the actions presented in the user
+    interface.
 
-    There is a set of constrains and a set of current constrains that here
-    we refer as state. We can set the constrains as a single constrain or
-    by passing a lis of constrains. If we set a constrain that is not registered
-    here, a `KeyError` exception is raised.
+    There is a set of constrains and a set of current constrains that
+    here we refer as state. We can set the constrains as a single
+    constrain or by passing a lis of constrains. If we set a constrain
+    that is not registered here, a `KeyError` exception is raised.
 
        :attribute init_state: Initial state.
        :attribute data_loaded: The data has been loaded.
@@ -89,13 +90,17 @@ class Constrains(QObject):
         """
         Sets the current state.
 
-        The current state can be set as a single constrain or a list of constrains.
+        The current state can be set as a single constrain or a list
+        of constrains. 
 
-           :param uistate: The constrain or constrains to be set in the current state.
-           :type uistate: int or str.
-           :raises:
-              - KeyError if the constrains given are not registered in `Constrains`
-              - TypeError if is not passed an integer or a list of integers
+        :param uistate: The constrain or constrains to be set in the
+                        current state.  
+        :type uistate: int or str. 
+        :raises:
+              - KeyError if the constrains given are not registered in
+                `Constrains` 
+              - TypeError if is not passed an integer or a list of
+                integers 
 
         :author: Julio C. Estrada <julio@cio.mx>
         """
@@ -117,8 +122,8 @@ class Constrains(QObject):
         """
         Gives the current state.
 
-          :returns: int or list, the constrain or list of constrains
-                    of the current state.
+        :returns: int or list, the constrain or list of constrains
+                  of the current state.
           :author: Julio C. Estrada <julio@cio.mx>
         """
         return self._state
@@ -140,40 +145,48 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
 
     Logical design
     ==============
-    This application is a tool for fringe pattern analysis and signal processing.
-    Then, the main data that this application uses is *image data*. The user 
-    interface has an area where the *image data* is shown to the user as an image.
-    This area is a `QtGui.QGraphicsView`. The image data is wrapped in a
-    `unwrappixmapitem.UnwrapPixmapItem` which is a `QtGui.QPixmapItem` and is
-    presented in the scene of the `QtGui.QGraphicsView`.
+    This application is a tool for fringe pattern analysis and signal
+    processing. 
+    Then, the main data that this application uses is *image
+    data*. The user interface has an area where the *image data* is
+    shown to the user as an image. This area is a
+    `QtGui.QGraphicsView`. The image data is wrapped in a
+    `unwrappixmapitem.UnwrapPixmapItem` which is a `QtGui.QPixmapItem`
+    and is presented in the scene of the `QtGui.QGraphicsView`.
 
      Actions
      -------
-     In this context, an action is any object in the user interface that executes
-     a command. For example: the *File* menu may has the following actions:
+     In this context, an action is any object in the user interface
+     that executes a command. For example: the *File* menu may has the
+     following actions:
        - *Open*
        - *Save*
        - *Close*
        - *Quit*
 
-     Each of these is an action. Each action has attached a constrain that enables
-     or disables this action only if one of its constrains matches the current 
-     state of constrains. Then, to manage this, each user action must set the 
-     current constrain state to one of the defined in `Constrains`.
+     Each of these is an action. Each action has attached a constrain
+     that enables or disables this action only if one of its
+     constrains matches the current state of constrains. Then, to
+     manage this, each user action must set the current constrain
+     state to one of the defined in `Constrains`. 
 
-     Actions that process data are called systems. Each system has its dialog for
-     the user. In the system's dialog the user sets the paremeters of the system
-     being executed. This user interface mantains a reference to the current
-     system's dialog and implements methods and operations that responds to the
-     system's dialog. Also, the user interface mantains a reference to the
-     constrains to mantain the current state of constrains set by the user action.
+     Actions that process data are called systems. Each system has its
+     dialog for the user. In the system's dialog the user sets the
+     paremeters of the system being executed. This user interface
+     mantains a reference to the current system's dialog and
+     implements methods and operations that responds to the system's
+     dialog. Also, the user interface mantains a reference to the
+     constrains to mantain the current state of constrains set by the
+     user action.
 
-      :attribute _image: A reference to the `unwrappixmapitem.UnwrapPixmapItem` that 
-                         wraps the image data and tha is show in the application 
-                         *graphics view*.
+      :attribute _image: A reference to the
+                         `unwrappixmapitem.UnwrapPixmapItem` that  
+                         wraps the image data and tha is show in the
+                         application  *graphics view*.
       :type _image: unwrappixmapitem.UnwrapPixmapItem
-      :attribute _scene: The graphics scene that shows the graphic elements (*image 
-                         data*) graphics view of the user interface.
+      :attribute _scene: The graphics scene that shows the graphic
+                         elements (*image data*) graphics view of the
+                         user interface. 
       :type _scene: QtGui.QGraphicsScene
       :attribute _system_dlg: Instance of the current system dialog.
       :type _system_dlg: classes extended from QtGui.QDialog
@@ -197,8 +210,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
 
         Initializes the scene and the graphics view.
 
-         :param parent: A widge parent. If it is `None` it means that it is the
-                        principal widget.
+         :param parent: A widge parent. If it is `None` it means that
+                        it is the principal widget.
          :type parent: QtGui.QWidget
 
          :author: Julio C. Estrada <julio@cio.mx>
@@ -214,7 +227,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
 
     def _connectActions(self):
         """
-        Connects the signals and slots of menu actions and defines its constrains.
+        Connects the signals and slots of menu actions and defines its
+        constrains. 
 
           :author: Julio C. Estrada <julio@cio.mx>
         """
@@ -244,7 +258,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     @pyqtSlot()  
     def _onPhaseUnwrapping(self):
         """
-        Slot called when the user selects 'Phase unwrapping' from the system menu.
+        Slot called when the user selects 'Phase unwrapping' from the
+        system menu.
 
         While is being executed, this sets the following states:
           - `Constrains.busy_state`
@@ -286,7 +301,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     def _onPhaseDemodulation(self):
         """
         _onPhaseDemodulation()
-        Called when the user selects 'Phase demodulation' from the system menu.
+        Called when the user selects 'Phase demodulation' from the
+        system menu. 
 
         Author: Julio C. Estrada <julio@cio.mx>
         """
@@ -298,9 +314,9 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         _onOpen()
         Called when the user selects 'Open' from file menu.
 
-        It launches a dialog for the user in order to select the file to open.
-        When the file is opened it is created a QPixmapItem that holds the image
-        data as a numpy array.
+        It launches a dialog for the user in order to select the file
+        to open. When the file is opened it is created a QPixmapItem
+        that holds the image data as a numpy array.
 
         Author: Julio C. Estrada <julio@cio.mx>
         """
@@ -352,8 +368,8 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
     @pyqtSlot()
     def _onOpenMask(self):
         """ _onOpenMask()
-        Called when user selects 'Open mask' from file menu in order to apply this
-        mask to an already loaded image data.
+        Called when user selects 'Open mask' from file menu in order
+        to apply this mask to an already loaded image data.
 
         Author: Julio C. Estrada <julio@cio.mx>
         """
@@ -414,8 +430,9 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         """ getScene()
         Returns the graphics scene of the user interface.
 
-        The graphics scene is where al data to be processed is shown in a graphics
-        view. Use this graphics scene to implement user interactions when needed.
+        The graphics scene is where al data to be processed is shown
+        in a graphics view. Use this graphics scene to implement user
+        interactions when needed. 
 
         Return:
          * scene: The graphics scene
@@ -442,8 +459,9 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
         """
         Sets the current process being executed.
         
-          :param process" The process object to bee set as the current process
+        :param process" The process object to bee set as the current
+                        process.
           
-          :author: Julio C. Estrada <julio@cio.mx>
+        :author: Julio C. Estrada <julio@cio.mx>
         """
         self._process = process
