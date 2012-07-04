@@ -1,4 +1,4 @@
-from PyQt4.QtCore import QObject
+from PyQt4.QtCore import QObject,  pyqtSignal
 
 class Constrains(QObject):
     """
@@ -61,7 +61,7 @@ class Constrains(QObject):
     _state = set([init_state])
 
     # Signal to notify that the state has been changed
-    stateChanged = pyqtSignal(int)
+    stateChanged = pyqtSignal(set)
 
     def __init__(self, parent=None):
         """
@@ -100,9 +100,9 @@ class Constrains(QObject):
         if len(state & self._constrains) > 0:
             self._state = state
         else:
-            raise KeyError, "Attemptinng to ser an unknown state"
+            raise KeyError, "Attemptinng to set an unknown state"
 
-        self.stateChanged.emit(self._constrains)
+        self.stateChanged.emit(state)
 
     def getState(self):
         """
