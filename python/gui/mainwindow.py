@@ -1,15 +1,23 @@
-from PyQt4.QtGui import QMainWindow
+from PyQt4.QtGui import QMainWindow, QGraphicsScene
 from PyQt4.QtCore import pyqtSlot
 from ui_mainwin import Ui_MainGUI
 from constrains import Constrains
-from filedialog import FileDialog
+from filedialog import OpenDialog
+from image import Image
+from pixmapitem import PixmapItem
+from document import Document
 
 class MainWindow(QMainWindow):
     _state = None
+    _actionDialog = None
+    _doc = None
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self._ui = Ui_MainGUI()
         self._ui.setupUi(self)
+        scene = QGraphicsScene()
+        self._ui._graphicsView.setScene(scene)
+        
         self._state = Constrains()
 
     def connectSignals(self):
@@ -70,9 +78,38 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _onOpen(self):
-        dlg = FileDialog(self, "Open file")
+        dlg = OpenDialog(self, "Open file")
         dlg.setModal(True)
-        dlg.exec_()
+        dlg.taskFinished.connect(self._onOpenFinished)
+        dlg.show()
+        self._actionDialog = dlg
+        
+        self._state.setState(Constrains.user_interacting)
+        
+    @pyqtSlot(int)
+    def _onOpenFinished(self, res):
+        if res == 1:
+            self._doc = Document(self._actionDialog.getOutput())
+            self.showImage(self._doc.getImage())
+            self._state.setState(Constrains.data_loaded)
+            
+        scene = self._ui._graphicsView.scene()
+        self._ui._graphicsView.setSceneRect(scene.itemsBoundingRect())
+
+    def showImage(self, image):
+        scene = self._ui._graphicsView.scene()
+        items = scene.items()
+        for item in items:
+            scene.removeItem(item)
+            
+        item = PixmapItem(image)
+        item.setMoveEventHandler(self._onMouseHoverImage)
+        scene.addItem(item)
+        
+    def _onMouseHoverImage(self, pos, image):
+        strPos = "pixel(%d, %d) = " % (pos.x(),pos.y())
+        strPos += str(image[pos.y(), pos.x()])
+        self.statusBar().showMessage(strPos, 3000)
 
     @pyqtSlot()
     def _onOpenMask(self):
@@ -80,7 +117,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _onQuit(self):
-        pass
+        self.close()
 
     @pyqtSlot()
     def _onSave(self):

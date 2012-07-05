@@ -1,5 +1,7 @@
 from PyQt4.QtCore import QThread, QMutex, QReadWriteLock, \
-                         pyqtSignal, pyqtSlot
+                         pyqtSignal, pyqtSlot, QMutexLocker, \
+                         QReadLocker, QWriteLocker
+from copy import copy
 
 class Process(QThread):
     _mutex = QMutex()
@@ -7,9 +9,9 @@ class Process(QThread):
     _input = None
     _output = None
     _parameters = None
+    state = 0
     
     progress = pyqtSignal(object)
-    status = 0
     def __init__(self, parent = None):
         super(Process, self).__init__(parent)
         
@@ -20,16 +22,17 @@ class Process(QThread):
         self._lock.unlock()
         
     def setInput(self, inp):
-        self._input = inp
-        
-    def setOutput(self, out):
-        self._output = out
-        
+        with QMutexLocker(self._mutex):
+            self._input = copy(inp)
+                
     def setParameters(self, parameters):
-        self._parameters = parameters
+        with QMutexLocker(self._mutex):
+            self._parameters = copy(parameters)
         
     def getInput(self):
-        return self._input
+        with QMutexLocker(self._mutex):
+            return copy(self._input)
     
     def getOutput(self):
-        return self._output
+        with QMutexLocker(self._mutex):
+            return copy(self._output)

@@ -2,15 +2,15 @@ from PyQt4.QtGui import QDialog
 from PyQt4.QtCore import pyqtSignal, pyqtSlot
 from copy import copy
 
-class ActionDialog(QDialog):
-    _process = None
-    _input = None
-    _output = None
-    _progressDlg = None
-    
+class ActionDialog(QDialog):    
     taskFinished = pyqtSignal(int)
     def __init__(self, parent=None):
         super(ActionDialog, self).__init__(parent)
+        
+        self._process = None
+        self._input = None
+        self._output = None
+        self._progressDlg = None
         
         self.setModal(True)
         self.accepted.connect(self.onAccepted)
@@ -30,7 +30,7 @@ class ActionDialog(QDialog):
     @pyqtSlot()
     def onAccepted(self):
         if self._process is not None:
-            self._process.finished.connect(self.onFinished)
+            self._process.finished.connect(self.onProcessFinished)
             self._process.progress.connect(self.onProgressUpdate)
             self._process.start()
             self.hide()
@@ -40,12 +40,17 @@ class ActionDialog(QDialog):
                 self._progressDlg.show()
     
     @pyqtSlot()
-    def onFinished(self):
-        self._process.finished.disconnect(self.onFinished)
-        self._process.progress.connect(self.onProgressUpdate)
-        self.taskFinished.emit(self._process.status)
+    def onProcessFinished(self):
+        self._output = self._process.getOutput()
+
+        self._process.finished.disconnect(self.onProcessFinished)
+        self._process.progress.disconnect(self.onProgressUpdate)        
+        self.taskFinished.emit(self._process.state)
+        
+        del self._process
+        self._process = None
         if self._progressDlg is not None:
-            self.progressDlg.hide()
+            self.progressDlg.done(1)
         
     @pyqtSlot(object)
     def onProgressUpdate(self, data):
