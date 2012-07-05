@@ -1,7 +1,7 @@
 from PyQt4.QtGui import QImage
 import numpy as np
 
-class UnwrapImage(QImage):
+class Image(QImage):
     """
     QImage that loads data from a numpy array.
 
@@ -33,7 +33,7 @@ class UnwrapImage(QImage):
         self._array = np_array.copy()
         self._fromC1()
         h,w = self._array.shape
-        super(UnwrapImage, self).__init__(self._data, w, h, self.Format_RGB32)
+        super(Image, self).__init__(self._data, w, h, self.Format_RGB32)
 
 
     def _fromC1(self):
@@ -81,7 +81,7 @@ class UnwrapImage(QImage):
 
         Author: Julio C. Estrada
         """
-        return self._array.copy()
+        return self._array
 
     def getData(self, flag=''):
         """
@@ -97,4 +97,3 @@ class UnwrapImage(QImage):
             return self._image.copy()
         if flag=='reference':
             return self._image
-        return None
