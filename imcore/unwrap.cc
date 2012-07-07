@@ -95,6 +95,7 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
   }
 
   Scanner scan(dx, dy, pixel); 
+  scan.setMask(mask);
   int i,j, iter=0;
   if(wphase.type()==CV_32F)
     do{
@@ -163,6 +164,7 @@ bool Unwrap::runInteractive(int iters)
     cv::GaussianBlur(path, path, cv::Size(0,0), _smooth, _smooth);
     gradient(path, dx, dy);
     _scanner = new Scanner(dx, dy, _pixel);
+    _scanner->setMask(_mask);
   }
 
   int iter=0;
