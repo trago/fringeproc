@@ -48,6 +48,8 @@ public:
    * @param pixel the starting pixel point
    */
   Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel);
+
+  void setMask(cv::Mat mask);
 #endif
   /**
    * Determines the next pixel point in the sequence.
@@ -97,6 +99,7 @@ private:
   cv::Mat_<double> m_matu;
   /** The frequencies or differences in y-direction */
   cv::Mat_<double> m_matv;
+  cv::Mat_<char> m_mask;
   /** Label field that marks whith true the already visited pixels. */
   cv::Mat_<bool> m_visited;
   /** The current pixel in the scanning sequence */

@@ -17,6 +17,7 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
   m_matu=mat_u;
   m_matv=mat_v;
   m_visited = cv::Mat_<bool>::zeros(mat_u.rows, mat_u.cols);
+  m_mask = cv::Mat_<bool>::ones(mat_u.rows, mat_u.cols);
   m_pixel.x=0;
   m_pixel.y=0;
   insertPixelToPath(m_pixel);
@@ -30,6 +31,7 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
   m_matu=mat_u;
   m_matv=mat_v;
   m_visited = cv::Mat_<bool>::zeros(mat_u.rows, mat_u.cols);
+  m_mask = cv::Mat_<bool>::ones(mat_u.rows, mat_u.cols);
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;
@@ -39,6 +41,11 @@ Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
 void Scanner::setFreqMin(double freq)
 {
   m_freqmin = freq;
+}
+
+void Scanner::setMask(cv::Mat mask)
+{
+  m_mask = mask;
 }
 
 bool Scanner::next()
@@ -67,30 +74,30 @@ bool Scanner::checkNeighbor(cv::Point pixel)
 {
   int y=pixel.y, x=pixel.x;
 
-  if(!m_visited(y,x)){
+  if(!m_visited(y,x) && m_mask(y,x)){
     if(x-1>=0)
-      if(m_visited(y,x-1))
+      if(m_visited(y,x-1) && m_mask(y,x-1))
         return true;
     if(x+1<m_matu.cols)
-      if(m_visited(y,x+1))
+      if(m_visited(y,x+1) && m_mask(y,x+1))
         return true;
     if(y-1>=0)
-      if(m_visited(y-1,x))
+      if(m_visited(y-1,x) && m_mask(y-1,x))
         return true;
     if(y+1<m_matu.rows)
-      if(m_visited(y+1,x))
+      if(m_visited(y+1,x) && m_mask(y+1,x))
         return true;
     if(x-1>=0 && y-1>=0)
-      if(m_visited(y-1,x-1))
+      if(m_visited(y-1,x-1) && m_mask(y-1,x-1))
         return true;
     if(x+1<m_matu.cols && y-1>=0)
-      if(m_visited(y-1,x+1))
+      if(m_visited(y-1,x+1) && m_mask(y-1,x+1))
         return true;
     if(x+1<m_matu.cols && y+1<m_matu.rows)
-      if(m_visited(y+1,x+1))
+      if(m_visited(y+1,x+1) && m_mask(y+1,x+1))
         return true;
     if(x-1>=0 && y+1<m_matu.rows)
-      if(m_visited(y+1,x-1))
+      if(m_visited(y+1,x-1) && m_mask(y+1,x-1))
         return true;
   }
   return false;
@@ -140,45 +147,45 @@ bool Scanner::next(double fpow)
     for(int i=0; i<8; i++) magn[i]=-1;
     int x=m_pixel.x, y=m_pixel.y;
     if(x-1>=0)
-      if(!m_visited(y,x-1)){
+      if(!m_visited(y,x-1) && m_mask(y,x-1)){
         pixel[0]=cv::Point(x-1,y);
         magn[0]=m_matu(y,x-1)*m_matu(y,x-1) + m_matv(y,x-1)*m_matv(y,x-1);
       }
     if(x+1<m_matu.cols)
-      if(!m_visited(y,x+1)){
+      if(!m_visited(y,x+1) && m_mask(y,x+1)){
         pixel[1]=cv::Point(x+1,y);
         magn[1]=m_matu(y,x+1)*m_matu(y,x+1) + m_matv(y,x+1)*m_matv(y,x+1);
       }
     if(y-1>=0)
-      if(!m_visited(y-1,x)){
+      if(!m_visited(y-1,x) && m_mask(y-1,x)){
         pixel[2]=cv::Point(x,y-1);
         magn[2]=m_matu(y-1,x)*m_matu(y-1,x) + m_matv(y-1,x)*m_matv(y-1,x);
       }
     if(y+1<m_matu.rows)
-      if(!m_visited(y+1,x)){
+      if(!m_visited(y+1,x) && m_mask(y+1,x)){
         pixel[3]=cv::Point(x,y+1);
         magn[3]=m_matu(y+1,x)*m_matu(y+1,x) + m_matv(y+1,x)*m_matv(y+1,x);
       }
     if(x-1>=0 && y-1>=0)
-      if(!m_visited(y-1,x-1)){
+      if(!m_visited(y-1,x-1) && m_mask(y-1,x-1)){
         pixel[4]=cv::Point(x-1,y-1);
         magn[4]=m_matu(y-1,x-1)*m_matu(y-1,x-1) +
             m_matv(y-1,x-1)*m_matv(y-1,x-1);
       }
     if(x+1<m_matu.cols && y-1>=0)
-      if(!m_visited(y-1,x+1)){
+      if(!m_visited(y-1,x+1) && m_mask(y-1,x+1)){
         pixel[5]=cv::Point(x+1,y-1);
         magn[5]=m_matu(y-1,x+1)*m_matu(y-1,x+1) +
             m_matv(y-1,x+1)*m_matv(y-1,x+1);
       }
     if(x+1<m_matu.cols && y+1<m_matu.rows)
-      if(!m_visited(y+1,x+1)){
+      if(!m_visited(y+1,x+1) && m_mask(y+1,x+1)){
         pixel[6]=cv::Point(x+1,y+1);
         magn[6]=m_matu(y+1,x+1)*m_matu(y+1,x+1) +
             m_matv(y+1,x+1)*m_matv(y+1,x+1);
       }
     if(x-1>=0 && y+1<m_matu.rows)
-      if(!m_visited(y+1,x-1)){
+      if(!m_visited(y+1,x-1) && m_mask(y+1,x-1)){
         pixel[7]=cv::Point(x-1,y+1);
         magn[7]=m_matu(y+1,x-1)*m_matu(y+1,x-1) +
             m_matv(y+1,x-1)*m_matv(y+1,x-1);
@@ -221,8 +228,10 @@ cv::Point2i Scanner::getPosition()
 inline
 void Scanner::insertPixelToPath(const cv::Point& pixel)
 {
-  m_visited(pixel.y, pixel.x)=true;
-  m_path.push_back(pixel);
+  if(m_mask(pixel.y, pixel.x)){
+    m_visited(pixel.y, pixel.x)=true;
+    m_path.push_back(pixel);
+  }
 }
 
 void Scanner::updateFreqMin(bool update)

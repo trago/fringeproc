@@ -26,6 +26,7 @@ public:
 #ifndef SWIG
   cv::Mat getOutput();
   cv::Mat getInput();
+  void setMask(cv::Mat mask);
 #endif
 
   void setPixel(cv::Point pixel);
@@ -33,6 +34,7 @@ public:
 
 private:
   cv::Mat_<char> _visited;
+  cv::Mat_<char> _mask;
   cv::Mat_<double> _wphase;
   cv::Mat_<double> _uphase;
   cv::Point _pixel;

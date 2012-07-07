@@ -5,7 +5,9 @@
 
 inline
 void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-                         cv::Mat& pp, cv::Mat& visited, float tao, const int N)
+			  const cv::Mat& mask,
+			  cv::Mat& pp, cv::Mat& visited, 
+			  float tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
   int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
@@ -16,16 +18,18 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
     if(i%2==0)
       for(int j=low_j; j<hig_j; j++){
         pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-                                           wp.ptr<float>(),
-                                           pp.ptr<float>(),
-                                           visited.ptr<uchar>(),
-                                           tao, wp.rows, wp.cols);
+					wp.ptr<float>(),
+					mask.ptr<char>(),
+					pp.ptr<float>(),
+					visited.ptr<uchar>(),
+					tao, wp.rows, wp.cols);
         visited.at<uchar>(i,j)=1;
       }
     else
       for(int j=hig_j-1; j>=low_j; j--){
         pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
                                         wp.ptr<float>(),
+					mask.ptr<char>(),
                                         pp.ptr<float>(),
                                         visited.ptr<uchar>(),
                                         tao, wp.rows, wp.cols);
@@ -36,7 +40,9 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
 
 inline
 void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-                         cv::Mat& pp, cv::Mat& visited, double tao, const int N)
+			  const cv::Mat& mask,
+			  cv::Mat& pp, cv::Mat& visited, 
+			  double tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
   int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
@@ -47,19 +53,21 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
     if(i%2==0)
       for(int j=low_j; j<hig_j; j++){
         pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-                                           wp.ptr<double>(),
-                                           pp.ptr<double>(),
-                                           visited.ptr<uchar>(),
-                                           tao, wp.rows, wp.cols);
+					 wp.ptr<double>(),
+					 mask.ptr<char>(),
+					 pp.ptr<double>(),
+					 visited.ptr<uchar>(),
+					 tao, wp.rows, wp.cols);
         visited.at<uchar>(i,j)=1;
       }
     else
       for(int j=hig_j-1; j>=low_j; j--){
         pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-                                        wp.ptr<double>(),
-                                        pp.ptr<double>(),
-                                        visited.ptr<uchar>(),
-                                        tao, wp.rows, wp.cols);
+					 wp.ptr<double>(),
+					 mask.ptr<char>(),
+					 pp.ptr<double>(),
+					 visited.ptr<uchar>(),
+					 tao, wp.rows, wp.cols);
         visited.at<uchar>(i,j)=1;
       }
   }
@@ -69,8 +77,8 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
  * Phase unwrapping method 
  */
 template<typename T>
-void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
-                     double smooth_path, int n, cv::Point pixel)
+void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase, 
+		     double tao, double smooth_path, int n, cv::Point pixel)
 {
   const int M=wphase.rows, N=wphase.cols;
   cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
@@ -93,18 +101,18 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat uphase, double tao,
       pixel = scan.getPosition();
       i=pixel.y;
       j=pixel.x;
-      sunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
+      sunwrap_neighborhood(i, j, wphase, mask, uphase, visited, tao, n);
     }while(scan.next());
   else
     do{
       i=pixel.y;
       j=pixel.x;
-      dunwrap_neighborhood(i, j, wphase, uphase, visited, tao, n);
+      dunwrap_neighborhood(i, j, wphase, mask, uphase, visited, tao, n);
     }while(scan.next());
 
 }
 
-void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
+void unwrap2D(cv::Mat wphase, cv::Mat mask, cv::Mat uphase, double tao,
               double smooth_path, int N, cv::Point pixel) throw(cv::Exception)
 {
   if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
@@ -118,9 +126,9 @@ void unwrap2D(cv::Mat wphase, cv::Mat uphase, double tao,
     uphase.create(wphase.rows, wphase.cols, wphase.type());
 
   if(wphase.type()==CV_32F)
-    unwrap2D_engine<float>(wphase, uphase, tao, smooth_path, N, pixel);
+    unwrap2D_engine<float>(wphase, mask, uphase, tao, smooth_path, N, pixel);
   else
-    unwrap2D_engine<double>(wphase, uphase, tao, smooth_path, N, pixel);
+    unwrap2D_engine<double>(wphase, mask, uphase, tao, smooth_path, N, pixel);
 }
 
 Unwrap::Unwrap(cv::Mat_<double> wphase, double tau, double smooth, int N)
@@ -131,6 +139,7 @@ Unwrap::Unwrap(cv::Mat_<double> wphase, double tau, double smooth, int N)
   _N=N;
   _uphase = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
   _visited = cv::Mat_<char>::zeros(_wphase.rows, _wphase.cols);
+  _mask = cv::Mat_<char>::ones(_wphase.rows, _wphase.cols);
   _scanner = NULL;
 }
 
@@ -142,7 +151,7 @@ Unwrap::~Unwrap()
 
 void Unwrap::run()
 {
-  unwrap2D(_wphase, _uphase, _tau, _smooth, _N, _pixel);
+  unwrap2D(_wphase, _mask, _uphase, _tau, _smooth, _N, _pixel);
 }
 
 bool Unwrap::runInteractive(int iters)
@@ -160,7 +169,7 @@ bool Unwrap::runInteractive(int iters)
   do{
     _pixel = _scanner->getPosition();
     int i= _pixel.y, j=_pixel.x;
-    dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
+    dunwrap_neighborhood(i, j, _wphase, _mask, _uphase, _visited, _tau, _N);
     _visited(i,j)=1;
   }while(_scanner->next() && (++iter)<iters);
 
@@ -170,7 +179,7 @@ bool Unwrap::runInteractive(int iters)
 void Unwrap::processPixel(cv::Point pixel)
 {
   int i=pixel.y, j=pixel.x;
-  dunwrap_neighborhood(i, j, _wphase, _uphase, _visited, _tau, _N);
+  dunwrap_neighborhood(i, j, _wphase, _mask, _uphase, _visited, _tau, _N);
 }
 
 
@@ -188,3 +197,7 @@ cv::Mat Unwrap::getInput()
   return _wphase;
 }
 
+void Unwrap::setMask(cv::Mat mask)
+{
+  _mask = mask;
+}

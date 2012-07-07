@@ -43,7 +43,8 @@ float sW(float phase);
   @param x the x-coordinate of the pixel
   @param y the y-coordenate of the pixel
   @param phase the wrapped phase array
-  @param the unwrapped phase array
+  @param mask the mask that determines the region of interest
+  @param uphase the unwrapped phase array
   @param a matrix array that indicates with 1 if the pixel has been already
          unwrapped
   @param tao the parameter of the linear system. It must be less than one and
@@ -52,7 +53,7 @@ float sW(float phase);
   @param N the number of columns
   */
 float sunwrap_pixel(const size_t idx, const int x, const int y,
-                    const float *phase,
+                    const float *phase, const char* mask,
                     const float *uphase,
                     const uint8_t *visited, float tao,
                     const size_t M, const size_t N);
@@ -93,7 +94,8 @@ double dW(double phase);
   @param x the x-coordinate of the pixel
   @param y the y-coordenate of the pixel
   @param phase the wrapped phase array
-  @param the unwrapped phase array
+  @param mask the mask that determines the region of interest
+  @param uphase the unwrapped phase array
   @param a matrix array that indicates with 1 if the pixel has been already
          unwrapped
   @param tao the parameter of the linear system. It must be less than one and
@@ -102,7 +104,7 @@ double dW(double phase);
   @param N the number of columns
   */
 double dunwrap_pixel(const size_t idx, const int x, const int y,
-                     const double *phase,
+                     const double *phase, const char* mask,
                      const double *uphase,
                      const uint8_t *visited, double tao,
                      const size_t M, const size_t N);
