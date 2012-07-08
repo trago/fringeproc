@@ -1,13 +1,14 @@
 #include <utils/utils.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <utils/utils.h>
 #include "unwrap.h"
 #include "unwrap_gears.h"
 
 inline
 void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-			  const cv::Mat& mask,
-			  cv::Mat& pp, cv::Mat& visited, 
-			  float tao, const int N)
+                          const cv::Mat& mask,
+                          cv::Mat& pp, cv::Mat& visited,
+                          float tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
   int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
@@ -17,32 +18,36 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
   for(int i=low_i; i<hig_i; i++){
     if(i%2==0)
       for(int j=low_j; j<hig_j; j++){
-        pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-					wp.ptr<float>(),
-					mask.ptr<char>(),
-					pp.ptr<float>(),
-					visited.ptr<uchar>(),
-					tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
+        if(mask.at<char>(i,j)){
+          pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
+                                          wp.ptr<float>(),
+                                          mask.ptr<char>(),
+                                          pp.ptr<float>(),
+                                          visited.ptr<uchar>(),
+                                          tao, wp.rows, wp.cols);
+          visited.at<uchar>(i,j)=1;
+        }
       }
     else
       for(int j=hig_j-1; j>=low_j; j--){
-        pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-                                        wp.ptr<float>(),
-					mask.ptr<char>(),
-                                        pp.ptr<float>(),
-                                        visited.ptr<uchar>(),
-                                        tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
+        if(mask.at<char>(i,j)){
+          pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
+                                          wp.ptr<float>(),
+                                          mask.ptr<char>(),
+                                          pp.ptr<float>(),
+                                          visited.ptr<uchar>(),
+                                          tao, wp.rows, wp.cols);
+          visited.at<uchar>(i,j)=1;
+        }
       }
   }
 }
 
 inline
 void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-			  const cv::Mat& mask,
-			  cv::Mat& pp, cv::Mat& visited, 
-			  double tao, const int N)
+                          const cv::Mat& mask,
+                          cv::Mat& pp, cv::Mat& visited,
+                          double tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
   int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
@@ -52,33 +57,37 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
   for(int i=low_i; i<hig_i; i++){
     if(i%2==0)
       for(int j=low_j; j<hig_j; j++){
-        pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-					 wp.ptr<double>(),
-					 mask.ptr<char>(),
-					 pp.ptr<double>(),
-					 visited.ptr<uchar>(),
-					 tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
+        if(mask.at<char>(i,j)){
+          pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
+                                           wp.ptr<double>(),
+                                           mask.ptr<char>(),
+                                           pp.ptr<double>(),
+                                           visited.ptr<uchar>(),
+                                           tao, wp.rows, wp.cols);
+          visited.at<uchar>(i,j)=1;
+        }
       }
     else
       for(int j=hig_j-1; j>=low_j; j--){
-        pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-					 wp.ptr<double>(),
-					 mask.ptr<char>(),
-					 pp.ptr<double>(),
-					 visited.ptr<uchar>(),
-					 tao, wp.rows, wp.cols);
-        visited.at<uchar>(i,j)=1;
+        if(mask.at<char>(i,j)){
+          pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
+                                           wp.ptr<double>(),
+                                           mask.ptr<char>(),
+                                           pp.ptr<double>(),
+                                           visited.ptr<uchar>(),
+                                           tao, wp.rows, wp.cols);
+          visited.at<uchar>(i,j)=1;
+        }
       }
   }
 }
 
-/** 
- * Phase unwrapping method 
+/**
+ * Phase unwrapping method
  */
 template<typename T>
-void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase, 
-		     double tao, double smooth_path, int n, cv::Point pixel)
+void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
+                     double tao, double smooth_path, int n, cv::Point pixel)
 {
   const int M=wphase.rows, N=wphase.cols;
   cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
@@ -94,7 +103,7 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
     gradient(path, dx, dy);
   }
 
-  Scanner scan(dx, dy, pixel); 
+  Scanner scan(dx, dy, pixel);
   scan.setMask(mask);
   int i,j, iter=0;
   if(wphase.type()==CV_32F)
@@ -146,7 +155,7 @@ Unwrap::Unwrap(cv::Mat_<double> wphase, double tau, double smooth, int N)
 
 Unwrap::~Unwrap()
 {
-  if (_scanner != NULL) 
+  if (_scanner != NULL)
     delete _scanner;
 }
 
@@ -202,4 +211,27 @@ cv::Mat Unwrap::getInput()
 void Unwrap::setMask(cv::Mat mask)
 {
   _mask = mask;
+}
+
+void Unwrap::filterPhase(double sigma)
+{
+  cv::Mat ss = sin<double>(_wphase);
+  cv::Mat cc = cos<double>(_wphase);
+  cv::GaussianBlur(ss, ss, cv::Size(0,0), sigma);
+  cv::GaussianBlur(cc, cc, cv::Size(0,0), sigma);
+
+  _wphase = atan2<double>(ss, cc);
+}
+
+cv::Mat Unwrap::genPath(double sigma)
+{
+  cv::Mat ss = sin<double>(_wphase);
+  cv::Mat cc = cos<double>(_wphase);
+  cv::GaussianBlur(ss, ss, cv::Size(0,0), sigma);
+  cv::GaussianBlur(cc, cc, cv::Size(0,0), sigma);
+
+  cv::Mat wphase = atan2<double>(ss, cc);
+  cc = cos<double>(wphase);
+
+  return cc;
 }

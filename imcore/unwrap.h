@@ -6,11 +6,11 @@
 #include "scanner.h"
 #endif
 
-/** 
- * Phase unwrapping system. 
- *  
- * This phase unwrapping system uses an Infinite Impulse 
- * Response system. 
+/**
+ * Phase unwrapping system.
+ *
+ * This phase unwrapping system uses an Infinite Impulse
+ * Response system.
  */
 class Unwrap{
 public:
@@ -22,7 +22,7 @@ public:
 
   void run();
   bool runInteractive(int iters=1);
-  
+
 #ifndef SWIG
   cv::Mat getOutput();
   cv::Mat getInput();
@@ -31,6 +31,8 @@ public:
 
   void setPixel(cv::Point pixel);
   void processPixel(cv::Point pixel);
+  void filterPhase(double simga);
+  cv::Mat genPath(double sigma);
 
 private:
   cv::Mat_<char> _visited;

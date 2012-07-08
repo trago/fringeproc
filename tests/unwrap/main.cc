@@ -4,7 +4,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <imcore/unwrap.h>
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
+
+using namespace std;
 
 inline
 void imshow(const char* wn, cv::Mat im)
@@ -15,9 +18,8 @@ void imshow(const char* wn, cv::Mat im)
   cv::imshow(wn, tmp);
 }
 
-
-void takeGradient(cv::Mat_<double> p, cv::Mat_<char> mask, 
-		  cv::Mat_<double> dx,
+void takeGradient(cv::Mat_<double> p, cv::Mat_<char> mask,
+                  cv::Mat_<double> dx,
                   cv::Mat_<double> dy, cv::Point pixel)
 {
   for(int i=pixel.y-1; i<=pixel.y+1; i++)
@@ -34,10 +36,28 @@ void takeGradient(cv::Mat_<double> p, cv::Mat_<char> mask,
 
 }
 
+cv::Mat readFltFile(char* fname)
+{
+  ifstream file;
+  file.open(fname, ios::in);
+  float M, N;
+  float val;
+  file>>M;
+  file>>N;
+
+  cv::Mat_<double> dat(M,N);
+  for(int i=0; i<M; i++)
+    for(int j=0; j<N;j++){
+      file>>val;
+      dat(i,j)=val;
+    }
+
+  cout<<"("<<M << ", "<< N<<")"<<endl;
+  return dat;
+}
+
 int main(int argc, char* argv[])
 {
-  using namespace std;
-
   cv::Mat wphase;
   cv::Mat uphase;
   cv::Mat visited;
@@ -48,19 +68,20 @@ int main(int argc, char* argv[])
 
   if(argc != 6 && argc !=5){
     cout<<"Phase unwrapping method." <<endl
-        <<"Usage: "<< argv[0] 
-	<<" <image_file> [<mask_file>] <tao> <smooth> <N>"<<endl
+        <<"Usage: "<< argv[0]
+        <<" <image_file> [<mask_file>] <tao> <smooth> <N>"<<endl
         <<"\n<image_file> \tis the file name of the image having the wrapped "
-	<<"<mask_file> \tis the mask that determines the region of interest."
+        <<"<mask_file> \tis the mask that determines the region of interest."
         <<"phase map."<<endl
         <<"<tao> \t\tis the paramater of the linear low-pass filter. You mus "
         <<"\n\t\tchoose tao>0 and tao<1"<<endl
         <<"<smooth> \tThe scanning path is taken from the phase map. This "
         <<"parameter \n\t\tis to remove noise from the path."<<endl
-        <<"<N> \t\tis the neighborhood size used by the linear system."<<endl;
+       <<"<N> \t\tis the neighborhood size used by the linear system."<<endl;
     return 1;
   }
-  cv::Mat image = cv::imread(argv[1], 0);
+  //cv::Mat image = cv::imread(argv[1], 0);
+  cv::Mat image = readFltFile(argv[1]);
   if(image.empty()){
     cerr<<"I can not read the image file." << endl;
     return 1;
@@ -72,7 +93,7 @@ int main(int argc, char* argv[])
     N = atoi(argv[4]);
   }
   else{
-    cv::Mat mask = cv::imread(argv[2], 0);
+    mask = cv::imread(argv[2], 0);
     if(image.empty()){
       cerr<<"I can not read the mask image file." << endl;
       return 1;
@@ -88,12 +109,13 @@ int main(int argc, char* argv[])
   wphase.create(image.rows, image.cols, CV_64F);
   image.convertTo(wphase, CV_64F);
   cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
-  mask.convertTo(mask, CV_64F);
+
   double min, max;
+  mask.convertTo(mask, CV_64F);
   cv::minMaxLoc(mask, &min, &max);
   if(min!=max)
     cv::normalize(mask, mask, 1, 0, cv::NORM_MINMAX);
-  
+
   visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
   uphase = cv::Mat::zeros(image.rows, image.cols, CV_64F);
   dx = cv::Mat::zeros(image.rows, image.cols, CV_64F);
@@ -108,13 +130,15 @@ int main(int argc, char* argv[])
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
   cv::Point pixel;
-  pixel.x=362;
-  pixel.y=201;
+  pixel.x=482;
+  pixel.y=431;
   Unwrap unwrap(wphase, tao, sigma, N);
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
-  uphase = unwrap.getOutput();
+  path = unwrap.genPath(1);
+  gradient(path, dx, dy);
 
+  uphase = unwrap.getOutput();
   int iter=0;
   unwrap.runInteractive();
   do{
@@ -130,7 +154,7 @@ int main(int argc, char* argv[])
   cv::namedWindow("path");
   imshow("phase", uphase);
   imshow("wphase", wphase);
-  imshow("path", cos<double>(uphase));
+  imshow("path", path/*cos<double>(uphase)*/);
   imshow("dx", dx);
   imshow("dy", dy);
 
