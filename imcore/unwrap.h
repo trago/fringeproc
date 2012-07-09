@@ -29,6 +29,7 @@ public:
   void setMask(cv::Mat mask);
 #endif
 
+  void setTao(double tao);
   void setPixel(cv::Point pixel);
   void processPixel(cv::Point pixel);
   void filterPhase(double simga);
@@ -39,6 +40,8 @@ private:
   cv::Mat_<char> _mask;
   cv::Mat_<double> _wphase;
   cv::Mat_<double> _uphase;
+  cv::Mat_<double> _dx;
+  cv::Mat_<double> _dy;
   cv::Point _pixel;
   double _tau;
   double _smooth;
@@ -46,6 +49,7 @@ private:
 
   Scanner* _scanner;
 
+  void takeGradient(cv::Point pixel, const int N);
 };
 
 

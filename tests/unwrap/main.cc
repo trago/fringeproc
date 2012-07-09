@@ -18,23 +18,6 @@ void imshow(const char* wn, cv::Mat im)
   cv::imshow(wn, tmp);
 }
 
-void takeGradient(cv::Mat_<double> p, cv::Mat_<char> mask,
-                  cv::Mat_<double> dx,
-                  cv::Mat_<double> dy, cv::Point pixel)
-{
-  for(int i=pixel.y-1; i<=pixel.y+1; i++)
-    for(int j=pixel.x-1; j<=pixel.x+1; j++){
-      if(i>=1 && i<p.rows && j>=0 && j<p.cols)
-        dy(i,j)=(p(i,j)-p(i-1,j))*mask(i,j);
-      if(j>=1 && j<p.cols && i>=0 && i<p.rows)
-        dx(i,j)=(p(i,j)-p(i,j-1))*mask(i,j);
-      if(j==0 && j<p.cols && i>=0 && i<p.rows)
-        dx(i,j)=(p(i,j+1)-p(i,j))*mask(i,j);
-      if(i==0 && i<p.rows && j>=0 && j<p.cols)
-        dy(i,j)=(p(i+1,j)-p(i,j))*mask(i,j);
-    }
-
-}
 
 cv::Mat readFltFile(char* fname)
 {
@@ -130,8 +113,8 @@ int main(int argc, char* argv[])
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
   cv::Point pixel;
-  pixel.x=482;
-  pixel.y=431;
+  pixel.x=198;
+  pixel.y=327;
   Unwrap unwrap(wphase, tao, sigma, N);
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
@@ -147,6 +130,16 @@ int main(int argc, char* argv[])
       cv::waitKey(32);
     }
   }while(unwrap.runInteractive());
+  unwrap.setPixel(pixel);
+  unwrap.runInteractive();
+  unwrap.setTao(0.013);
+  iter=0;
+  do{
+    if(iter++ % 9000 ==0){
+      imshow("phase", uphase);
+      cv::waitKey(32);
+    }
+  }while(unwrap.runInteractive());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
 
   cv::namedWindow("phase");
@@ -154,7 +147,7 @@ int main(int argc, char* argv[])
   cv::namedWindow("path");
   imshow("phase", uphase);
   imshow("wphase", wphase);
-  imshow("path", path/*cos<double>(uphase)*/);
+  imshow("path", atan2<double>(sin<double>(uphase),cos<double>(uphase)));
   imshow("dx", dx);
   imshow("dy", dy);
 

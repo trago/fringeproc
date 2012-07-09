@@ -150,6 +150,8 @@ Unwrap::Unwrap(cv::Mat_<double> wphase, double tau, double smooth, int N)
   _uphase = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
   _visited = cv::Mat_<char>::zeros(_wphase.rows, _wphase.cols);
   _mask = cv::Mat_<char>::ones(_wphase.rows, _wphase.cols);
+  _dx = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
+  _dy = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
   _scanner = NULL;
 }
 
@@ -166,14 +168,16 @@ void Unwrap::run()
 
 bool Unwrap::runInteractive(int iters)
 {
-  cv::Mat_<double> dx, dy;
-
   if (_scanner==NULL) {
-    cv::Mat path = cos<double>(_wphase);
-    cv::GaussianBlur(path, path, cv::Size(0,0), _smooth, _smooth);
-    gradient(path, dx, dy);
-    _scanner = new Scanner(dx, dy, _pixel);
+    _scanner = new Scanner(_dx, _dy, _pixel);
     _scanner->setMask(_mask);
+    /*
+    cv::Mat path = cos<double>(_wphase);
+    if(_smooth>0){
+      cv::GaussianBlur(path, path, cv::Size((int)_smooth,(int)_smooth),0);
+      gradient(path, _dx, _dy);
+    }
+    */
   }
 
   int iter=0;
@@ -181,6 +185,7 @@ bool Unwrap::runInteractive(int iters)
     _pixel = _scanner->getPosition();
     int i= _pixel.y, j=_pixel.x;
     dunwrap_neighborhood(i, j, _wphase, _mask, _uphase, _visited, _tau, _N);
+    //takeGradient(_pixel, _N);
     _visited(i,j)=1;
   }while(_scanner->next() && (++iter)<iters);
 
@@ -196,6 +201,16 @@ void Unwrap::processPixel(cv::Point pixel)
 
 void Unwrap::setPixel(cv::Point pixel)
 {
+  if(_scanner!=NULL){
+    delete _scanner;
+  }
+  cv::Mat path = cos<double>(_wphase);
+  if(_smooth>0){
+    cv::GaussianBlur(path, path, cv::Size((int)_smooth,(int)_smooth),0);
+    gradient(path, _dx, _dy);
+  }
+  _scanner = new Scanner(_dx, _dy, pixel);
+  _scanner->setMask(_mask);
   _pixel=pixel;
 }
 
@@ -234,4 +249,27 @@ cv::Mat Unwrap::genPath(double sigma)
   cc = cos<double>(wphase);
 
   return cc;
+}
+
+void Unwrap::takeGradient(cv::Point pixel, const int N)
+{
+  const int N_2 = N/2;
+  cv::Mat_<double>& p = _uphase;
+  for(int i=pixel.y-N_2; i<=pixel.y+N_2; i++)
+    for(int j=pixel.x-N_2; j<=pixel.x+N_2; j++){
+      if(i>=1 && i<p.rows && j>=0 && j<p.cols)
+        _dy(i,j)=(p(i,j)-p(i-1,j))*_mask(i,j);
+      if(j>=1 && j<p.cols && i>=0 && i<p.rows)
+        _dx(i,j)=(p(i,j)-p(i,j-1))*_mask(i,j);
+      if(j==0 && j<p.cols && i>=0 && i<p.rows)
+        _dx(i,j)=(p(i,j+1)-p(i,j))*_mask(i,j);
+      if(i==0 && i<p.rows && j>=0 && j<p.cols)
+        _dy(i,j)=(p(i+1,j)-p(i,j))*_mask(i,j);
+    }
+
+}
+
+void Unwrap::setTao(double tao)
+{
+  _tau = tao;
 }
