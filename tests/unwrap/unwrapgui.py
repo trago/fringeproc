@@ -320,7 +320,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
 
         Author: Julio C. Estrada <julio@cio.mx>
         """
-        fileFilters = ["Image files (*.png *.jpg *.tif *.bmp)",
+        fileFilters = ["Image files (*.png *.jpg *.tif *.tiff *.bmp)",
                        "Flt files (*.flt)"]
         fname = QtGui.QFileDialog.getOpenFileName(self, "Open image data", 
                                                   QtCore.QDir.currentPath(),
@@ -394,7 +394,7 @@ class UnwrapGUI(QtGui.QMainWindow, Ui_UnwrapGUI):
                                                   QtCore.QDir.currentPath(),
                                                   fileFilters)
         if(fname[0]!=''):
-            #self._image.save(fname[0])
+            resp = self._image.getImage().save(fname[0])
             self._actionState.setState([Constrains.data_loaded, 
                                         Constrains.file_saved])
 

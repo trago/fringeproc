@@ -113,8 +113,8 @@ int main(int argc, char* argv[])
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
   cv::Point pixel;
-  pixel.x=198;
-  pixel.y=327;
+  pixel.x=383;
+  pixel.y=331;
   Unwrap unwrap(wphase, tao, sigma, N);
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
