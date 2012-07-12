@@ -127,10 +127,10 @@ int main(int argc, char* argv[])
       cv::waitKey(32);
     }
   }while(unwrap.runInteractive());
-  /*
+
   unwrap.setPixel(pixel);
   unwrap.runInteractive();
-  unwrap.setTao(0.013);
+  unwrap.setTao(0.01);
   iter=0;
   do{
     if(iter++ % 9000 ==0){
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
     }
   }while(unwrap.runInteractive());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
-  */
+
   cv::namedWindow("phase");
   cv::namedWindow("wphase");
   cv::namedWindow("path");
