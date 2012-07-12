@@ -92,6 +92,8 @@ cv::Mat DemodGabor::getWy()
 DemodGabor& DemodGabor::setScanMinf(double minf)
 {
   m_scanMinf=minf;
+
+  return *this;
 }
 
 void DemodGabor::removeDC()

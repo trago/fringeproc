@@ -1,5 +1,6 @@
 include_directories(${CMAKE_SOURCE_DIR}/imcore)
 include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${NUMPY_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 SET(CMAKE_SWIG_FLAGS "")
