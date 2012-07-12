@@ -46,10 +46,11 @@ int main(int argc, char* argv[])
   cv::Mat visited;
   cv::Mat mask;
   cv::Mat path, dx, dy;
+  cv::Point pixel;
   float tao, sigma;
   int N;
 
-  if(argc != 6 && argc !=5){
+  if(argc != 8 && argc !=7){
     cout<<"Phase unwrapping method." <<endl
         <<"Usage: "<< argv[0]
         <<" <image_file> [<mask_file>] <tao> <smooth> <N>"<<endl
@@ -69,11 +70,13 @@ int main(int argc, char* argv[])
     cerr<<"I can not read the image file." << endl;
     return 1;
   }
-  if(argc == 5){
+  if(argc == 7){
     mask = cv::Mat::ones(image.rows, image.cols, CV_8S);
     tao = atof(argv[2]);
     sigma = atof(argv[3]);
     N = atoi(argv[4]);
+    pixel.x = atoi(argv[5]);
+    pixel.y = atoi(argv[6]);
   }
   else{
     mask = cv::imread(argv[2], 0);
@@ -88,6 +91,8 @@ int main(int argc, char* argv[])
     tao = atof(argv[3]);
     sigma = atof(argv[4]);
     N = atoi(argv[5]);
+    pixel.x = atoi(argv[6]);
+    pixel.y = atoi(argv[7]);
   }
   wphase.create(image.rows, image.cols, CV_64F);
   image.convertTo(wphase, CV_64F);
@@ -101,25 +106,17 @@ int main(int argc, char* argv[])
 
   visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
   uphase = cv::Mat::zeros(image.rows, image.cols, CV_64F);
-  dx = cv::Mat::zeros(image.rows, image.cols, CV_64F);
-  dy = cv::Mat::zeros(image.rows, image.cols, CV_64F);
-  path = sin<double>(wphase);
-  cv::GaussianBlur(path, path, cv::Size(0,0), sigma);
-  gradient(path, dx, dy);
-  path = path*mask;
   mask.convertTo(mask, CV_8S);
 
   //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
   //path = sin<float>(path);
   //unwrap2D(wphase, uphase, tao, sigma,N);
-  cv::Point pixel;
-  pixel.x=383;
-  pixel.y=331;
+  //cv::Point pixel;
+  //pixel.x=383;
+  //pixel.y=331;
   Unwrap unwrap(wphase, tao, sigma, N);
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
-  path = unwrap.genPath(1);
-  gradient(path, dx, dy);
 
   uphase = unwrap.getOutput();
   int iter=0;
@@ -130,6 +127,7 @@ int main(int argc, char* argv[])
       cv::waitKey(32);
     }
   }while(unwrap.runInteractive());
+  /*
   unwrap.setPixel(pixel);
   unwrap.runInteractive();
   unwrap.setTao(0.013);
@@ -141,15 +139,13 @@ int main(int argc, char* argv[])
     }
   }while(unwrap.runInteractive());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
-
+  */
   cv::namedWindow("phase");
   cv::namedWindow("wphase");
   cv::namedWindow("path");
   imshow("phase", uphase);
   imshow("wphase", wphase);
   imshow("path", atan2<double>(sin<double>(uphase),cos<double>(uphase)));
-  imshow("dx", dx);
-  imshow("dy", dy);
 
   cv::waitKey();
   return 0;

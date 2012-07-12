@@ -204,9 +204,9 @@ void Unwrap::setPixel(cv::Point pixel)
   if(_scanner!=NULL){
     delete _scanner;
   }
-  cv::Mat path = cos<double>(_wphase);
+  cv::Mat path;// = cos<double>(_wphase);
   if(_smooth>0){
-    cv::GaussianBlur(path, path, cv::Size((int)_smooth,(int)_smooth),0);
+    cv::GaussianBlur(_wphase, path, cv::Size((int)_smooth,(int)_smooth),0);
     gradient(path, _dx, _dy);
   }
   _scanner = new Scanner(_dx, _dy, pixel);
@@ -257,6 +257,7 @@ void Unwrap::takeGradient(cv::Point pixel, const int N)
   cv::Mat_<double>& p = _uphase;
   for(int i=pixel.y-N_2; i<=pixel.y+N_2; i++)
     for(int j=pixel.x-N_2; j<=pixel.x+N_2; j++){
+      /*
       if(i>=1 && i<p.rows && j>=0 && j<p.cols)
         _dy(i,j)=(p(i,j)-p(i-1,j))*_mask(i,j);
       if(j>=1 && j<p.cols && i>=0 && i<p.rows)
@@ -265,6 +266,9 @@ void Unwrap::takeGradient(cv::Point pixel, const int N)
         _dx(i,j)=(p(i,j+1)-p(i,j))*_mask(i,j);
       if(i==0 && i<p.rows && j>=0 && j<p.cols)
         _dy(i,j)=(p(i+1,j)-p(i,j))*_mask(i,j);
+      */
+      _dy(i,j)=p(i,j);
+      _dx(i,j)=p(i,j);
     }
 
 }
