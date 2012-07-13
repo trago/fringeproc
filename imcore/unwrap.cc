@@ -93,13 +93,8 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
   cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
   cv::Mat path, dx, dy;
 
-  if(wphase.type()==CV_32F)
-    path = sin<float>(wphase);
-  else
-    path = sin<double>(wphase);
-
   if(smooth_path>0){
-    cv::GaussianBlur(path, path, cv::Size(0,0), smooth_path, smooth_path);
+    cv::GaussianBlur(wphase, path, cv::Size(0,0), smooth_path, smooth_path);
     gradient(path, dx, dy);
   }
 

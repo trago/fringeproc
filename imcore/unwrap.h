@@ -116,9 +116,13 @@ public:
    * sequence is restarted.
    */
   void setPixel(cv::Point pixel);
+  /**
+   * Process only the given pixel.
+   * 
+   * 
+   */
   void processPixel(cv::Point pixel);
   void filterPhase(double simga);
-  cv::Mat genPath(double sigma);
 
 private:
   cv::Mat_<char> _visited;
