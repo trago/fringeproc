@@ -39,6 +39,23 @@ cv::Mat readFltFile(char* fname)
   return dat;
 }
 
+void writeFltFile(cv::Mat_<double> mat, char* fname)
+{
+  ofstream file;
+  file.open(fname, ios::out);
+  float M=mat.cols, N=mat.rows;
+  float val;
+  file<<M<<endl;
+  file<<N<<endl;
+
+  for(int i=0; i<M; i++)
+    for(int j=0; j<N;j++){
+      val=mat(i,j);
+      file<<val<<endl;
+    }
+}
+
+
 int main(int argc, char* argv[])
 {
   cv::Mat wphase;
@@ -61,7 +78,9 @@ int main(int argc, char* argv[])
         <<"\n\t\tchoose tao>0 and tao<1"<<endl
         <<"<smooth> \tThe scanning path is taken from the phase map. This "
         <<"parameter \n\t\tis to remove noise from the path."<<endl
-       <<"<N> \t\tis the neighborhood size used by the linear system."<<endl;
+	<<"<N> \t\tis the neighborhood size used by the linear system."<<endl
+	<<"rows \tthe number of rows."<<endl
+	<<"cols \tthe number of columns."<<endl;
     return 1;
   }
   //cv::Mat image = cv::imread(argv[1], 0);
@@ -139,6 +158,8 @@ int main(int argc, char* argv[])
     }
   }while(unwrap.runInteractive());
   std::cout<<"Number of pixels: "<< iter<<std::endl;
+
+  writeFltFile(uphase, "uphase.flt");
 
   cv::namedWindow("phase");
   cv::namedWindow("wphase");
