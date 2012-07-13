@@ -171,13 +171,6 @@ bool Unwrap::runInteractive(int iters)
   if (_scanner==NULL) {
     _scanner = new Scanner(_dx, _dy, _pixel);
     _scanner->setMask(_mask);
-    /*
-    cv::Mat path = cos<double>(_wphase);
-    if(_smooth>0){
-      cv::GaussianBlur(path, path, cv::Size((int)_smooth,(int)_smooth),0);
-      gradient(path, _dx, _dy);
-    }
-    */
   }
 
   int iter=0;
@@ -204,7 +197,7 @@ void Unwrap::setPixel(cv::Point pixel)
   if(_scanner!=NULL){
     delete _scanner;
   }
-  cv::Mat path;// = cos<double>(_wphase);
+  cv::Mat path;
   if(_smooth>0){
     cv::GaussianBlur(_wphase, path, cv::Size((int)_smooth,(int)_smooth),0);
     gradient(path, _dx, _dy);
