@@ -16,6 +16,10 @@
       {
         (double* I, int M, int N)
       };
+   %apply (char* IN_FARRAY2, int DIM1, int DIM2) 
+      {
+        (char* I, int M, int N)
+      };
    %apply (double** ARGOUTVIEW_FARRAY2, int* DIM1, int* DIM2)
       {
         (double** data, int* M, int* N)
@@ -23,7 +27,10 @@
 
   Unwrap(double* I, int M, int N, double tau=0.09, 
          double smooth=9, int Nsize=15){
-    cv::Mat dat(M, N, CV_64F, I);
+    cv::Mat_<double> dat(M, N);
+    for(int i=0; i<M; i++)
+      for(int j=0; j<N; j++)
+	dat(i,j)=I[i*N + j];
     return new Unwrap(dat, tau, smooth, Nsize);
   }
 
@@ -41,7 +48,10 @@
     *N=mat.cols;
   }
 
-
+  void setMask(char* I, int M, int N){
+    cv::Mat mask(M, N, CV_8S, I);
+    $self->setMask(mask);
+  }
 };
 
 #endif
