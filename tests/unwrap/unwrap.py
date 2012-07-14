@@ -129,18 +129,23 @@ unwraper.setMask(mask)
 
 pixelsTotal = np.sum(mask)
 pixelCont = 0
+
+print "---> Executing phase unwrapping process"
 for iter in [0,1]:
-    while unwraper.runInteractive(3000):
-        up = unwraper.getOutput().copy()
-        cv2.normalize(up, up, 0, 1, cv2.NORM_MINMAX)
-        cv2.imshow("unwrapped", up)
-        cv2.waitKey(32)
+    while unwraper.runInteractive(6000):
+        pixelCont += 4100
+        percent = pixelCont/(2.0*pixelsTotal)
+        print "...> {0}% processed".format(int(percent*100))
     unwraper.setPixel((x,y))
-    unwraper.setTao(0.01)
+    unwraper.setTao(0.017)
+print "---> Done."
 up = unwraper.getOutput().copy()
+wp = np.arctan2(np.sin(up),np.cos(up))
 
 cv2.normalize(wphase, wphase, 0, 1, cv2.NORM_MINMAX)
 cv2.imshow("wrapped", wphase)
 cv2.normalize(up, up, 0, 1, cv2.NORM_MINMAX)
 cv2.imshow("unwrapped", up)
+cv2.normalize(wp, wp, 0, 1, cv2.NORM_MINMAX)
+cv2.imshow("rewrapped", wp)
 cv2.waitKey(0)
