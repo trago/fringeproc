@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
 
   unwrap.setPixel(pixel);
   unwrap.runInteractive();
-  unwrap.setTao(0.01);
+  unwrap.setTao(0.05);
   iter=0;
   do{
     if(iter++ % 9000 ==0){
