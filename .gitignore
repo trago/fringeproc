@@ -3,5 +3,6 @@
 /readme.org~
 *.*~
 *.pyc
+.DS_Store
 /nbproject
 /build
