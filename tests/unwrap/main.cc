@@ -147,6 +147,7 @@ int main(int argc, char* argv[])
     }
   }while(unwrap.runInteractive());
 
+  /*
   unwrap.setPixel(pixel);
   unwrap.runInteractive();
   unwrap.setTao(0.05);
@@ -157,6 +158,7 @@ int main(int argc, char* argv[])
       cv::waitKey(32);
     }
   }while(unwrap.runInteractive());
+  */
   std::cout<<"Number of pixels: "<< iter<<std::endl;
 
   writeFltFile(uphase, "uphase.flt");
