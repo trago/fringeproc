@@ -11,13 +11,13 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
                           float tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
-  int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
+  int hig_i = (ii+N/2)<(wp.rows)? (ii+N/2):(wp.rows-1);
   int low_j = (jj-N/2)>=0? (jj-N/2):0;
-  int hig_j = (jj+N/2)<(wp.cols-1)? (jj+N/2):(wp.cols-1);
+  int hig_j = (jj+N/2)<(wp.cols)? (jj+N/2):(wp.cols-1);
 
-  for(int i=low_i; i<hig_i; i++){
+  for(int i=low_i; i<=hig_i; i++){
     if(i%2==0)
-      for(int j=low_j; j<hig_j; j++){
+      for(int j=low_j; j<=hig_j; j++){
         if(mask.at<char>(i,j)){
           pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
                                           wp.ptr<float>(),
@@ -29,7 +29,7 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
         }
       }
     else
-      for(int j=hig_j-1; j>=low_j; j--){
+      for(int j=hig_j; j>=low_j; j--){
         if(mask.at<char>(i,j)){
           pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
                                           wp.ptr<float>(),
@@ -50,13 +50,13 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
                           double tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
-  int hig_i = (ii+N/2)<(wp.rows-1)? (ii+N/2):(wp.rows-1);
+  int hig_i = (ii+N/2)<(wp.rows)? (ii+N/2):(wp.rows-1);
   int low_j = (jj-N/2)>=0? (jj-N/2):0;
-  int hig_j = (jj+N/2)<(wp.cols-1)? (jj+N/2):(wp.cols-1);
+  int hig_j = (jj+N/2)<(wp.cols)? (jj+N/2):(wp.cols-1);
 
-  for(int i=low_i; i<hig_i; i++){
+  for(int i=low_i; i<=hig_i; i++){
     if(i%2==0)
-      for(int j=low_j; j<hig_j; j++){
+      for(int j=low_j; j<=hig_j; j++){
         if(mask.at<char>(i,j)){
           pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
                                            wp.ptr<double>(),
@@ -68,7 +68,7 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
         }
       }
     else
-      for(int j=hig_j-1; j>=low_j; j--){
+      for(int j=hig_j; j>=low_j; j--){
         if(mask.at<char>(i,j)){
           pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
                                            wp.ptr<double>(),
