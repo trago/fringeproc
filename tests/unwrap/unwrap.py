@@ -31,6 +31,9 @@ parser.add_option("-o", "--output", help="The file name where output is stored",
 (options, args) = parser.parse_args(sys.argv[1:])
 
 def readFltFile(fname):
+    """
+    readFltFile(fname)
+    """
     iter = 0
     data = None
     try:
@@ -84,7 +87,7 @@ if ext == '.flt':
     wphase = readFltFile(args[0])
     print "---> Done."
 else:
-    wphase = cv2.imread(args[0])
+    wphase = cv2.imread(args[0],0)
 if wphase == None:
     parser.error("Data file format not recognized or the file does not exists")
 
@@ -131,7 +134,7 @@ pixelsTotal = np.sum(mask)
 pixelCont = 0
 
 print "---> Executing phase unwrapping process"
-for iter in [0,1]:
+for iter in [0]:
     while unwraper.runInteractive(6000):
         pixelCont += 4100
         percent = pixelCont/(2.0*pixelsTotal)
