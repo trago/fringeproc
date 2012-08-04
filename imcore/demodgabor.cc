@@ -117,6 +117,7 @@ void DemodGabor::removeDC()
 DemodGabor& DemodGabor::setStartPixel(const cv::Point pixel)
 {
   m_startPixel=pixel;
+  return *this;
 }
 
 void DemodGabor::run()

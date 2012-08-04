@@ -91,7 +91,7 @@ public:
    * 
    * Executes the phase unwrapping system and stops until the number
    * of pixels given has been processed. When it stops, it remembers
-   * the last pixel processed. Next calls processed start the
+   * the last pixel processed. Next calls start the
    * processing from the last processed pixel.
    * @param[in] iters, the number of pixel to be processed.
    */

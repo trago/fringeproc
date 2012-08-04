@@ -538,8 +538,8 @@ gabor::DemodNeighborhood::DemodNeighborhood(cv::Mat param_I, cv::Mat param_fr,
                                             cv::Mat param_fi, cv::Mat param_fx,
                                             cv::Mat param_fy,
                                             cv::Mat param_visited)
-:m_demodPixel(param_I, param_fr, param_fi, param_fx, param_fy, param_visited),
- visit(param_visited)
+:visit(param_visited),
+ m_demodPixel(param_I, param_fr, param_fi, param_fx, param_fy, param_visited)
 {
 }
 

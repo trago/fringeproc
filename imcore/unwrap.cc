@@ -128,7 +128,7 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
 
   Scanner scan(dx, dy, pixel);
   scan.setMask(mask);
-  int i,j, iter=0;
+  int i,j;
   if(wphase.type()==CV_32F)
     do{
       pixel = scan.getPosition();
