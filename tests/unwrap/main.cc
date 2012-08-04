@@ -30,7 +30,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utils/utils.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <boost/program_options.hpp>
 #include <imcore/unwrap.h>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -46,8 +48,8 @@ void imshow(const char* wn, cv::Mat im)
   cv::imshow(wn, tmp);
 }
 
-
-cv::Mat readFltFile(char* fname)
+inline
+cv::Mat readFltFile(const char* fname)
 {
   ifstream file;
   file.open(fname, ios::in);
@@ -67,7 +69,8 @@ cv::Mat readFltFile(char* fname)
   return dat;
 }
 
-void writeFltFile(cv::Mat_<double> mat, char* fname)
+inline
+void writeFltFile(cv::Mat_<double> mat, const char* fname)
 {
   ofstream file;
   file.open(fname, ios::out);
@@ -92,55 +95,99 @@ int main(int argc, char* argv[])
   cv::Mat mask;
   cv::Mat path, dx, dy;
   cv::Point pixel;
-  float tao, sigma;
-  int N;
 
-  if(argc != 8 && argc !=7){
-    cout<<"Phase unwrapping method." <<endl
-        <<"Usage: "<< argv[0]
-        <<" <image_file> [<mask_file>] <tao> <smooth> <N>"<<endl
-        <<"\n<image_file> \tis the file name of the image having the wrapped "
-        <<"<mask_file> \tis the mask that determines the region of interest."
-        <<"phase map."<<endl
-        <<"<tao> \t\tis the paramater of the linear low-pass filter. You mus "
-        <<"\n\t\tchoose tao>0 and tao<1"<<endl
-        <<"<smooth> \tThe scanning path is taken from the phase map. This "
-        <<"parameter \n\t\tis to remove noise from the path."<<endl
-	<<"<N> \t\tis the neighborhood size used by the linear system."<<endl
-	<<"rows \tthe number of rows."<<endl
-	<<"cols \tthe number of columns."<<endl;
-    return 1;
+  namespace po = boost::program_options;
+  double tau;
+  int N, sigma, x, y;
+  std::string mfile, phasefile, outfile;
+  po::options_description desc("Allowed options");
+  desc.add_options()
+      ("help", "Help message")
+      ("tau,t", po::value<double>(&tau)->default_value(0.2),
+       "Set the bandwidth of the unwrapping system")
+      ("sigma,s", po::value<int>(&sigma)->default_value(13),
+       "Smoothing parameter to generate the scanning path")
+      ("Nwindow,N", po::value<int>(&N)->default_value(9),
+       "Window size of the windowed phase unwrapper")
+      ("mask,m", po::value<std::string>(&mfile),
+       "Mask file name that selects the region of interst")
+      ("input", po::value<std::string>(),
+       "The wrapped phase to be processed")
+      ("output,o", po::value<std::string>(),
+       "Output file where unwrapped phase is stored")
+      ("xinit,x", po::value<int>(&x)->default_value(13),
+       "Direction 'x' of starting point.")
+      ("yinit,y", po::value<int>(&y)->default_value(1),
+       "Direction 'y' of starting point.");
+  po::positional_options_description p;
+  p.add("input", -1);
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).
+            options(desc).positional(p).run(), vm);
+
+  if(vm.count("help")){
+    cout<<"Windowed phase unwrapping program.\n"<<endl;
+    cout<<"Usage: " << argv[0] << " <options> input-file" <<endl;
+    cout<<"Copyright (C) 2012, Julio C. Estrada\n"<<endl;
+    desc.print(cout);
+    cout<<endl;
+    cout<<"Example:"<<endl
+       <<"  $ "<<argv[0]<<" -N 13 -t 0.03 file.flt"<<endl;
+    return 0;
   }
-  //cv::Mat image = cv::imread(argv[1], 0);
-  cv::Mat image = readFltFile(argv[1]);
-  if(image.empty()){
-    cerr<<"I can not read the image file." << endl;
-    return 1;
-  }
-  if(argc == 7){
-    mask = cv::Mat::ones(image.rows, image.cols, CV_8S);
-    tao = atof(argv[2]);
-    sigma = atof(argv[3]);
-    N = atoi(argv[4]);
-    pixel.x = atoi(argv[5]);
-    pixel.y = atoi(argv[6]);
+  if(vm.count("input")){
+    phasefile = vm["input"].as<string>();
   }
   else{
+    cout<<"Usage: " << argv[0] << " <options> input-file" <<endl;
+    cout<<"Copyright (C) 2012, Julio C. Estrada\n"<<endl;
+    cerr << "Error: Input file required. Use --help" << endl;
+    return 1;
+  }
+  if(vm.count("mask")){
+    mfile = vm["mask"].as<string>();
+  }
+  else
+    mfile = "";
+  if(vm.count("output")){
+    outfile = vm["output"].as<string>();
+  }
+  else
+    outfile = "output.flt";
+  N = vm["Nwindow"].as<int>();
+  tau = vm["tau"].as<double>();
+  sigma = vm["sigma"].as<int>()%2==0?
+        vm["sigma"].as<int>()+1:vm["sigma"].as<int>();
+  x = vm["xinit"].as<int>();
+  y = vm["yinit"].as<int>();
+
+  //cv::Mat image = cv::imread(argv[1], 0);
+  cv::Mat image = readFltFile(phasefile.c_str());
+  if(image.empty()){
+    cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
+    return 1;
+  }
+  if(mfile != ""){
     mask = cv::imread(argv[2], 0);
-    if(image.empty()){
-      cerr<<"I can not read the mask image file." << endl;
+    if(mask.empty()){
+      cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
       return 1;
     }
     if(mask.rows!=image.rows || mask.cols!=image.cols){
-      cerr<<"Image and mask dimensions must match." << endl;
+      cerr<<"Error: Mask dimensions must match image dimensions." << endl;
       return 1;
     }
-    tao = atof(argv[3]);
-    sigma = atof(argv[4]);
-    N = atoi(argv[5]);
-    pixel.x = atoi(argv[6]);
-    pixel.y = atoi(argv[7]);
   }
+  else
+    mask = cv::Mat::ones(image.rows, image.cols, CV_8U);
+  cout<<"Phase unwrapping with the following parameters:"<<endl
+     <<"   Input file: " << phasefile<<endl
+     <<"          tau: "<<tau <<endl
+     <<"       Window: "<<N<<"x"<<N<<endl
+     <<"        sigma: "<<sigma<<endl
+     <<"Init position: ("<<x<<", "<<y<<")"<<endl;
+  pixel.x = x;
+  pixel.y = y;
   wphase.create(image.rows, image.cols, CV_64F);
   image.convertTo(wphase, CV_64F);
   cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
@@ -161,7 +208,7 @@ int main(int argc, char* argv[])
   //cv::Point pixel;
   //pixel.x=383;
   //pixel.y=331;
-  Unwrap unwrap(wphase, tao, sigma, N);
+  Unwrap unwrap(wphase, tau, sigma, N);
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
 
@@ -169,7 +216,7 @@ int main(int argc, char* argv[])
   int iter=0;
   unwrap.runInteractive();
   do{
-    if(iter++ % 9000 ==0){
+    if(iter++ % 3000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
     }
@@ -189,11 +236,8 @@ int main(int argc, char* argv[])
   */
   std::cout<<"Number of pixels: "<< iter<<std::endl;
 
-  writeFltFile(uphase, "uphase.flt");
+  writeFltFile(uphase, outfile.c_str());
 
-  cv::namedWindow("phase");
-  cv::namedWindow("wphase");
-  cv::namedWindow("path");
   imshow("phase", uphase);
   imshow("wphase", wphase);
   imshow("path", atan2<double>(sin<double>(uphase),cos<double>(uphase)));
