@@ -23,11 +23,28 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+.. module:: fringes
+   :plattaform: Unix
+   :synopsis: Module that executes the program fringes
+   
+.. moduleauthor:: Julio C. Estrada <julio@cio.mx>   
+   
+Fringes program.
+===============
+
+An application that uses the FringeProc library to process fringe patterns.
+"""
 
 import sys
 from gui.fringeproc import FringeProc
 
 def main(argv):
+    """
+    Application's main function.
+    
+    :param argv: argument list passed by user.
+    """
     fringe = FringeProc(argv)
     fringe.start()
     
