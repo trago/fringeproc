@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The Fringes application &mdash; fringes 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="fringes 0.1 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to fringes’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to fringes’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">fringes 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-fringes-application">
+<h1>The Fringes application<a class="headerlink" href="#the-fringes-application" title="Permalink to this headline">¶</a></h1>
+<p>This is an application written in <strong>Python</strong> for fringe pattern
+analysis. A fringe pattern is a two-dimensional (2D) image that
+modulates phase information. Its basic model is the following:</p>
+<div class="math">
+\[I(x,y) = a(x,y) + b(x,y)\cos(\phi(x,y))\]</div>
+<p>where <span class="math">\(a(x,y)\)</span> is the background illumination, <span class="math">\(b(x,y)\)</span>
+the constrast or modulation term and <span class="math">\(\phi(x,y)\)</span> is the
+modulating phase.</p>
+<p>Here we present the documentation of modules that conform the
+<strong>Fringes</strong> application.</p>
+<span class="target" id="module-fringes"></span><div class="section" id="fringes-module">
+<h2>fringes module<a class="headerlink" href="#fringes-module" title="Permalink to this headline">¶</a></h2>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">platform:</th><td class="field-body">Unix, Mac OSX</td>
+</tr>
+<tr class="field-even field"><th class="field-name">sinopsys:</th><td class="field-body">Main module.</td>
+</tr>
+</tbody>
+</table>
+<p>This is the main module that executes the <strong>fringes</strong> program.</p>
+</div>
+<dl class="function">
+<dt id="fringes.main">
+<tt class="descclassname">fringes.</tt><tt class="descname">main</tt><big>(</big><em>argv</em><big>)</big><a class="headerlink" href="#fringes.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the <em>fringes</em> application.</p>
+<p>When the application is started, it is shown the graphic user interface</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> &#8211; argument list passed by user.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-gui"></span><div class="section" id="gui-module">
+<h2>gui module<a class="headerlink" href="#gui-module" title="Permalink to this headline">¶</a></h2>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">platform:</th><td class="field-body">Unix, MacOs X</td>
+</tr>
+<tr class="field-even field"><th class="field-name">sinopsys:</th><td class="field-body">Graphic User interface</td>
+</tr>
+</tbody>
+</table>
+<p>This module defined the classes of objects that are used in the user interface.</p>
+</div>
+<span class="target" id="module-gui.mainwindow"></span><div class="section" id="mainwindow-module">
+<h2>mainwindow module<a class="headerlink" href="#mainwindow-module" title="Permalink to this headline">¶</a></h2>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">platform:</th><td class="field-body">Unix, MacOS X</td>
+</tr>
+<tr class="field-even field"><th class="field-name">sinopsys:</th><td class="field-body">Main window.</td>
+</tr>
+</tbody>
+</table>
+<p>The main window of the graphic user interface.</p>
+<p>The graphic user interface is composed by the following:</p>
+<ul class="simple">
+<li><strong>The menu.</strong>
+It get acces to different commands.</li>
+<li><strong>The view area.</strong>
+Here it is shown the images that are processed and results.</li>
+</ul>
+</div>
+<dl class="class">
+<dt id="gui.mainwindow.MainWindow">
+<em class="property">class </em><tt class="descclassname">gui.mainwindow.</tt><tt class="descname">MainWindow</tt><big>(</big><em>parent=None</em><big>)</big><a class="headerlink" href="#gui.mainwindow.MainWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main window of the user interface.</p>
+<p>The user interface interacts with the user. The main window has menus that
+let user do actions or execute commands. Actions are enabled when the
+conditions for executing an action are present. For example, you can not
+apply some kind of process if there is not any data present. This behaivor
+is implemented by using some kind of a state machine.</p>
+<p>The state machine works in the folliwing way: The aplication has states
+are constrain that enable or disable some actions from the user interface.
+When an action is executed, it stablishs the state that this action
+produces. For example, when user execute an action like <em>open file</em>, when
+the file is opened and its conted loaded the action will produce a 
+<em>data loaded</em> state. This state is a constrains that will enable or
+disable other actions.</p>
+<p>An action is a command to be executed by the user. Then, most actions has
+a dialog that interacts with the user to set parameters for the command
+being executed.</p>
+<p>User loads data for being processed. When the user loads data, this data is
+treated as a document. Then, a document represents the data on which the
+user is working on.</p>
+<p><strong>Protected attributes</strong></p>
+<dl class="attribute">
+<dt id="gui.mainwindow.MainWindow._state">
+<tt class="descname">_state</tt><a class="headerlink" href="#gui.mainwindow.MainWindow._state" title="Permalink to this definition">¶</a></dt>
+<dd><p>type: Constrains</p>
+<p>Has the current state of the application.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gui.mainwindow.MainWindow._actionDialog">
+<tt class="descname">_actionDialog</tt><a class="headerlink" href="#gui.mainwindow.MainWindow._actionDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>type: ActionDialog</p>
+<p>Reference to the current action dialog executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gui.mainwindow.MainWindow._doc">
+<tt class="descname">_doc</tt><a class="headerlink" href="#gui.mainwindow.MainWindow._doc" title="Permalink to this definition">¶</a></dt>
+<dd><p>type: Document</p>
+<p>Reference to the current document</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="gui.mainwindow.MainWindow.__init__">
+<tt class="descclassname">MainWindow.</tt><tt class="descname">__init__</tt><big>(</big><em>parent=None</em><big>)</big><a class="headerlink" href="#gui.mainwindow.MainWindow.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the main window.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> &#8211; <p>The parent window of this main window.</p>
+<p>Usually you pass <cite>parent=None</cite> in most cases.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gui.mainwindow.MainWindow.connectSignals">
+<tt class="descclassname">MainWindow.</tt><tt class="descname">connectSignals</tt><big>(</big><big>)</big><a class="headerlink" href="#gui.mainwindow.MainWindow.connectSignals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects the signals and slots of user actions.</p>
+<p>User actions are accesed usually from a graphic menu. When user selects
+an action, this actions emits a signal that is catched by an slot.
+Then, an slot is a function that executes the action.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author :</th><td class="field-body">Julio C. Estrada &lt;<a class="reference external" href="mailto:julio&#37;&#52;&#48;cio&#46;mx">julio<span>&#64;</span>cio<span>&#46;</span>mx</a>&gt;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The Fringes application</a><ul>
+<li><a class="reference internal" href="#fringes-module">fringes module</a></li>
+<li><a class="reference internal" href="#gui-module">gui module</a></li>
+<li><a class="reference internal" href="#mainwindow-module">mainwindow module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to fringes&#8217;s documentation!</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/fringes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to fringes’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">fringes 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Julio C. Estrada.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
