@@ -23,7 +23,16 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+gui module
+----------
+:platform: Unix, MacOs X
+:sinopsys: Graphic User interface
 
+.. moduleauthor:: Julio C. Estrada <julio@cio.mx>
+
+This module defined the classes of objects that are used in the user interface.
+"""
 import sip
 api2_classes = [
     'QData', 'QDateTime', 'QString', 'QTextStream',
@@ -32,3 +41,5 @@ for cl in api2_classes:
     sip.setapi(cl, 2)
 
 __all__=['fringeproc']
+
+from fringeproc import FringeProc

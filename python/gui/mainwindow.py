@@ -23,7 +23,24 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+mainwindow module
+-----------------
 
+:platform: Unix, MacOS X
+:sinopsys: Main window.
+
+.. moduleauthor:: Julio C. Estrada <julio@cio.mx>
+
+The main window of the graphic user interface.
+
+The graphic user interface is composed by the following:
+
+- **The menu.**
+  It get acces to different commands.
+- **The view area.**
+  Here it is shown the images that are processed and results.
+"""
 from PyQt4.QtGui import QMainWindow, QGraphicsScene
 from PyQt4.QtCore import pyqtSlot
 from ui_mainwin import Ui_MainGUI
@@ -34,10 +51,60 @@ from pixmapitem import PixmapItem
 from document import Document
 
 class MainWindow(QMainWindow):
+    """
+    This is the main window of the user interface.
+    
+    The user interface interacts with the user. The main window has menus that
+    let user do actions or execute commands. Actions are enabled when the
+    conditions for executing an action are present. For example, you can not
+    apply some kind of process if there is not any data present. This behaivor
+    is implemented by using some kind of a state machine.
+    
+    The state machine works in the folliwing way: The aplication has states
+    are constrain that enable or disable some actions from the user interface.
+    When an action is executed, it stablishs the state that this action
+    produces. For example, when user execute an action like *open file*, when
+    the file is opened and its conted loaded the action will produce a 
+    *data loaded* state. This state is a constrains that will enable or
+    disable other actions.
+    
+    An action is a command to be executed by the user. Then, most actions has
+    a dialog that interacts with the user to set parameters for the command
+    being executed.
+    
+    User loads data for being processed. When the user loads data, this data is
+    treated as a document. Then, a document represents the data on which the
+    user is working on.
+    
+    **Protected attributes**
+    
+    .. attribute:: _state
+    
+       type: Constrains
+       
+       Has the current state of the application.
+    .. attribute:: _actionDialog
+    
+       type: ActionDialog
+       
+       Reference to the current action dialog executed.
+    .. attribute:: _doc
+    
+       type: Document
+       
+       Reference to the current document
+    """
     _state = None
     _actionDialog = None
     _doc = None
     def __init__(self, parent=None):
+        """
+        Constructs the main window.
+        
+        :param parent: The parent window of this main window.
+           
+           Usually you pass `parent=None` in most cases.
+        """
         super(MainWindow, self).__init__(parent)
         self._ui = Ui_MainGUI()
         self._ui.setupUi(self)
@@ -48,10 +115,13 @@ class MainWindow(QMainWindow):
 
     def connectSignals(self):
         """
-        Connects the signals and slots of menu actions and defines its
-        constrains. 
+        Connects the signals and slots of user actions.
+        
+        User actions are accesed usually from a graphic menu. When user selects
+        an action, this actions emits a signal that is catched by an slot.
+        Then, an slot is a function that executes the action.
 
-          :author: Julio C. Estrada <julio@cio.mx>
+        :author: Julio C. Estrada <julio@cio.mx>
         """
         self._ui._mnuFileClose.triggered.connect(self._onClose)
         self._ui._mnuFileOpen.triggered.connect(self._onOpen)
@@ -65,6 +135,15 @@ class MainWindow(QMainWindow):
         self._state.stateChanged.connect(self._onStateChanged)
 
     def start(self):
+        """
+        Starts the application is main window.
+        
+        When the main window is started, action signals are connected, the
+        constrains of each action is set, the initial state is set and
+        the main window is shown on the cumputer display.
+        
+        :author: Julio C. Estrada <julio@cio.mx>
+        """
         self.connectSignals()
         self.setActionConstrains()
         self._state.setState(Constrains.init_state)
