@@ -45,7 +45,7 @@ from PyQt4.QtGui import QMainWindow, QGraphicsScene
 from PyQt4.QtCore import pyqtSlot
 from ui_mainwin import Ui_MainGUI
 from constrains import Constrains
-from filedialog import OpenDialog
+from filedialog import OpenDialog, SaveDialog
 from image import Image
 from pixmapitem import PixmapItem
 from document import Document
@@ -226,7 +226,23 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def _onSave(self):
-        pass
+        dlg = SaveDialog(self, "Save file")
+        dlg.setInput(self._doc.getImage())
+        dlg.setModal(True)
+        dlg.taskFinished.connect(self._onOpenFinished)
+        dlg.show()
+        self._actionDialog = dlg
+        
+        self._state.setState(Constrains.user_interacting)
+
+    @pyqtSlot(int)
+    def _onSaveFinished(self, res):
+        if res == 1:
+            self.statusBar().showMessage("Image saved", 3000)
+        else:
+            self.statusBar().showMessage("Image not saved", 3000)
+        self._state.setState([Constrains.data_saved,
+                              Constrains.data_loaded])
 
     @pyqtSlot()
     def _onPhaseUnwrapping(self):
