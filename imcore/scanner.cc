@@ -43,7 +43,7 @@ Scanner::Scanner(const Eigen::ArrayXXf* mat_u, const Eigen::ArrayXXf* mat_v)
   :m_matu(mat_u), m_matv(mat_v)
 {
   m_visited = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
-  m_mask = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
+  m_mask = Eigen::ArrayXXi::Zero(mat_u->rows(), mat_u->cols());
   m_pixel(0)=0;
   m_pixel(1)=0;
   insertPixelToPath(m_pixel);
@@ -55,7 +55,7 @@ Scanner::Scanner(const Eigen::ArrayXXf* mat_u, const Eigen::ArrayXXf* mat_v,
   :m_matu(mat_u), m_matv(mat_v)
 {
   m_visited = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
-  m_mask = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
+  m_mask = Eigen::ArrayXXi::Zero(mat_u->rows(), mat_u->cols());
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;
@@ -67,7 +67,7 @@ void Scanner::setFreqMin(double freq)
   m_freqmin = freq;
 }
 
-void Scanner::setMask(Eigen::ArrayXXf mask)
+void Scanner::setMask(const Eigen::ArrayXXi& mask)
 {
   m_mask = mask;
 }

@@ -1,5 +1,5 @@
 # Utils lib.
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/include)
 set(utils_SRC utils.cc
 )
 

@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <opencv2/core/core.hpp>
+#include <Eigen/Dense>
 
 /**
   Fills the matrix using an parabola.
@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   @param mat the matrix
   @param A the manitude.
   */
-void parabola(Eigen::ArrayXXf mat, float A) throw(cv::Exception);
+void parabola(Eigen::ArrayXXf& mat, float A);
 
 /**
   Takes the cosine of the matrix given as angle.
@@ -56,7 +56,7 @@ void parabola(Eigen::ArrayXXf mat, float A) throw(cv::Exception);
   @param angle the values taken as argument of the cosine function
   @param cc the cosine values obtained
   */
-void cosine(const Eigen::ArrayXXf angle, Eigen::ArrayXXf& cc) throw(cv::Exception);
+void cosine(const Eigen::ArrayXXf& angle, Eigen::ArrayXXf& cc);
 
 /**
   Generates the field X and Y with linear spaced data.
@@ -109,11 +109,13 @@ Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
  * @param dx [output] the differences along x-direction (columns)
  * @param dy [output] the differences along y-direction (rows)
  */
-void gradient(const Eigen::ArrayXXf I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy);
+void gradient(const Eigen::ArrayXXf& I,
+              Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy);
 
-Eigen::ArrayXXf wphase(const Eigen::ArrayXXf p);
-Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf mat, float a, float b);
+Eigen::ArrayXXf wphase(const Eigen::ArrayXXf& p);
+Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf& mat, float a, float b);
 
+/* Codigo para opencv--- No sirve en estos momentos
 template<typename T>
 Eigen::ArrayXXf cos(const Eigen::ArrayXXf mat) throw(cv::Exception)
 {
@@ -171,5 +173,5 @@ Eigen::ArrayXXf atan2(const Eigen::ArrayXXf& ss, const Eigen::ArrayXXf& cc) thro
 
   return ang;
 }
-
+*/
 #endif // UTILS_H

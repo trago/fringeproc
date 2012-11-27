@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include "unwrap_gears.h"
 
+
 float sW(float phase)
 {
   float m= 2 * M_PI;
@@ -48,9 +49,9 @@ double dW(double phase)
 
 float sunwrap_pixel(const size_t idx, const int x, const int y,
                     const float *restrict phase, 
-		    const char *restrict mask,
+                    const int *restrict mask,
                     const float *restrict uphase,
-                    const uint8_t *restrict visited, float tao,
+                    const int *restrict visited, float tao,
                     const size_t M, const size_t N)
 {
   float val= 0;
@@ -119,9 +120,9 @@ float sunwrap_pixel(const size_t idx, const int x, const int y,
 
 double dunwrap_pixel(const size_t idx, const int x, const int y,
                      const double *restrict phase,
-		     const char *restrict mask,
+                     const int *restrict mask,
                      const double *restrict uphase,
-                     const uint8_t *restrict visited, double tao,
+                     const int *restrict visited, double tao,
                      const size_t M, const size_t N)
 {
   double val= 0;

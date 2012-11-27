@@ -78,7 +78,7 @@ public:
   Scanner(const Eigen::ArrayXXf* mat_u,
           const Eigen::ArrayXXf* mat_v, Eigen::Array2i pixel);
 
-  void setMask(Eigen::ArrayXXf mask);
+  void setMask(const Eigen::ArrayXXi& mask);
 #endif
   /**
    * Determines the next pixel point in the sequence.
@@ -129,7 +129,7 @@ private:
   /** The frequencies or differences in y-direction */
   const Eigen::ArrayXXf* m_matv;
   /** Mask for the data */
-  Eigen::ArrayXXf m_mask;
+  Eigen::ArrayXXi m_mask;
   /** Label field that marks whith true the already visited pixels. */
   Eigen::ArrayXXf m_visited;
   /** The current pixel in the scanning sequence */

@@ -228,7 +228,7 @@ Eigen::ArrayXXf gaussian_filter(const Eigen::ArrayXXf& data, float sigma)
 {
   Eigen::ArrayXXf hx, hy;
   Eigen::ArrayXXf tmp(data.rows(), data.cols());
-  gen_gaussianKernel(hx, jy, sigma);
+  gen_gaussianKernel(hx, hy, sigma);
 
   sconvolution(data.data(), hx.data(), hy.data(),
                tmp.data(), data.rows(), data.cols(), hy.cols(), hx.cols());

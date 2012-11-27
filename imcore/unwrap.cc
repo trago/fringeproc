@@ -26,46 +26,49 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **************************************************************************/
 
+#define cimg_display 0
+#include <CImg.h>
+
 #include <utils/utils.h>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <utils/utils.h>
 #include "unwrap.h"
 #include "unwrap_gears.h"
+#include "gabor_gears.h"
 
 inline
 void sunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
-                          const Eigen::ArrayXXf& mask,
-                          Eigen::ArrayXXf& pp, Eigen::ArrayXXf& visited,
+                          const Eigen::ArrayXXi& mask,
+                          Eigen::ArrayXXf& pp, Eigen::ArrayXXi& visited,
                           float tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
-  int hig_i = (ii+N/2)<(wp.rows)? (ii+N/2):(wp.rows-1);
+  int hig_i = (ii+N/2)<(wp.rows())? (ii+N/2):(wp.rows()-1);
   int low_j = (jj-N/2)>=0? (jj-N/2):0;
-  int hig_j = (jj+N/2)<(wp.cols)? (jj+N/2):(wp.cols-1);
+  int hig_j = (jj+N/2)<(wp.cols())? (jj+N/2):(wp.cols()-1);
 
   for(int i=low_i; i<=hig_i; i++){
     if(i%2==0)
       for(int j=low_j; j<=hig_j; j++){
-        if(mask.at<char>(i,j)){
-          pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-                                          wp.ptr<float>(),
-                                          mask.ptr<char>(),
-                                          pp.ptr<float>(),
-                                          visited.ptr<uchar>(),
-                                          tao, wp.rows, wp.cols);
-          visited.at<uchar>(i,j)=1;
+        if(mask(i,j)){
+          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+                                          wp.data(),
+                                          mask.data(),
+                                          pp.data(),
+                                          visited.data(),
+                                          tao, wp.rows(), wp.cols());
+          visited(i,j)=1;
         }
       }
     else
       for(int j=hig_j; j>=low_j; j--){
-        if(mask.at<char>(i,j)){
-          pp.at<float>(i,j)=sunwrap_pixel(i*wp.cols+j, j, i,
-                                          wp.ptr<float>(),
-                                          mask.ptr<char>(),
-                                          pp.ptr<float>(),
-                                          visited.ptr<uchar>(),
-                                          tao, wp.rows, wp.cols);
-          visited.at<uchar>(i,j)=1;
+        if(mask(i,j)){
+          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+                                          wp.data(),
+                                          mask.data(),
+                                          pp.data(),
+                                          visited.data(),
+                                          tao, wp.rows(), wp.cols());
+          visited(i,j)=1;
         }
       }
   }
@@ -73,38 +76,38 @@ void sunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
 
 inline
 void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
-                          const Eigen::ArrayXXf& mask,
-                          Eigen::ArrayXXf& pp, Eigen::ArrayXXf& visited,
+                          const Eigen::ArrayXXi& mask,
+                          Eigen::ArrayXXf& pp, Eigen::ArrayXXi& visited,
                           double tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
-  int hig_i = (ii+N/2)<(wp.rows)? (ii+N/2):(wp.rows-1);
+  int hig_i = (ii+N/2)<(wp.rows())? (ii+N/2):(wp.rows()-1);
   int low_j = (jj-N/2)>=0? (jj-N/2):0;
-  int hig_j = (jj+N/2)<(wp.cols)? (jj+N/2):(wp.cols-1);
+  int hig_j = (jj+N/2)<(wp.cols())? (jj+N/2):(wp.cols()-1);
 
   for(int i=low_i; i<=hig_i; i++){
     if(i%2==0)
       for(int j=low_j; j<=hig_j; j++){
-        if(mask.at<char>(i,j)){
-          pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-                                           wp.ptr<double>(),
-                                           mask.ptr<char>(),
-                                           pp.ptr<double>(),
-                                           visited.ptr<uchar>(),
-                                           tao, wp.rows, wp.cols);
-          visited.at<uchar>(i,j)=1;
+        if(mask(i,j)){
+          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+                                wp.data(),
+                                mask.data(),
+                                pp.data(),
+                                visited.data(),
+                                tao, wp.rows(), wp.cols());
+          visited(i,j)=1;
         }
       }
     else
       for(int j=hig_j; j>=low_j; j--){
-        if(mask.at<char>(i,j)){
-          pp.at<double>(i,j)=dunwrap_pixel(i*wp.cols+j, j, i,
-                                           wp.ptr<double>(),
-                                           mask.ptr<char>(),
-                                           pp.ptr<double>(),
-                                           visited.ptr<uchar>(),
-                                           tao, wp.rows, wp.cols);
-          visited.at<uchar>(i,j)=1;
+        if(mask(i,j)){
+          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+                                           wp.data(),
+                                           mask.data(),
+                                           pp.data(),
+                                           visited.data(),
+                                           tao, wp.rows(), wp.cols());
+          visited(i,j)=1;
         }
       }
   }
@@ -113,68 +116,51 @@ void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
 /**
  * Phase unwrapping method
  */
-template<typename T>
-void unwrap2D_engine(Eigen::ArrayXXf wphase, Eigen::ArrayXXf mask, Eigen::ArrayXXf uphase,
-                     double tao, double smooth_path, int n, cv::Point pixel)
+void unwrap2D_engine(const Eigen::ArrayXXf& wphase, const Eigen::ArrayXXi& mask,
+                     Eigen::ArrayXXf& uphase,
+                     double tao, double smooth_path, int n,
+                     Eigen::Array2i pixel)
 {
-  const int M=wphase.rows, N=wphase.cols;
-  Eigen::ArrayXXf visited = Eigen::ArrayXXf::zeros(M, N, CV_8U);
+  const int M=wphase.rows(), N=wphase.cols();
+  Eigen::ArrayXXi visited = Eigen::ArrayXXi::Zero(M, N);
   Eigen::ArrayXXf path, dx, dy;
 
   if(smooth_path>0){
-    cv::GaussianBlur(wphase, path, cv::Size(0,0), smooth_path, smooth_path);
+    path = gaussian_filter(wphase, smooth_path);
     gradient(path, dx, dy);
   }
 
-  Scanner scan(dx, dy, pixel);
+  Scanner scan(&dx, &dy, pixel);
   scan.setMask(mask);
   int i,j;
-  if(wphase.type()==CV_32F)
-    do{
-      pixel = scan.getPosition();
-      i=pixel.y;
-      j=pixel.x;
-      sunwrap_neighborhood(i, j, wphase, mask, uphase, visited, tao, n);
-    }while(scan.next());
-  else
-    do{
-      i=pixel.y;
-      j=pixel.x;
-      dunwrap_neighborhood(i, j, wphase, mask, uphase, visited, tao, n);
-    }while(scan.next());
-
+  do{
+    pixel = scan.getPosition();
+    i=pixel(0);
+    j=pixel(1);
+    sunwrap_neighborhood(i, j, wphase, mask, uphase, visited, tao, n);
+  }while(scan.next());
 }
 
-void unwrap2D(Eigen::ArrayXXf wphase, Eigen::ArrayXXf mask, Eigen::ArrayXXf uphase, double tao,
-              double smooth_path, int N, cv::Point pixel) throw(cv::Exception)
+void unwrap2D(const Eigen::ArrayXXf& wphase, const Eigen::ArrayXXi& mask,
+              Eigen::ArrayXXf& uphase, double tao,
+              double smooth_path, int N, Eigen::Array2i& pixel)
 {
-  if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
-    cv::Exception e(1000,
-                    "Type not supported, must be single or double precision.",
-                    "unwrap2D", std::string(__FILE__), __LINE__);
-    throw(e);
-  }
-  if(uphase.rows!=wphase.rows && uphase.cols!=wphase.cols &&
-     uphase.type()!=wphase.type())
-    uphase.create(wphase.rows, wphase.cols, wphase.type());
+  uphase.resize(wphase.rows(), wphase.cols());
 
-  if(wphase.type()==CV_32F)
-    unwrap2D_engine<float>(wphase, mask, uphase, tao, smooth_path, N, pixel);
-  else
-    unwrap2D_engine<double>(wphase, mask, uphase, tao, smooth_path, N, pixel);
+  unwrap2D_engine(wphase, mask, uphase, tao, smooth_path, N, pixel);
 }
 
-Unwrap::Unwrap(Eigen::ArrayXXf_<double> wphase, double tau, double smooth, int N)
+Unwrap::Unwrap(const Eigen::ArrayXXf& wphase, double tau, double smooth, int N)
 : _wphase(wphase)
 {
   _tau = tau;
   _smooth = smooth;
   _N=N;
-  _uphase = Eigen::ArrayXXf_<double>::zeros(_wphase.rows, _wphase.cols);
-  _visited = Eigen::ArrayXXf_<char>::zeros(_wphase.rows, _wphase.cols);
-  _mask = Eigen::ArrayXXf_<char>::ones(_wphase.rows, _wphase.cols);
-  _dx = Eigen::ArrayXXf_<double>::zeros(_wphase.rows, _wphase.cols);
-  _dy = Eigen::ArrayXXf_<double>::zeros(_wphase.rows, _wphase.cols);
+  _uphase = Eigen::ArrayXXf::Zero(_wphase.rows(), _wphase.cols());
+  _visited = Eigen::ArrayXXi::Zero(_wphase.rows(), _wphase.cols());
+  _mask = Eigen::ArrayXXi::Constant(_wphase.rows(), _wphase.cols(), 1);
+  _dx = Eigen::ArrayXXf::Zero(_wphase.rows(), _wphase.cols());
+  _dy = Eigen::ArrayXXf::Zero(_wphase.rows(), _wphase.cols());
   _scanner = NULL;
 }
 
@@ -192,14 +178,14 @@ void Unwrap::run()
 bool Unwrap::runInteractive(int iters)
 {
   if (_scanner==NULL) {
-    _scanner = new Scanner(_dx, _dy, _pixel);
+    _scanner = new Scanner(&_dx, &_dy, _pixel);
     _scanner->setMask(_mask);
   }
 
   int iter=0;
   do{
     _pixel = _scanner->getPosition();
-    int i= _pixel.y, j=_pixel.x;
+    int i= _pixel(1), j=_pixel(0);
     dunwrap_neighborhood(i, j, _wphase, _mask, _uphase, _visited, _tau, _N);
     //takeGradient(_pixel, _N);
     _visited(i,j)=1;
@@ -208,24 +194,30 @@ bool Unwrap::runInteractive(int iters)
   return iter==iters;
 }
 
-void Unwrap::processPixel(cv::Point pixel)
+void Unwrap::processPixel(const Eigen::Array2i& pixel)
 {
-  int i=pixel.y, j=pixel.x;
+  int i=pixel(1), j=pixel(0);
   dunwrap_neighborhood(i, j, _wphase, _mask, _uphase, _visited, _tau, _N);
 }
 
 
-void Unwrap::setPixel(cv::Point pixel)
+void Unwrap::setPixel(const Eigen::Array2i& pixel)
 {
+  using namespace cimg_library;
   if(_scanner!=NULL){
     delete _scanner;
   }
-  Eigen::ArrayXXf path;
+  Eigen::ArrayXXf path(_wphase.rows(), _wphase.rows());
+  CImg<float> cimg_wphase(_wphase.data(), _wphase.cols(), _wphase.rows(),
+                          1, 1, true);
+  CImg<float> cimg_path(path.data(), _wphase.cols(), _wphase.rows(),
+                          1, 1, true);
   if(_smooth>0){
-    cv::GaussianBlur(_wphase, path, cv::Size((int)_smooth,(int)_smooth),0);
+    cimg_path = cimg_wphase.get_blur(_smooth);
+    //cv::GaussianBlur(_wphase, path, cv::Size((int)_smooth,(int)_smooth),0);
     gradient(path, _dx, _dy);
   }
-  _scanner = new Scanner(_dx, _dy, pixel);
+  _scanner = new Scanner(&_dx, &_dy, pixel);
   _scanner->setMask(_mask);
   _pixel=pixel;
 }
@@ -239,48 +231,64 @@ Eigen::ArrayXXf Unwrap::getInput()
   return _wphase;
 }
 
-void Unwrap::setMask(Eigen::ArrayXXf mask)
+void Unwrap::setMask(const Eigen::ArrayXXi& mask)
 {
   _mask = mask;
 }
 
+/*
 void Unwrap::filterPhase(double sigma)
 {
-  Eigen::ArrayXXf ss = sin<double>(_wphase);
-  Eigen::ArrayXXf cc = cos<double>(_wphase);
-  cv::GaussianBlur(ss, ss, cv::Size(0,0), sigma);
-  cv::GaussianBlur(cc, cc, cv::Size(0,0), sigma);
+  using namespace cimg_library;
+  Eigen::ArrayXXf ss = _wphase.sin();
+  Eigen::ArrayXXf cc = _wphase.cos();
+  CImg<float> cimg_ss(ss.data(), ss.cols(), ss.rows(), 1, 1, true);
+  CImg<float> cimg_cc(cc.data(), cc.cols(), cc.rows(), 1, 1, true);
 
-  _wphase = atan2<double>(ss, cc);
+  cimg_ss.blur(sigma);
+  cimg_cc.blur(sigma);
+
+
+
+  for(int i=0; i<ss.rows(); i++)
+    for(int j=0; j<ss.cols(); j++)
+      _wphase(i,j) = atan2(ss, cc);
 }
-
+*/
 Eigen::ArrayXXf Unwrap::genPath(double sigma)
 {
-  Eigen::ArrayXXf ss = sin<double>(_wphase);
-  Eigen::ArrayXXf cc = cos<double>(_wphase);
-  cv::GaussianBlur(ss, ss, cv::Size(0,0), sigma);
-  cv::GaussianBlur(cc, cc, cv::Size(0,0), sigma);
+  using namespace cimg_library;
+  Eigen::ArrayXXf ss = _wphase.sin();
+  Eigen::ArrayXXf cc = _wphase.cos();
+  CImg<float> cimg_ss(ss.data(), ss.cols(), ss.rows(), 1, 1, true);
+  CImg<float> cimg_cc(cc.data(), cc.cols(), cc.rows(), 1, 1, true);
 
-  Eigen::ArrayXXf wphase = atan2<double>(ss, cc);
-  cc = cos<double>(wphase);
+  cimg_ss.blur(sigma);
+  cimg_cc.blur(sigma);
+
+  Eigen::ArrayXXf wphase(ss.rows(), ss.cols());
+  for(int i=0; i<ss.rows(); i++)
+    for(int j=0; j<ss.cols(); j++)
+      wphase(i,j) = atan2(ss(i,j),cc(i,j));
+  cc = wphase.cos();
 
   return cc;
 }
 
-void Unwrap::takeGradient(cv::Point pixel, const int N)
+void Unwrap::takeGradient(const Eigen::Array2i& pixel, const int N)
 {
   const int N_2 = N/2;
-  Eigen::ArrayXXf_<double>& p = _uphase;
-  for(int i=pixel.y-N_2; i<=pixel.y+N_2; i++)
-    for(int j=pixel.x-N_2; j<=pixel.x+N_2; j++){
+  Eigen::ArrayXXf& p = _uphase;
+  for(int i=pixel(1)-N_2; i<=pixel(1)+N_2; i++)
+    for(int j=pixel(0)-N_2; j<=pixel(0)+N_2; j++){
       /*
-      if(i>=1 && i<p.rows && j>=0 && j<p.cols)
+      if(i>=1 && i<p.rows() && j>=0 && j<p.cols())
         _dy(i,j)=(p(i,j)-p(i-1,j))*_mask(i,j);
-      if(j>=1 && j<p.cols && i>=0 && i<p.rows)
+      if(j>=1 && j<p.cols() && i>=0 && i<p.rows())
         _dx(i,j)=(p(i,j)-p(i,j-1))*_mask(i,j);
-      if(j==0 && j<p.cols && i>=0 && i<p.rows)
+      if(j==0 && j<p.cols() && i>=0 && i<p.rows())
         _dx(i,j)=(p(i,j+1)-p(i,j))*_mask(i,j);
-      if(i==0 && i<p.rows && j>=0 && j<p.cols)
+      if(i==0 && i<p.rows() && j>=0 && j<p.cols())
         _dy(i,j)=(p(i+1,j)-p(i,j))*_mask(i,j);
       */
       _dy(i,j)=p(i,j);

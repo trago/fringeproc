@@ -28,14 +28,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <imcore/scanner.h>
 #include <utils/utils.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <boost/program_options.hpp>
 #include <imcore/unwrap.h>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <Eigen/Dense>
+#include <CImg.h>
 
 using namespace std;
 

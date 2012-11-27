@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define UNWRAP_H
 
 #ifndef SWIG
-#include <opencv2/core/core.hpp>
+#include <Eigen/Dense>
 #include "scanner.h"
 #endif
 
@@ -72,7 +72,7 @@ public:
    * @param[in] N, the neighborhood size around each pixel that is
    * being processid sequentially.
    */
-  Unwrap(Eigen::ArrayXXf_<double> wphase, double tau=0.09, double smooth=9, int N=15);
+  Unwrap(const Eigen::ArrayXXf& wphase, double tau=0.09, double smooth=9, int N=15);
 #endif
   /**
    * The destructor.
@@ -122,7 +122,7 @@ public:
    * region of interest and with zeros the region that is not going to
    * be processed.
    */
-  void setMask(Eigen::ArrayXXf mask);
+  void setMask(const Eigen::ArrayXXi& mask);
 
   Eigen::ArrayXXf genPath(double sigma);
 #endif
@@ -143,30 +143,30 @@ public:
    * obtained. That is, when you set the starting pixel, the scanning
    * sequence is restarted.
    */
-  void setPixel(cv::Point pixel);
+  void setPixel(const Eigen::Array2i& pixel);
   /**
    * Process only the given pixel.
    * 
    * 
    */
-  void processPixel(cv::Point pixel);
-  void filterPhase(double simga);
+  void processPixel(const Eigen::Array2i& pixel);
+  //void filterPhase(double simga);
 
 private:
-  Eigen::ArrayXXf_<char> _visited;
-  Eigen::ArrayXXf_<char> _mask;
-  Eigen::ArrayXXf_<double> _wphase;
-  Eigen::ArrayXXf_<double> _uphase;
-  Eigen::ArrayXXf_<double> _dx;
-  Eigen::ArrayXXf_<double> _dy;
-  cv::Point _pixel;
+  const Eigen::ArrayXXf& _wphase;
+  Eigen::ArrayXXi _visited;
+  Eigen::ArrayXXi _mask;
+  Eigen::ArrayXXf _uphase;
+  Eigen::ArrayXXf _dx;
+  Eigen::ArrayXXf _dy;
+  Eigen::Array2i _pixel;
   double _tau;
   double _smooth;
   int _N;
 
   Scanner* _scanner;
 
-  void takeGradient(cv::Point pixel, const int N);
+  void takeGradient(const Eigen::Array2i& pixel, const int N);
 };
 
 

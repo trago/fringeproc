@@ -81,9 +81,9 @@ float sW(float phase);
   @param N the number of columns
   */
 float sunwrap_pixel(const size_t idx, const int x, const int y,
-                    const float *phase, const char* mask,
+                    const float *phase, const int* mask,
                     const float *uphase,
-                    const uint8_t *visited, float tao,
+                    const int *visited, float tao,
                     const size_t M, const size_t N);
 
 /**
@@ -132,9 +132,9 @@ double dW(double phase);
   @param N the number of columns
   */
 double dunwrap_pixel(const size_t idx, const int x, const int y,
-                     const double *phase, const char* mask,
+                     const double *phase, const int* mask,
                      const double *uphase,
-                     const uint8_t *visited, double tao,
+                     const int *visited, double tao,
                      const size_t M, const size_t N);
 #ifdef __cplusplus
 }
