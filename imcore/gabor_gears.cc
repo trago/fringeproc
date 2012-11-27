@@ -148,127 +148,122 @@ void sconvolution(const float *__restrict data,
     }
 }
 
-void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
-             const double sigma, const int type) throw(cv::Exception)
+void gen_gaborKernel(Eigen::ArrayXXf& greal, Eigen::ArrayXXf& gimag,
+                     const double f,
+                     const double sigma)
 {
   const int N =(int) sigma*3;
-  greal.create(1,2*N+1, type);
-  gimag.create(1,2*N+1, type);
 
-  if(type==CV_32F)
-    for(int i=-N; i<=N; i++){
-      greal.at<float>(0,i+N)=exp(-i*i/(2*sigma*sigma))*cos(f*i);
-      gimag.at<float>(0,i+N)=-exp(-i*i/(2*sigma*sigma))*sin(f*i);
-    }
-  else if(type==CV_64F)
-    for(int i=-N; i<=N; i++){
-      greal.at<double>(0,i+N)=exp(-i*i/(2*sigma*sigma))*cos(f*i);
-      gimag.at<double>(0,i+N)=-exp(-i*i/(2*sigma*sigma))*sin(f*i);
-    }
-  else{
-    cv::Exception e(DEMOD_UNKNOWN_TYPE, "Data type not supported",
-            "gen_gaborKernel", __FILE__, __LINE__);
-    throw(e);
+  greal.resize(1,2*N+1);
+  gimag.resize(1,2*N+1);
+
+  for(int i=-N; i<=N; i++){
+    greal(0,i+N)=exp(-i*i/(2*sigma*sigma))*cos(f*i);
+    gimag(0,i+N)=-exp(-i*i/(2*sigma*sigma))*sin(f*i);
   }
 }
 
-void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
+void gen_gaussianKernel(Eigen::ArrayXXf& hx, Eigen::ArrayXXf& hy,
+                        const double sigma)
+{
+  const int N =(int) sigma*3;
+
+  hx.resize(1,2*N+1);
+  hy.resize(1,2*N+1);
+
+  for(int i=-N; i<=N; i++){
+    hx(0,i+N)=exp(-i*i/(2*sigma*sigma));
+    hy(0,i+N)=exp(-i*i/(2*sigma*sigma));
+  }
+}
+
+void gabor_adaptiveFilterXY(const Eigen::ArrayXXf& data,
+                            Eigen::ArrayXXf& fr, Eigen::ArrayXXf& fi,
                             const double wx, const double wy,
                             const int x, const int y)
 {
-  cv::Mat hxr, hxi, hyr, hyi;
+  Eigen::ArrayXXf hxr, hxi, hyr, hyi;
   double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
       sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
 
   sx = sx>7? 7:(sx<1? 1:sx);
   sy = sy>7? 7:(sy<1? 1:sy);
 
-  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
-  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+  gen_gaborKernel(hxr, hxi, wx, sx);
+  gen_gaborKernel(hyr, hyi, wy, sy);
 
-  if(data.type()==CV_32F){
-    fr.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyr, x, y) -
-        convolutionAtXY<float>(data, hxi, hyi, x, y);
-    fi.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyi, x, y) +
-        convolutionAtXY<float>(data, hxi, hyr, x, y);
-  }
-  else if(data.type()==CV_64F){
-    fr.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyr, x, y) -
-        convolutionAtXY<double>(data, hxi, hyi, x, y);
-    fi.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyi, x, y) +
-        convolutionAtXY<double>(data, hxi, hyr, x, y);
-  }
+  fr(y,x)=convolutionAtXY(data, hxr, hyr, x, y) -
+      convolutionAtXY(data, hxi, hyi, x, y);
+  fi(y,x)=convolutionAtXY(data, hxr, hyi, x, y) +
+      convolutionAtXY(data, hxi, hyr, x, y);
 }
 
-void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
+void gabor_filter(const Eigen::ArrayXXf& data,
+                  Eigen::ArrayXXf& fr, Eigen::ArrayXXf& fi,
                   const double wx, const double wy)
 {
-  cv::Mat hxr, hxi, hyr, hyi;
-  cv::Mat tmp1(data.rows, data.cols, data.type());
-  cv::Mat tmp2(data.rows, data.cols, data.type());
+  Eigen::ArrayXXf hxr, hxi, hyr, hyi;
+  Eigen::ArrayXXf tmp1(data.rows(), data.cols());
+  Eigen::ArrayXXf tmp2(data.rows(), data.cols());
   double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
 
   sx = sx>22? 22:(sx<1? 1:sx);
   sy = sy>22? 22:(sy<1? 1:sy);
-  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
-  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+  gen_gaborKernel(hxr, hxi, wx, sx);
+  gen_gaborKernel(hyr, hyi, wy, sy);
 
-  if(data.type()==CV_32F){
-    sconvolution(data.ptr<float>(), hxr.ptr<float>(), hyr.ptr<float>(),
-                 tmp1.ptr<float>(), data.rows, data.cols, hyr.cols, hxr.cols);
-    sconvolution(data.ptr<float>(), hxi.ptr<float>(), hyi.ptr<float>(),
-                 tmp2.ptr<float>(), data.rows, data.cols, hyi.cols, hxi.cols);
-    fr = tmp1 - tmp2;
-    sconvolution(data.ptr<float>(), hxr.ptr<float>(), hyi.ptr<float>(),
-                 tmp1.ptr<float>(), data.rows, data.cols, hyi.cols, hxr.cols);
-    sconvolution(data.ptr<float>(), hxi.ptr<float>(), hyr.ptr<float>(),
-                 tmp2.ptr<float>(), data.rows, data.cols, hyr.cols, hxi.cols);
-    fi = tmp1 + tmp2;
-  }
-  else if(data.type()==CV_64F){
-    dconvolution(data.ptr<double>(), hxr.ptr<double>(), hyr.ptr<double>(),
-                 tmp1.ptr<double>(), data.rows, data.cols, hyr.cols, hxr.cols);
-    dconvolution(data.ptr<double>(), hxi.ptr<double>(), hyi.ptr<double>(),
-                 tmp2.ptr<double>(), data.rows, data.cols, hyi.cols, hxi.cols);
-    fr = tmp1 - tmp2;
-    dconvolution(data.ptr<double>(), hxr.ptr<double>(), hyi.ptr<double>(),
-                 tmp1.ptr<double>(), data.rows, data.cols, hyi.cols, hxr.cols);
-    dconvolution(data.ptr<double>(), hxi.ptr<double>(), hyr.ptr<double>(),
-                 tmp2.ptr<double>(), data.rows, data.cols, hyr.cols, hxi.cols);
-    fi = tmp1 + tmp2;
-  }
+  sconvolution(data.data(), hxr.data(), hyr.data(),
+               tmp1.data(), data.rows(), data.cols(), hyr.cols(), hxr.cols());
+  sconvolution(data.data(), hxi.data(), hyi.data(),
+               tmp2.data(), data.rows(), data.cols(), hyi.cols(), hxi.cols());
+  fr = tmp1 - tmp2;
+  sconvolution(data.data(), hxr.data(), hyi.data(),
+               tmp1.data(), data.rows(), data.cols(), hyi.cols(), hxr.cols());
+  sconvolution(data.data(), hxi.data(), hyr.data(),
+               tmp2.data(), data.rows(), data.cols(), hyr.cols(), hxi.cols());
+  fi = tmp1 + tmp2;
 }
 
-cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
-                      const int x, const int y)
+Eigen::ArrayXXf gaussian_filter(const Eigen::ArrayXXf& data, float sigma)
+{
+  Eigen::ArrayXXf hx, hy;
+  Eigen::ArrayXXf tmp(data.rows(), data.cols());
+  gen_gaussianKernel(hx, jy, sigma);
+
+  sconvolution(data.data(), hx.data(), hy.data(),
+               tmp.data(), data.rows(), data.cols(), hy.cols(), hx.cols());
+
+  return tmp;
+}
+
+Eigen::Array2f peak_freqXY(const Eigen::ArrayXXf& fx,
+                           const Eigen::ArrayXXf& fy, Eigen::ArrayXXi& visited,
+                           const int x, const int y)
 {
   const int N=9;
-  cv::Vec2d freqs=0;
+  Eigen::Array2f freqs;
+  freqs << 0,0;
   int cont=0;
 
   for(int i=y-N/2; i<=y+N/2; i++)
     for(int j=x-N/2; j<=x+N/2; j++){
-      if(j>=0 && j<fx.cols && i>=0 && i<fx.rows)
-        if(visited.at<char>(i,j)){
-          freqs[0]+=fx.at<double>(i,j);
-          freqs[1]+=fy.at<double>(i,j);
+      if(j>=0 && j<fx.cols() && i>=0 && i<fx.rows())
+        if(visited(i,j)){
+          freqs(0)+=fx(i,j);
+          freqs(1)+=fy(i,j);
           cont++;
         }
     }
 
-  freqs[0]=cont>=0? freqs[0]/cont:0;
-  freqs[1]=cont>=0? freqs[1]/cont:0;
+  freqs(0)=cont>=0? freqs(0)/cont:0;
+  freqs(1)=cont>=0? freqs(1)/cont:0;
 
   return freqs;
 
 }
 
-gabor::FilterXY::FilterXY()
-{
-  m_kernelN=7;
-}
-
-gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim)
+gabor::FilterXY::FilterXY(const Eigen::ArrayXXf& dat,
+                          Eigen::ArrayXXf& fre, Eigen::ArrayXXf& fim)
 :data(dat), fr(fre), fi(fim)
 {
   m_kernelN=7;
@@ -279,12 +274,15 @@ gabor::FilterXY::FilterXY(const gabor::FilterXY& cpy)
 {
 }
 
-void gabor::FilterXY::operator()(cv::Mat dat, cv::Mat fre, cv::Mat fim)
+/*
+void gabor::FilterXY::operator()(const Eigen::ArrayXXf& dat,
+                                 Eigen::ArrayXXf& fre, Eigen::ArrayXXf& fim)
 {
   data=dat;
   fr=fre;
-  fi=fi;
+  fi=fim;
 }
+*/
 
 void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
                                  const int y)
@@ -295,21 +293,13 @@ void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
   sx = sx>m_kernelN? m_kernelN:(sx<1? 1:sx);
   sy = sy>m_kernelN? m_kernelN:(sy<1? 1:sy);
 
-  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
-  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+  gen_gaborKernel(hxr, hxi, wx, sx);
+  gen_gaborKernel(hyr, hyi, wy, sy);
 
-  if(data.type()==CV_32F){
-    fr.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyr, x, y) -
-        convolutionAtXY<float>(data, hxi, hyi, x, y);
-    fi.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyi, x, y) +
-        convolutionAtXY<float>(data, hxi, hyr, x, y);
-  }
-  else if(data.type()==CV_64F){
-    fr.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyr, x, y) -
-        convolutionAtXY<double>(data, hxi, hyi, x, y);
-    fi.at<double>(y,x)=convolutionAtXY<double>(data, hxr, hyi, x, y) +
-        convolutionAtXY<double>(data, hxi, hyr, x, y);
-  }
+  fr(y,x)=convolutionAtXY(data, hxr, hyr, x, y) -
+      convolutionAtXY(data, hxi, hyi, x, y);
+  fi(y,x)=convolutionAtXY(data, hxr, hyi, x, y) +
+      convolutionAtXY(data, hxi, hyr, x, y);
 }
 
 gabor::FilterXY& gabor::FilterXY::setKernelSize(double size)
@@ -319,9 +309,11 @@ gabor::FilterXY& gabor::FilterXY::setKernelSize(double size)
 }
 
 
-gabor::FilterNeighbor::FilterNeighbor(cv::Mat param_I, cv::Mat param_fr,
-                                      cv::Mat param_fi)
-:m_localFilter(param_I, param_fr, param_fi), M(param_I.rows), N(param_I.cols)
+gabor::FilterNeighbor::FilterNeighbor(const Eigen::ArrayXXf& param_I,
+                                      Eigen::ArrayXXf& param_fr,
+                                      Eigen::ArrayXXf& param_fi)
+  :m_localFilter(param_I, param_fr, param_fi), M(param_I.rows()),
+    N(param_I.cols())
 {
 }
 
@@ -345,9 +337,12 @@ gabor::FilterNeighbor& gabor::FilterNeighbor::setKernelSize(double size)
   return *this;
 }
 
-gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
-                              cv::Mat parm_fi, cv::Mat parm_fx,
-                              cv::Mat parm_fy, cv::Mat parm_visited)
+gabor::DemodPixel::DemodPixel(const Eigen::ArrayXXf& parm_I,
+                              Eigen::ArrayXXf& parm_fr,
+                              Eigen::ArrayXXf& parm_fi,
+                              Eigen::ArrayXXf& parm_fx,
+                              Eigen::ArrayXXf& parm_fy,
+                              Eigen::ArrayXXi& parm_visited)
 :m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
  fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15), 
   m_combFreqs(false), m_combN(7)
@@ -381,24 +376,24 @@ gabor::DemodPixel& gabor::DemodPixel::setMinFq(const double w)
 
 void gabor::DemodPixel::operator()(const int i, const int j)
 {
-  cv::Vec2d freqs, freq;
+  Eigen::Array2f freqs, freq;
 
   freqs= peak_freqXY(fx, fy, visited, j, i);
-  visited.at<char>(i,j)=1;
+  visited(i,j)=1;
 
   for(int iter=0; iter<m_iters; iter++){
-    m_filter(freqs[0], freqs[1], i, j);
+    m_filter(freqs(0), freqs(1), i, j);
     freq = m_calcfreq(j, i);
-    freq = (!m_calcfreq.changed())? freq:0.;
+    freq = (!m_calcfreq.changed())? freq:(Eigen::Array2f() << 0,0).finished();
     freq = m_tau*freq + (1-m_tau)*freqs;
-    fx.at<double>(i,j)=freq[0];
-    fy.at<double>(i,j)=freq[1];
+    fx(i,j)=freq(0);
+    fy(i,j)=freq(1);
     if(m_combFreqs)
       freq = combFreq(freq,i,j);
   }
 }
 
-cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
+Eigen::Array2f gabor::DemodPixel::combFreq(Eigen::Array2f& freqs,
 				      const int i, const int j)
 {
   const int N = m_combN;
@@ -408,29 +403,29 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
   double sum1=0;
   for(int m=i-N/2; m<=i+N/2; m++)
     for(int n=j-N/2; n<=j+N/2; n++)
-      if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-        if(visited.at<char>(m,n)){
-          sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
+      if(n>=0 && n<fx.cols() && m>=0 && m<fx.rows())
+        if(visited(m,n)){
+          sum1=freqs(0)*fx(m,n) + freqs(1)*fy(m,n);
           cont++;
           right+= (sum1>=0? 1:0);
         }
   float cp = (float)right/(float)cont;
   if((1-cp)>p){
     std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
-    freqs[0]=0;
-    freqs[1]=0;
+    freqs(0)=0;
+    freqs(1)=0;
     cont=0;
 
     for(int m=i-N/2; m<=i+N/2; m++)
       for(int n=j-N/2; n<=j+N/2; n++)
-        if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-          if(visited.at<char>(m,n)){
-            freqs[0]+=fx.at<double>(m,n);
-            freqs[1]+=fy.at<double>(m,n);
+        if(n>=0 && n<fx.cols() && m>=0 && m<fx.rows())
+          if(visited(m,n)){
+            freqs(0)+=fx(m,n);
+            freqs(1)+=fy(m,n);
             cont++;
           }
-    freqs[0]/=cont>0? cont:1;
-    freqs[1]/=cont>0? cont:1;
+    freqs(0)/=cont>0? cont:1;
+    freqs(1)/=cont>0? cont:1;
   }
   return freqs;
 }
@@ -447,9 +442,11 @@ gabor::DemodPixel& gabor::DemodPixel::setCombNsize(const int Nsize)
   return *this;
 }
 
-gabor::DemodSeed::DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
-                            cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat
-                            parm_visited)
+gabor::DemodSeed::DemodSeed(const Eigen::ArrayXXf& parm_I, Eigen::ArrayXXf& parm_fr,
+                            Eigen::ArrayXXf& parm_fi,
+                            Eigen::ArrayXXf& parm_fx,
+                            Eigen::ArrayXXf& parm_fy,
+                            Eigen::ArrayXXi& parm_visited)
 :DemodPixel(parm_I, parm_fr, parm_fi, parm_fx, parm_fy, parm_visited)
 {
   m_iters=1;
@@ -461,18 +458,19 @@ gabor::DemodPixel& gabor::DemodPixel::setIters(const int iters)
   return *this;
 }
 
-void gabor::DemodSeed::operator()(cv::Vec2d freqs, const int i, const int j)
+void gabor::DemodSeed::operator()(Eigen::Array2f& freqs, const int i, const int j)
 {
   for(int iter=0; iter<m_iters; iter++){
-    m_filter(freqs[0], freqs[1], i,j);
+    m_filter(freqs(0), freqs(1), i,j);
     freqs = m_calcfreq(j, i);
   }
-  fx.at<double>(i,j)=freqs[0];
-  fy.at<double>(i,j)=freqs[1];
-  visited.at<char>(i,j)=1;
+  fx(i,j)=freqs(0);
+  fy(i,j)=freqs(1);
+  visited(i,j)=1;
 }
 
-gabor::CalcFreqXY::CalcFreqXY(cv::Mat param_fr, cv::Mat param_fi)
+gabor::CalcFreqXY::CalcFreqXY(Eigen::ArrayXXf& param_fr,
+                              Eigen::ArrayXXf& param_fi)
 : fr(param_fr), fi(param_fi)
 {
   m_maxf=M_PI/2;
@@ -491,40 +489,40 @@ gabor::CalcFreqXY& gabor::CalcFreqXY::setMinFq(const double w)
   return *this;
 }
 
-cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
+Eigen::Array2f gabor::CalcFreqXY::operator()(const int x, const int y)
 {
-  cv::Vec2d freqs;
-  double imx = x-1>=0? (fi.at<double>(y,x)-fi.at<double>(y,x-1)):
-                       (fi.at<double>(y,x+1)-fi.at<double>(y,x));
-  double rex = x-1>=0? (fr.at<double>(y,x)-fr.at<double>(y,x-1)):
-                       (fr.at<double>(y,x+1)-fr.at<double>(y,x));
-  double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
-      fi.at<double>(y,x)*fi.at<double>(y,x);
+  Eigen::Array2f freqs;
+  double imx = x-1>=0? (fi(y,x)-fi(y,x-1)):
+                       (fi(y,x+1)-fi(y,x));
+  double rex = x-1>=0? (fr(y,x)-fr(y,x-1)):
+                       (fr(y,x+1)-fr(y,x));
+  double magn = fr(y,x)*fr(y,x) +
+      fi(y,x)*fi(y,x);
 
   if(magn<0.0001)
     magn=0.0001; //Evitar devision entre 0
 
-  freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
+  freqs[0] = (imx*fr(y,x) - fi(y,x)*rex)/magn;
 
-  imx = y-1>=0? (fi.at<double>(y,x)-fi.at<double>(y-1,x)):
-                       (fi.at<double>(y+1,x)-fi.at<double>(y,x));
-  rex = y-1>=0? (fr.at<double>(y,x)-fr.at<double>(y-1,x)):
-                       (fr.at<double>(y+1,x)-fr.at<double>(y,x));
+  imx = y-1>=0? (fi(y,x)-fi(y-1,x)):
+                       (fi(y+1,x)-fi(y,x));
+  rex = y-1>=0? (fr(y,x)-fr(y-1,x)):
+                       (fr(y+1,x)-fr(y,x));
 
-  freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
+  freqs[1] = (imx*fr(y,x) - fi(y,x)*rex)/magn;
   m_changed=false;
 
-  magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
+  magn=freqs(0)*freqs(0)+freqs(1)*freqs(1);
   if(magn < m_minf*m_minf){
     magn = m_minf/sqrt(magn);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
+    freqs(0)=freqs(0)*magn;
+    freqs(1)=freqs(1)*magn;
     m_changed=true;
   }
   else if(magn > m_maxf*m_maxf){
     magn = m_maxf/sqrt(magn);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
+    freqs(0)=freqs(0)*magn;
+    freqs(1)=freqs(1)*magn;
     m_changed=true;
   }
   return freqs;
@@ -534,10 +532,12 @@ bool gabor::CalcFreqXY::changed()
   return m_changed;
 }
 
-gabor::DemodNeighborhood::DemodNeighborhood(cv::Mat param_I, cv::Mat param_fr,
-                                            cv::Mat param_fi, cv::Mat param_fx,
-                                            cv::Mat param_fy,
-                                            cv::Mat param_visited)
+gabor::DemodNeighborhood::DemodNeighborhood(const Eigen::ArrayXXf& param_I,
+                                            Eigen::ArrayXXf& param_fr,
+                                            Eigen::ArrayXXf& param_fi,
+                                            Eigen::ArrayXXf& param_fx,
+                                            Eigen::ArrayXXf& param_fy,
+                                            Eigen::ArrayXXi& param_visited)
 :visit(param_visited),
  m_demodPixel(param_I, param_fr, param_fi, param_fx, param_fy, param_visited)
 {
@@ -593,25 +593,25 @@ void gabor::DemodNeighborhood::operator()(const int i, const int j)
   if(j-1>=0)
     if(!visit(i,j-1))
       m_demodPixel(i, j-1);
-  if(j+1<visit.cols)
+  if(j+1<visit.cols())
     if(!visit(i,j+1))
       m_demodPixel(i, j+1);
   if(i-1>=0)
     if(!visit(i-1,j))
       m_demodPixel(i-1, j);
-  if(i+1<visit.rows)
+  if(i+1<visit.rows())
     if(!visit(i+1,j))
       m_demodPixel(i+1, j);
   if(j-1>=0 && i-1>=0)
     if(!visit(i-1,j-1))
       m_demodPixel(i-1, j-1);
-  if(j+1<visit.cols && i-1>=0)
+  if(j+1<visit.cols() && i-1>=0)
     if(!visit(i-1,j+1))
       m_demodPixel(i-1, j+1);
-  if(j+1<visit.cols && i+1<visit.rows)
+  if(j+1<visit.cols() && i+1<visit.rows())
     if(!visit(i+1,j+1))
       m_demodPixel(i+1, j+1);
-  if(j-1>=0 && i+1<visit.rows)
+  if(j-1>=0 && i+1<visit.rows())
     if(!visit(i+1,j-1))
       m_demodPixel(i+1, j-1);
 }

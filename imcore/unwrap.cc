@@ -33,9 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "unwrap_gears.h"
 
 inline
-void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-                          const cv::Mat& mask,
-                          cv::Mat& pp, cv::Mat& visited,
+void sunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
+                          const Eigen::ArrayXXf& mask,
+                          Eigen::ArrayXXf& pp, Eigen::ArrayXXf& visited,
                           float tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
@@ -72,9 +72,9 @@ void sunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
 }
 
 inline
-void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
-                          const cv::Mat& mask,
-                          cv::Mat& pp, cv::Mat& visited,
+void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
+                          const Eigen::ArrayXXf& mask,
+                          Eigen::ArrayXXf& pp, Eigen::ArrayXXf& visited,
                           double tao, const int N)
 {
   int low_i = (ii-N/2)>=0? (ii-N/2):0;
@@ -114,12 +114,12 @@ void dunwrap_neighborhood(const int ii, const int jj, const cv::Mat& wp,
  * Phase unwrapping method
  */
 template<typename T>
-void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
+void unwrap2D_engine(Eigen::ArrayXXf wphase, Eigen::ArrayXXf mask, Eigen::ArrayXXf uphase,
                      double tao, double smooth_path, int n, cv::Point pixel)
 {
   const int M=wphase.rows, N=wphase.cols;
-  cv::Mat visited = cv::Mat::zeros(M, N, CV_8U);
-  cv::Mat path, dx, dy;
+  Eigen::ArrayXXf visited = Eigen::ArrayXXf::zeros(M, N, CV_8U);
+  Eigen::ArrayXXf path, dx, dy;
 
   if(smooth_path>0){
     cv::GaussianBlur(wphase, path, cv::Size(0,0), smooth_path, smooth_path);
@@ -145,7 +145,7 @@ void unwrap2D_engine(cv::Mat wphase, cv::Mat mask, cv::Mat uphase,
 
 }
 
-void unwrap2D(cv::Mat wphase, cv::Mat mask, cv::Mat uphase, double tao,
+void unwrap2D(Eigen::ArrayXXf wphase, Eigen::ArrayXXf mask, Eigen::ArrayXXf uphase, double tao,
               double smooth_path, int N, cv::Point pixel) throw(cv::Exception)
 {
   if(wphase.type()!=CV_32F && wphase.type()!=CV_64F){
@@ -164,17 +164,17 @@ void unwrap2D(cv::Mat wphase, cv::Mat mask, cv::Mat uphase, double tao,
     unwrap2D_engine<double>(wphase, mask, uphase, tao, smooth_path, N, pixel);
 }
 
-Unwrap::Unwrap(cv::Mat_<double> wphase, double tau, double smooth, int N)
+Unwrap::Unwrap(Eigen::ArrayXXf_<double> wphase, double tau, double smooth, int N)
 : _wphase(wphase)
 {
   _tau = tau;
   _smooth = smooth;
   _N=N;
-  _uphase = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
-  _visited = cv::Mat_<char>::zeros(_wphase.rows, _wphase.cols);
-  _mask = cv::Mat_<char>::ones(_wphase.rows, _wphase.cols);
-  _dx = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
-  _dy = cv::Mat_<double>::zeros(_wphase.rows, _wphase.cols);
+  _uphase = Eigen::ArrayXXf_<double>::zeros(_wphase.rows, _wphase.cols);
+  _visited = Eigen::ArrayXXf_<char>::zeros(_wphase.rows, _wphase.cols);
+  _mask = Eigen::ArrayXXf_<char>::ones(_wphase.rows, _wphase.cols);
+  _dx = Eigen::ArrayXXf_<double>::zeros(_wphase.rows, _wphase.cols);
+  _dy = Eigen::ArrayXXf_<double>::zeros(_wphase.rows, _wphase.cols);
   _scanner = NULL;
 }
 
@@ -220,7 +220,7 @@ void Unwrap::setPixel(cv::Point pixel)
   if(_scanner!=NULL){
     delete _scanner;
   }
-  cv::Mat path;
+  Eigen::ArrayXXf path;
   if(_smooth>0){
     cv::GaussianBlur(_wphase, path, cv::Size((int)_smooth,(int)_smooth),0);
     gradient(path, _dx, _dy);
@@ -230,38 +230,38 @@ void Unwrap::setPixel(cv::Point pixel)
   _pixel=pixel;
 }
 
-cv::Mat Unwrap::getOutput()
+Eigen::ArrayXXf Unwrap::getOutput()
 {
   return _uphase;
 }
-cv::Mat Unwrap::getInput()
+Eigen::ArrayXXf Unwrap::getInput()
 {
   return _wphase;
 }
 
-void Unwrap::setMask(cv::Mat mask)
+void Unwrap::setMask(Eigen::ArrayXXf mask)
 {
   _mask = mask;
 }
 
 void Unwrap::filterPhase(double sigma)
 {
-  cv::Mat ss = sin<double>(_wphase);
-  cv::Mat cc = cos<double>(_wphase);
+  Eigen::ArrayXXf ss = sin<double>(_wphase);
+  Eigen::ArrayXXf cc = cos<double>(_wphase);
   cv::GaussianBlur(ss, ss, cv::Size(0,0), sigma);
   cv::GaussianBlur(cc, cc, cv::Size(0,0), sigma);
 
   _wphase = atan2<double>(ss, cc);
 }
 
-cv::Mat Unwrap::genPath(double sigma)
+Eigen::ArrayXXf Unwrap::genPath(double sigma)
 {
-  cv::Mat ss = sin<double>(_wphase);
-  cv::Mat cc = cos<double>(_wphase);
+  Eigen::ArrayXXf ss = sin<double>(_wphase);
+  Eigen::ArrayXXf cc = cos<double>(_wphase);
   cv::GaussianBlur(ss, ss, cv::Size(0,0), sigma);
   cv::GaussianBlur(cc, cc, cv::Size(0,0), sigma);
 
-  cv::Mat wphase = atan2<double>(ss, cc);
+  Eigen::ArrayXXf wphase = atan2<double>(ss, cc);
   cc = cos<double>(wphase);
 
   return cc;
@@ -270,7 +270,7 @@ cv::Mat Unwrap::genPath(double sigma)
 void Unwrap::takeGradient(cv::Point pixel, const int N)
 {
   const int N_2 = N/2;
-  cv::Mat_<double>& p = _uphase;
+  Eigen::ArrayXXf_<double>& p = _uphase;
   for(int i=pixel.y-N_2; i<=pixel.y+N_2; i++)
     for(int j=pixel.x-N_2; j<=pixel.x+N_2; j++){
       /*

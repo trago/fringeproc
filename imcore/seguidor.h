@@ -126,26 +126,26 @@ private:
 class Seguidor{
  private:
     /**Es la imagen de entrada*/
-    cv::Mat _I;
+    Eigen::ArrayXXf _I;
     /**Es la m?scara de valores que son v?lidos en la imagen.
 
        @note Actualmente esta variable es puesta para uso en el futuro
        @todo Implementar la aplicaci?n de m?scaras sobre la im?gen
      */
-    cv::Mat _m;
+    Eigen::ArrayXXf _m;
     /**Contiene etiquetas de los puntos que ya han sido caminados.
 
        El objetivo es para identificar aquellos puntos que ya han sido
        recorridos por el seguidor. Si un punto tiene un valor de 1 es que ya ha
        sido recorrido, 0 es que no.
      */
-    cv::Mat _caminado;
+    Eigen::ArrayXXf _caminado;
     /**Aqui se guarda el mapa de calidad de la im?gen.
 
        El mapa de calidad se refiere al mapa cauntozado de la magnitud del
        gradiente como se explico anteriormente.
      */
-    cv::Mat _qmap;
+    Eigen::ArrayXXf _qmap;
     /**Es un arrglo de registros para cada nivel de cauntizaci?n.*/
     std::list<Punto>* _colas;
     /**Es el punto que actualmente es recorrido.*/
@@ -215,7 +215,7 @@ class Seguidor{
      * @todo Implementar un constructor que permita pasar como par?metro la
      * m?scara que ser? plicada al dominio del seguidor.
      */
-    Seguidor(const cv::Mat& I,int levels);
+    Seguidor(const Eigen::ArrayXXf& I,int levels);
     /** Crea una nueva instancia de Seguidor.
      * Al crearce esta nueva instancia, se calcula autom?ticamente el mapa de
      * calidad cauntizado a @f$ n @f$ niveles (cuantizaci?n de la magnitud
@@ -228,7 +228,7 @@ class Seguidor{
      * @todo Implementar un constructor que permita pasar como par?metro la
      * m?scara que ser? plicada al dominio del seguidor.
      */
-    Seguidor(const cv::Mat& I,int r, int c, int levels);
+    Seguidor(const Eigen::ArrayXXf& I,int r, int c, int levels);
 
     ~Seguidor();
     /**
@@ -247,7 +247,7 @@ class Seguidor{
      *Regresa el mapa de calidad que se esta utilizando.
      *@return double[][] el mapa de calidad
      **/
-    cv::Mat get_qmap();
+    Eigen::ArrayXXf get_qmap();
     /**
      *Extrae el siguiente punto a seguir de acuerdo al mapa de calidad.
      *
@@ -265,7 +265,7 @@ class Seguidor{
       @param qmap es el mapa de calidad a utilizar
      *@todo Considerar el uso de m?scara sobre el dominio.
      */
-    void setQMap(const cv::Mat& qmap);
+    void setQMap(const Eigen::ArrayXXf& qmap);
 };
 
 

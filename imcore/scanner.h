@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef SWIG
 
-#include <opencv2/core/core.hpp>
+#include <Eigen/Dense>
 #include <list>
 #include <vector>
 
@@ -66,7 +66,7 @@ public:
    * @param mat_u the differences in x-direction
    * @param mat_v the differences in y-direction
    */
-  Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v);
+  Scanner(const Eigen::ArrayXXf* mat_u, const Eigen::ArrayXXf* mat_v);
   /**
    * Builds the scanner with the given differences in x- and y-direction,
    * starting at the given pixel point.
@@ -75,9 +75,10 @@ public:
    * @param mat_v the differences in y-direction
    * @param pixel the starting pixel point
    */
-  Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel);
+  Scanner(const Eigen::ArrayXXf* mat_u,
+          const Eigen::ArrayXXf* mat_v, Eigen::Array2i pixel);
 
-  void setMask(cv::Mat mask);
+  void setMask(Eigen::ArrayXXf mask);
 #endif
   /**
    * Determines the next pixel point in the sequence.
@@ -90,13 +91,13 @@ public:
    *
    * @return the actual pixel point
    */
-  cv::Point getPosition();
+  Eigen::Array2i getPosition();
    /**
    * Sets the starting pixel point.
    *
    * @param pixel the starting pixel point
    */
-  void setInitPosition(cv::Point pixel);
+  void setInitPosition(Eigen::Array2i pixel);
   /**
    * Sets the minimum magnitude (frequency magnitude) to scan.
    *
@@ -124,23 +125,24 @@ public:
 
 private:
   /** The frequencies or differences in x-direction */
-  cv::Mat_<double> m_matu;
+  const Eigen::ArrayXXf* m_matu;
   /** The frequencies or differences in y-direction */
-  cv::Mat_<double> m_matv;
-  cv::Mat_<char> m_mask;
+  const Eigen::ArrayXXf* m_matv;
+  /** Mask for the data */
+  Eigen::ArrayXXf m_mask;
   /** Label field that marks whith true the already visited pixels. */
-  cv::Mat_<bool> m_visited;
+  Eigen::ArrayXXf m_visited;
   /** The current pixel in the scanning sequence */
-  cv::Point m_pixel;
+  Eigen::Array2i m_pixel;
   /** Stores the pixel sequence */
-  std::vector<cv::Point> m_path;
+  std::vector<Eigen::Array2i, Eigen::aligned_allocator<Eigen::Array2i> > m_path;
   /** The minimum frequency to scan*/
   double m_freqmin;
   /** Indicates if the minimum frequency to scan is updated*/
   bool m_updateMinFreq;
 
   /** Inserts the pixel to the path and marks it as visited*/
-  void insertPixelToPath(const cv::Point& pixel);
+  void insertPixelToPath(const Eigen::Array2i& pixel);
   /** }
    * Moves to the next pixel in the path.
    *
@@ -150,11 +152,11 @@ private:
   /**
    * @todo In development.
    */
-  cv::Point findPixel();
+  Eigen::Array2i findPixel();
   /**
    * @todo In development.
    */
-  bool checkNeighbor(cv::Point pixel);
+  bool checkNeighbor(Eigen::Array2i pixel);
 
 };
 

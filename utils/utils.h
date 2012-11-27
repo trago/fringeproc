@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   @param mat the matrix
   @param A the manitude.
   */
-void parabola(cv::Mat mat, float A) throw(cv::Exception);
+void parabola(Eigen::ArrayXXf mat, float A) throw(cv::Exception);
 
 /**
   Takes the cosine of the matrix given as angle.
@@ -56,7 +56,7 @@ void parabola(cv::Mat mat, float A) throw(cv::Exception);
   @param angle the values taken as argument of the cosine function
   @param cc the cosine values obtained
   */
-void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception);
+void cosine(const Eigen::ArrayXXf angle, Eigen::ArrayXXf& cc) throw(cv::Exception);
 
 /**
   Generates the field X and Y with linear spaced data.
@@ -76,7 +76,7 @@ void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception);
   @param M number of rows for X and Y
   @param N number of columns for X and Y
   */
-void linspaced(cv::Mat& X, cv::Mat& Y, const float bx, float ex,
+void linspaced(Eigen::ArrayXXf& X, Eigen::ArrayXXf& Y, const float bx, float ex,
                const float by, float ey,
                const int M, const int N);
 
@@ -86,7 +86,7 @@ void linspaced(cv::Mat& X, cv::Mat& Y, const float bx, float ex,
  * @param M the number of rows
  * @param N the number of columns
  */
-cv::Mat peaks(const int M, const int N);
+Eigen::ArrayXXf peaks(const int M, const int N);
 /**
  * Generates a ramp
  * @param wx the tilt in X
@@ -94,12 +94,12 @@ cv::Mat peaks(const int M, const int N);
  * @param M number of rows
  * @param N number of columns
  */
-cv::Mat ramp(float wx, float wy, const int M, const int N);
+Eigen::ArrayXXf ramp(float wx, float wy, const int M, const int N);
 
 /**
  * Generates the peaks function with speckle noise.
  */
-cv::Mat speckle_peaks(const int M, const int N, const float magn,
+Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
                       const int speckle_size);
 
 /**
@@ -109,13 +109,13 @@ cv::Mat speckle_peaks(const int M, const int N, const float magn,
  * @param dx [output] the differences along x-direction (columns)
  * @param dy [output] the differences along y-direction (rows)
  */
-void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy);
+void gradient(const Eigen::ArrayXXf I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy);
 
-cv::Mat wphase(const cv::Mat p);
-cv::Mat mapRange(const cv::Mat mat, float a, float b);
+Eigen::ArrayXXf wphase(const Eigen::ArrayXXf p);
+Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf mat, float a, float b);
 
 template<typename T>
-cv::Mat cos(const cv::Mat mat) throw(cv::Exception)
+Eigen::ArrayXXf cos(const Eigen::ArrayXXf mat) throw(cv::Exception)
 {
   if(mat.type()!=CV_32F && mat.type()!=CV_64F){
     cv::Exception e(1000, "Type not supported", "cos",
@@ -123,7 +123,7 @@ cv::Mat cos(const cv::Mat mat) throw(cv::Exception)
                     __LINE__);
     throw(e);
   }
-  cv::Mat_<T> cc(mat.rows, mat.cols, mat.type());
+  Eigen::ArrayXXf_<T> cc(mat.rows, mat.cols, mat.type());
   const T*const __restrict__ pt = (T*)mat.data;
   T*const __restrict__ pt_cc=(T*)cc.data;
 
@@ -134,7 +134,7 @@ cv::Mat cos(const cv::Mat mat) throw(cv::Exception)
 }
 
 template<typename T>
-cv::Mat sin(const cv::Mat mat) throw(cv::Exception)
+Eigen::ArrayXXf sin(const Eigen::ArrayXXf mat) throw(cv::Exception)
 {
   if(mat.type()!=CV_32F && mat.type()!=CV_64F){
     cv::Exception e(1000, "Type not supported", "sin",
@@ -142,7 +142,7 @@ cv::Mat sin(const cv::Mat mat) throw(cv::Exception)
                     __LINE__);
     throw(e);
   }
-  cv::Mat_<T> cc(mat.rows, mat.cols, mat.type());
+  Eigen::ArrayXXf_<T> cc(mat.rows, mat.cols, mat.type());
   const T*const __restrict__ pt = (T*)mat.data;
   T*const __restrict__ pt_cc=(T*)cc.data;
 
@@ -153,7 +153,7 @@ cv::Mat sin(const cv::Mat mat) throw(cv::Exception)
 }
 
 template<typename T>
-cv::Mat atan2(const cv::Mat& ss, const cv::Mat& cc) throw(cv::Exception)
+Eigen::ArrayXXf atan2(const Eigen::ArrayXXf& ss, const Eigen::ArrayXXf& cc) throw(cv::Exception)
 {
   if(ss.type()!=CV_32F && ss.type()!=CV_64F){
     cv::Exception e(1000, "Type not supported", "sin",
@@ -161,7 +161,7 @@ cv::Mat atan2(const cv::Mat& ss, const cv::Mat& cc) throw(cv::Exception)
                     __LINE__);
     throw(e);
   }
-  cv::Mat_<T> ang(ss.rows, ss.cols, ss.type());
+  Eigen::ArrayXXf_<T> ang(ss.rows, ss.cols, ss.type());
   T*const __restrict__ pt = (T*)ang.data;
   const T*const __restrict__ pt_cc=(T*)cc.data;
   const T*const __restrict__ pt_ss=(T*)ss.data;

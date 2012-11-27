@@ -37,20 +37,20 @@ int main(int argc, char* argv[])
 {
   double wx= .7, wy=.7;
   const int M=456, N=456;
-  cv::Mat I(M,N,CV_64F);
-  cv::Mat phase(M,N,CV_64F);
-  cv::Mat fx(cv::Mat::zeros(M,N,CV_64F)), fy(cv::Mat::zeros(M,N,CV_64F)),
+  Eigen::ArrayXXf I(M,N,CV_64F);
+  Eigen::ArrayXXf phase(M,N,CV_64F);
+  Eigen::ArrayXXf fx(Eigen::ArrayXXf::zeros(M,N,CV_64F)), fy(Eigen::ArrayXXf::zeros(M,N,CV_64F)),
       ffx, ffy; // las f's son las frecuencias teoricas y las
                 // ff's las estimadas
-  cv::Mat noise(M,N,CV_64F);
-  cv::Mat fr(cv::Mat::zeros(M,N,CV_64F)), fi(cv::Mat::zeros(M,N,CV_64F)),
+  Eigen::ArrayXXf noise(M,N,CV_64F);
+  Eigen::ArrayXXf fr(Eigen::ArrayXXf::zeros(M,N,CV_64F)), fi(Eigen::ArrayXXf::zeros(M,N,CV_64F)),
       visited;
-  cv::Mat path(M,N,CV_64F);
-  cv::Mat magn;
-  cv::Mat hxr, hxi, hyr, hyi;
-  cv::Mat h;
-  cv::Mat fase;
-  cv::Mat tmp;
+  Eigen::ArrayXXf path(M,N,CV_64F);
+  Eigen::ArrayXXf magn;
+  Eigen::ArrayXXf hxr, hxi, hyr, hyi;
+  Eigen::ArrayXXf h;
+  Eigen::ArrayXXf fase;
+  Eigen::ArrayXXf tmp;
 
   if(argc==1){
     // Genera datos de entrada
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
       gen_gaborKernel(hxr, hxi, wx, sx, CV_64F);
       gen_gaborKernel(hyr, hyi, wy, sy, CV_64F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo
-      h=cv::Mat::zeros(64,64, CV_64F)-1;
+      h=Eigen::ArrayXXf::zeros(64,64, CV_64F)-1;
       for(int i=0; i<hyr.cols; i++)
         for(int j=0; j<hxr.cols; j++)
           h.at<double>(i,j)=hxr.at<double>(0,j)*hyi.at<double>(0,i) +

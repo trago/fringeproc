@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEMODGABOR_H
 
 #ifndef SWIG
-#include <opencv2/core/core.hpp>
+#include <Eigen/Dense>
 #include "gabor_gears.h"
 #endif
 
@@ -56,33 +56,33 @@ public:
    */
 
 #ifndef SWIG
-  DemodGabor(const cv::Mat I);
+  DemodGabor(const Eigen::ArrayXXf& I);
 
   /**
    * Returns the real part of the output
    * @return the real part of the output
    */
-  cv::Mat getFr();
+  Eigen::ArrayXXf getFr();
   /**
    * Returns the imaginary part of the output
    * @return the imaginary part of the output
    */
-  cv::Mat getFi();
+  Eigen::ArrayXXf getFi();
   /**
    * Returns the estimated local frequencies at x-direction
    * @return the estimated local frequencies
    */
-  cv::Mat getWx();
+  Eigen::ArrayXXf getWx();
   /**
    * Returns the estimated local frequenciesat y-direction
    * @return the estimated local frequencies
    */
-  cv::Mat getWy();
+  Eigen::ArrayXXf getWy();
   /**
    * Returns the image being processed.
    * @return the image data
    */
-  cv::Mat getInput();
+  Eigen::ArrayXXf getInput();
 #endif
 
   /**
@@ -141,10 +141,10 @@ public:
   DemodGabor& setMaxfq(const double w);
   DemodGabor& setMinfq(const double w);
   DemodGabor& setTau(const double tau);
-  DemodGabor& setStartPixel(const cv::Point pixel);
+  DemodGabor& setStartPixel(const Eigen::Array2i& pixel);
   DemodGabor& setCombFreqs(const bool comb);
   DemodGabor& setCombSize(const int size);
-  cv::Point getStartPixel();
+  Eigen::Array2i getStartPixel();
 
 
   /**
@@ -155,18 +155,18 @@ public:
   bool runInteractive(Scanner& scan);
 private:
   /** The image matrix being processed */
-  cv::Mat_<double> m_I;
+  Eigen::ArrayXXf m_I;
   /** The real part of the output */
-  cv::Mat_<double> m_fr;
+  Eigen::ArrayXXf m_fr;
   /** The imaginary part of the output */
-  cv::Mat_<double> m_fi;
+  Eigen::ArrayXXf m_fi;
   /** The obtained frequencies at x-direction */
-  cv::Mat_<double> m_fx;
+  Eigen::ArrayXXf m_fx;
   /** The obtained frequencies at y-direction */
-  cv::Mat_<double> m_fy;
+  Eigen::ArrayXXf m_fy;
   /** Label field marking the pixels already visited */
-  cv::Mat_<uchar> m_visited;
-  cv::Point m_startPixel;
+  Eigen::ArrayXXi m_visited;
+  Eigen::Array2i m_startPixel;
 
   /** The minimum radial frequency to process */
   double m_scanMinf;

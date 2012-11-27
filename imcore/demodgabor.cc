@@ -30,7 +30,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "demodgabor.h"
 #include "gabor_gears.h"
 #include "scanner.h"
-#include <opencv2/imgproc/imgproc.hpp>
 
 DemodGabor::DemodGabor()
 {
@@ -43,23 +42,18 @@ DemodGabor::DemodGabor()
   m_kernelSize = 7;
   m_combSize=7;
   m_combFreqs=false;
-  m_startPixel.x=0;
-  m_startPixel.y=0;
+  m_startPixel(0)=0;
+  m_startPixel(1)=0;
 }
 
-DemodGabor::DemodGabor(const cv::Mat I)
+DemodGabor::DemodGabor(const Eigen::ArrayXXf& I)
 {
-  CV_Assert(I.channels()==1);
-
-  if(I.type() != CV_64F)
-    I.convertTo(m_I, CV_64F);
-  else
-    m_I = I.clone();
-  m_fr = cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
-  m_fi = cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
-  m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
-  m_fy = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
-  m_visited = cv::Mat_<uchar>::zeros(m_I.rows, m_I.cols);
+  m_I = I;
+  m_fr = Eigen::ArrayXXf::Zero(m_I.rows(), m_I.cols());
+  m_fi = Eigen::ArrayXXf::Zero(m_I.rows(), m_I.cols());
+  m_fx = Eigen::ArrayXXf::Constant(m_I.rows(), m_I.cols(), M_PI/2.0);
+  m_fy = Eigen::ArrayXXf::Constant(m_I.rows(), m_I.cols(), M_PI/2.0);
+  m_visited = Eigen::ArrayXXi::Zero(m_I.rows(), m_I.cols());
   m_scanMinf = 0.03;
   m_minfq = 0.09;
   m_maxfq = M_PI/2;
@@ -69,31 +63,31 @@ DemodGabor::DemodGabor(const cv::Mat I)
   m_kernelSize = 7;
   m_combSize=7;
   m_combFreqs=false;
-  m_startPixel.x=I.cols/2;
-  m_startPixel.y=I.rows/2;
+  m_startPixel(0)=I.cols()/2;
+  m_startPixel(1)=I.rows()/2;
 }
 
-cv::Mat DemodGabor::getFi()
+Eigen::ArrayXXf DemodGabor::getFi()
 {
   return m_fi;
 }
 
-cv::Mat DemodGabor::getFr()
+Eigen::ArrayXXf DemodGabor::getFr()
 {
   return m_fr;
 }
 
-cv::Mat DemodGabor::getInput()
+Eigen::ArrayXXf DemodGabor::getInput()
 {
   return m_I;
 }
 
-cv::Mat DemodGabor::getWx()
+Eigen::ArrayXXf DemodGabor::getWx()
 {
   return m_fx;
 }
 
-cv::Mat DemodGabor::getWy()
+Eigen::ArrayXXf DemodGabor::getWy()
 {
   return m_fy;
 }
@@ -107,14 +101,14 @@ DemodGabor& DemodGabor::setScanMinf(double minf)
 
 void DemodGabor::removeDC()
 {
-  cv::Mat_<double> aux;
-  cv::GaussianBlur(m_I, m_I, cv::Size(0,0), 1);
-  cv::GaussianBlur(m_I, aux, cv::Size(0,0), 15);
+  Eigen::ArrayXXf aux;
+  m_I = gaussian_filter(m_I, 1);
+  aux = gaussian_filter(m_I, 15);
 
   m_I-=aux;
 }
 
-DemodGabor& DemodGabor::setStartPixel(const cv::Point pixel)
+DemodGabor& DemodGabor::setStartPixel(const Eigen::Array2i& pixel)
 {
   m_startPixel=pixel;
   return *this;
@@ -122,16 +116,16 @@ DemodGabor& DemodGabor::setStartPixel(const cv::Point pixel)
 
 void DemodGabor::run()
 {
-  cv::Vec2d freqs;
-  int i=m_startPixel.y, j=m_startPixel.x;
-  freqs[0]=0.7; freqs[1]=0.7;
+  Eigen::Array2f freqs;
+  int i=m_startPixel(1), j=m_startPixel(0);
+  freqs(0)=0.7; freqs(1)=0.7;
 
-  m_fx(i,j)=freqs[0];
-  m_fy(i,j)=freqs[1];
+  m_fx(i,j)=freqs(0);
+  m_fy(i,j)=freqs(1);
 
-  Scanner scan(m_fx, m_fy, m_startPixel);
+  Scanner scan(&m_fx, &m_fy, m_startPixel);
   scan.setFreqMin(m_scanMinf);
-  cv::Point pixel;
+  Eigen::Array2i pixel;
   gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
   gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
 
@@ -143,11 +137,11 @@ void DemodGabor::run()
 
   do{
     pixel=scan.getPosition();
-    i=pixel.y;
-    j=pixel.x;
-    if((i==m_startPixel.y && j==m_startPixel.x)){
+    i=pixel(1);
+    j=pixel(0);
+    if((i==m_startPixel(1) && j==m_startPixel(0))){
       demodSeed(freqs,i,j);
-      freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
+      freqs(0)=m_fx(i,j); freqs(1)=m_fy(i,j);
       //scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
     }
     else
@@ -157,9 +151,10 @@ void DemodGabor::run()
 
 bool DemodGabor::runInteractive(Scanner& scan)
 {
-  cv::Vec2d freqs(0.7,0.7);
+  Eigen::Array2f freqs;
+  freqs << 0.7,0.7;
 
-  cv::Point pixel;
+  Eigen::Array2i pixel;
   gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
   gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
   demodN.setIters(m_iters).setKernelSize(m_kernelSize).
@@ -169,11 +164,11 @@ bool DemodGabor::runInteractive(Scanner& scan)
     setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
 
   pixel=scan.getPosition();
-  const int i=pixel.y;
-  const int j=pixel.x;
-  if((i==m_startPixel.y && j==m_startPixel.x)){
+  const int i=pixel(1);
+  const int j=pixel(0);
+  if((i==m_startPixel(1) && j==m_startPixel(0))){
     demodSeed(freqs,i,j);
-    freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
+    freqs[0]=m_fx(i,j); freqs[1]=m_fy(i,j);
     //scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
   }
   else
@@ -226,15 +221,15 @@ DemodGabor& DemodGabor::setCombSize(const int size)
 
 void DemodGabor::reset()
 {
-  m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
-  m_fy = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
-  m_visited = cv::Mat_<uchar>::zeros(m_I.rows, m_I.cols);
-  m_fr =  cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
-  m_fi =  cv::Mat_<double>::zeros(m_I.rows, m_I.cols);
+  m_fx = Eigen::ArrayXXf::Constant(m_I.rows(), m_I.cols(), M_PI/2.0);
+  m_fy = Eigen::ArrayXXf::Constant(m_I.rows(), m_I.cols(), M_PI/2.0);
+  m_visited = Eigen::ArrayXXi::Zero(m_I.rows(), m_I.cols());
+  m_fr =  Eigen::ArrayXXf::Zero(m_I.rows(), m_I.cols());
+  m_fi =  Eigen::ArrayXXf::Zero(m_I.rows(), m_I.cols());
 }
 
 
-cv::Point DemodGabor::getStartPixel()
+Eigen::Array2i DemodGabor::getStartPixel()
 {
   return m_startPixel;
 }

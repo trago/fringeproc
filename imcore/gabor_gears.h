@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GABOR_GEARS
 #define GABOR_GEARS
 
-#include <opencv2/core/core.hpp>
+#include <Eigen/Dense>
 
 #define DEMOD_UNKNOWN_TYPE 1000
 
@@ -49,8 +49,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * CV_32F or CV_64F.
  * @throw Exception If the type is not correct.
  */
-void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
-             const double sigma, const int type) throw(cv::Exception);
+void gen_gaborKernel(Eigen::ArrayXXf& greal, Eigen::ArrayXXf& gimag,
+                     const double f, const double sigma,
+                     const int type);
+
+void gen_gaussianKernel(Eigen::ArrayXXf& hx, Eigen::ArrayXXf& hy,
+                        const double sigma);
 
 /**
  * Applies the gabor filter at (x,y) and stores the result.
@@ -67,8 +71,9 @@ void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
  * @param x The x-position.
  * @param y The y-position.
  */
-void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
-                            const double wx, const double wy,
+void gabor_adaptiveFilterXY(const Eigen::ArrayXXf& data, Eigen::ArrayXXf& fr,
+                            Eigen::ArrayXXf& fi, const double wx,
+                            const double wy,
                             const int x, const int y);
 
 /**
@@ -82,11 +87,16 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
  * @param x The x-position.
  * @param y The y-position.
  */
-void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
+void gabor_filter(const Eigen::ArrayXXf& data, Eigen::ArrayXXf& fr,
+                  Eigen::ArrayXXf& fi,
                   const double wx, const double wy);
 
-cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
-                      const int x, const int y);
+Eigen::ArrayXXf gaussian_filter(const Eigen::ArrayXXf& data, float sigma);
+
+
+Eigen::Array2f peak_freqXY(const Eigen::ArrayXXf& fx, const Eigen::ArrayXXf& fy,
+                           const Eigen::ArrayXXi& visited,
+                           const int x, const int y);
 
 double dconvolutionAtXY(const double *__restrict data,
                const double *__restrict kernelx,
@@ -116,22 +126,14 @@ void sconvolution(const float *__restrict data,
            const int M, const int N,
            const int KM, const int KN);
 
-template <typename T>
-T convolutionAtXY(const cv::Mat data, const cv::Mat kernelx,
-          const cv::Mat kernely, const int x, const int y)
+
+float convolutionAtXY(const Eigen::ArrayXXf& data, const Eigen::ArrayXXf& kernelx,
+          const Eigen::ArrayXXf& kernely, const int x, const int y)
 {
-  if(data.type()==CV_32F){
-    return sconvolutionAtXY(data.ptr<float>(), kernelx.ptr<float>(),
-                kernely.ptr<float>(), x, y,
-                data.rows, data.cols, kernely.cols/2,
-                kernelx.cols/2);
-  }
-  else if(data.type()==CV_64F){
-    return dconvolutionAtXY(data.ptr<double>(), kernelx.ptr<double>(),
-                kernely.ptr<double>(), x, y,
-                data.rows, data.cols, kernely.cols/2,
-                kernelx.cols/2);
-  }
+  return sconvolutionAtXY(data.data(), kernelx.data(),
+                          kernely.data(), x, y,
+                          data.rows(), data.cols(), kernely.cols()/2,
+                          kernelx.cols()/2);
   return 0;
 }
 
@@ -143,11 +145,12 @@ namespace gabor{
    */
   class FilterXY{
   public:
-    FilterXY();
-    FilterXY(cv::Mat data, cv::Mat fre, cv::Mat fim);
+    FilterXY(const Eigen::ArrayXXf& data, Eigen::ArrayXXf& fre,
+             Eigen::ArrayXXf& fim);
     FilterXY(const FilterXY& cpy);
 
-    virtual void operator()(cv::Mat data, cv::Mat fre, cv::Mat fim);
+    //virtual void operator()(const Eigen::ArrayXXf& data, Eigen::ArrayXXf& fre,
+    //                        Eigen::ArrayXXf& fim);
     virtual void operator()(const double wx, const double wy,
 			    const int x, const int y);
     /**
@@ -157,9 +160,9 @@ namespace gabor{
      */
     FilterXY& setKernelSize(double size);
   protected:
-    cv::Mat hxr, hxi, hyr, hyi;
-    cv::Mat data;
-    cv::Mat fr, fi;
+    Eigen::ArrayXXf hxr, hxi, hyr, hyi;
+    const Eigen::ArrayXXf& data;
+    Eigen::ArrayXXf &fr, &fi;
   private:
     /** The maximum kernel size. */
     double m_kernelN;
@@ -176,7 +179,8 @@ namespace gabor{
    */
   class FilterNeighbor{
   public:
-    FilterNeighbor(cv::Mat param_I, cv::Mat param_fr, cv::Mat param_fi);
+    FilterNeighbor(const Eigen::ArrayXXf& param_I, Eigen::ArrayXXf& param_fr,
+                   Eigen::ArrayXXf& param_fi);
     void operator()(double wx, double wy, int i, int j);
     FilterNeighbor& setKernelSize(double size);
   protected:
@@ -194,14 +198,15 @@ namespace gabor{
    */
   class CalcFreqXY{
   public:
-    CalcFreqXY(cv::Mat param_fr, cv::Mat param_fi);
+    CalcFreqXY(Eigen::ArrayXXf& param_fr,
+               Eigen::ArrayXXf& param_fi);
 
     CalcFreqXY& setMinFq(const double w);
     CalcFreqXY& setMaxFq(const double w);
-    cv::Vec2d operator()(const int x, const int y);
+    Eigen::Array2f operator()(const int x, const int y);
     bool changed();
   protected:
-    const cv::Mat fr, fi;
+    const Eigen::ArrayXXf &fr, &fi;
   private:
     double m_minf, m_maxf;
     bool m_changed;
@@ -226,8 +231,10 @@ namespace gabor{
      * @param parm_visited Indicates with ones the already processed
      * pixels
      */
-    DemodPixel(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
-               cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat parm_visited);
+    DemodPixel(const Eigen::ArrayXXf& parm_I, Eigen::ArrayXXf& parm_fr,
+               Eigen::ArrayXXf& parm_fi,
+               Eigen::ArrayXXf& parm_fx, Eigen::ArrayXXf& parm_fy,
+               Eigen::ArrayXXi& parm_visited);
 
     void operator()(const int i, const int j);
     DemodPixel& setKernelSize(const double size);
@@ -250,7 +257,8 @@ namespace gabor{
     DemodPixel& setCombNsize(const int Nsize);
 
   protected:
-    cv::Mat fx, fy, visited;
+    Eigen::ArrayXXf &fx, &fy;
+    Eigen::ArrayXXi &visited;
     FilterNeighbor m_filter;
     CalcFreqXY m_calcfreq;
     int m_iters;
@@ -262,21 +270,24 @@ namespace gabor{
     /** The neighborhood size of the combing function */
     char m_combN;
 
-    cv::Vec2d combFreq(cv::Vec2d freqs, const int i, const int j);
+    Eigen::Array2f combFreq(Eigen::Array2f& freqs, const int i, const int j);
   };
 
   class DemodSeed:public DemodPixel{
   public:
-    DemodSeed(cv::Mat parm_I, cv::Mat parm_fr, cv::Mat parm_fi,
-              cv::Mat parm_fx, cv::Mat parm_fy, cv::Mat parm_visited);
-    void operator()(cv::Vec2d freqs, const int i, const int j);
+    DemodSeed(const Eigen::ArrayXXf& parm_I, Eigen::ArrayXXf& parm_fr,
+              Eigen::ArrayXXf& parm_fi,
+              Eigen::ArrayXXf& parm_fx, Eigen::ArrayXXf& parm_fy,
+              Eigen::ArrayXXi& parm_visited);
+    void operator()(Eigen::Array2f& freqs, const int i, const int j);
   };
 
   class DemodNeighborhood{
   public:
-    DemodNeighborhood(cv::Mat param_I, cv::Mat param_fr,
-                      cv::Mat param_fi, cv::Mat param_fx,
-                      cv::Mat param_fy, cv::Mat param_visited);
+    DemodNeighborhood(const Eigen::ArrayXXf& param_I, Eigen::ArrayXXf& param_fr,
+                      Eigen::ArrayXXf& param_fi, Eigen::ArrayXXf& param_fx,
+                      Eigen::ArrayXXf& param_fy,
+                      Eigen::ArrayXXi& param_visited);
 
     DemodNeighborhood& setKernelSize(const double size);
     DemodNeighborhood& setMinFq(const double w);
@@ -287,7 +298,7 @@ namespace gabor{
     DemodNeighborhood& setCombSize(int size);
     void operator()(const int i, const int j);
   protected:
-    const cv::Mat_<uchar> visit;
+    Eigen::ArrayXXi& visit;
     DemodPixel m_demodPixel;
   };
 }

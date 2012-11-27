@@ -72,7 +72,7 @@ public:
    * @param[in] N, the neighborhood size around each pixel that is
    * being processid sequentially.
    */
-  Unwrap(cv::Mat_<double> wphase, double tau=0.09, double smooth=9, int N=15);
+  Unwrap(Eigen::ArrayXXf_<double> wphase, double tau=0.09, double smooth=9, int N=15);
 #endif
   /**
    * The destructor.
@@ -106,7 +106,7 @@ public:
    * @return the reference to the matrix where the unwrapped phase is
    * stored.
    */
-  cv::Mat getOutput();
+  Eigen::ArrayXXf getOutput();
   /**
    * Returns the wrapped phase used as input.
    * 
@@ -114,7 +114,7 @@ public:
    * going to be processed.
    * @return the reference to the wrapped phase used as input.
    */
-  cv::Mat getInput();
+  Eigen::ArrayXXf getInput();
   /**
    * Sets the mask that determines the region of interes.
    * 
@@ -122,9 +122,9 @@ public:
    * region of interest and with zeros the region that is not going to
    * be processed.
    */
-  void setMask(cv::Mat mask);
+  void setMask(Eigen::ArrayXXf mask);
 
-  cv::Mat genPath(double sigma);
+  Eigen::ArrayXXf genPath(double sigma);
 #endif
 
   /** 
@@ -153,12 +153,12 @@ public:
   void filterPhase(double simga);
 
 private:
-  cv::Mat_<char> _visited;
-  cv::Mat_<char> _mask;
-  cv::Mat_<double> _wphase;
-  cv::Mat_<double> _uphase;
-  cv::Mat_<double> _dx;
-  cv::Mat_<double> _dy;
+  Eigen::ArrayXXf_<char> _visited;
+  Eigen::ArrayXXf_<char> _mask;
+  Eigen::ArrayXXf_<double> _wphase;
+  Eigen::ArrayXXf_<double> _uphase;
+  Eigen::ArrayXXf_<double> _dx;
+  Eigen::ArrayXXf_<double> _dy;
   cv::Point _pixel;
   double _tau;
   double _smooth;

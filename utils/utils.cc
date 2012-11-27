@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <opencv2/imgproc/imgproc.hpp>
 
-void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
+void gradient(const Eigen::ArrayXXf I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy)
 {
   if((I.depth()!=CV_32F || I.depth()!=CV_64F) && I.channels()!=1){
     cv::Exception e(1000, "The matrix must be float or double with channel=1",
@@ -63,7 +63,7 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
       dx.at<double>(I.rows-1,i)=dx.at<double>(I.rows-2,i);
 }
 
-void parabola(cv::Mat mat, float A) throw(cv::Exception)
+void parabola(Eigen::ArrayXXf mat, float A) throw(cv::Exception)
 {
   if((mat.depth()!=CV_32F || mat.depth()!=CV_64F) && mat.channels()!=1){
     cv::Exception e(1000, "The matrix must be float or double with channel=1",
@@ -82,7 +82,7 @@ void parabola(cv::Mat mat, float A) throw(cv::Exception)
         mat.at<double>(i,j)= A*((i-cm)*(i-cm) + (j-cn)*(j-cn));
 }
 
-void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception)
+void cosine(const Eigen::ArrayXXf angle, Eigen::ArrayXXf& cc) throw(cv::Exception)
 {
   if((angle.depth()!=CV_32F || angle.depth()!=CV_64F) && angle.channels()!=1){
     cv::Exception e(1000, "The matrix must be float or double with channel=1",
@@ -90,9 +90,9 @@ void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception)
     throw(e);
   }
   if(angle.depth()!=cc.depth() && angle.channels()!=1)
-    cc = cv::Mat(angle.size(), CV_MAKETYPE(angle.depth(), 1));
+    cc = Eigen::ArrayXXf(angle.size(), CV_MAKETYPE(angle.depth(), 1));
   else if(cc.cols!=angle.cols && cc.rows!=angle.rows)
-    cc = cv::Mat(angle.size(), CV_MAKETYPE(angle.depth(), 1));
+    cc = Eigen::ArrayXXf(angle.size(), CV_MAKETYPE(angle.depth(), 1));
 
   const int M=angle.rows, N=angle.cols;
   for(int i=0; i<M; i++)
@@ -103,12 +103,12 @@ void cosine(const cv::Mat angle, cv::Mat& cc) throw(cv::Exception)
         cc.at<double>(i,j)=cos(angle.at<double>(i,j));
 }
 
-void linspaced(cv::Mat& X, cv::Mat& Y, const float bx, float ex,
+void linspaced(Eigen::ArrayXXf& X, Eigen::ArrayXXf& Y, const float bx, float ex,
                const float by, float ey,
                const int M, const int N)
 {
-  X = cv::Mat(M,N,CV_32F);
-  Y = cv::Mat(M,N,CV_32F);
+  X = Eigen::ArrayXXf(M,N,CV_32F);
+  Y = Eigen::ArrayXXf(M,N,CV_32F);
   const float stepx = (ex-bx)/(float)(N-1);
   const float stepy = (ey-by)/(float)(M-1);
   float *const __restrict__ ptx=(float*)X.data;
@@ -129,11 +129,11 @@ void linspaced(cv::Mat& X, cv::Mat& Y, const float bx, float ex,
   }
 }
 
-cv::Mat peaks(const int M, const int N)
+Eigen::ArrayXXf peaks(const int M, const int N)
 {
-  cv::Mat X, Y;
-  cv::Mat p(M,N, CV_32F);
-  cv::Mat tmp;
+  Eigen::ArrayXXf X, Y;
+  Eigen::ArrayXXf p(M,N, CV_32F);
+  Eigen::ArrayXXf tmp;
   linspaced(X, Y, -3.0, 3.0, -3.0, 3.0, M, N);
 
   p = 1 - X/2.0;
@@ -149,23 +149,23 @@ cv::Mat peaks(const int M, const int N)
   return p;
 }
 
-cv::Mat ramp(float wx, float wy, const int M, const int N)
+Eigen::ArrayXXf ramp(float wx, float wy, const int M, const int N)
 {
-  cv::Mat X, Y, res;
+  Eigen::ArrayXXf X, Y, res;
   linspaced(X, Y, 0, M-1, 0, N-1, M, N);
   res = wx*X + wy*Y;
 
   return res;
 }
 
-cv::Mat speckle_peaks(const int M, const int N, const float magn,
+Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
                const int speckle_size)
 {
-  cv::Mat Ic0;
-  cv::Mat Ic1;
-  cv::Mat p = peaks(M,N)*magn;
-  cv::Mat noise0(M,N,CV_32F);
-  cv::Mat noise1(M,N,CV_32F);
+  Eigen::ArrayXXf Ic0;
+  Eigen::ArrayXXf Ic1;
+  Eigen::ArrayXXf p = peaks(M,N)*magn;
+  Eigen::ArrayXXf noise0(M,N,CV_32F);
+  Eigen::ArrayXXf noise1(M,N,CV_32F);
   const float pi=M_PI;
 
   cv::randu(noise0, cv::Vec<float,1>(-1), cv::Vec<float,1>(1));
@@ -183,9 +183,9 @@ cv::Mat speckle_peaks(const int M, const int N, const float magn,
   return wphase(Ic0-Ic1);
 }
 
-cv::Mat wphase(const cv::Mat p)
+Eigen::ArrayXXf wphase(const Eigen::ArrayXXf p)
 {
-  cv::Mat wp(p.rows, p.cols, CV_32F);
+  Eigen::ArrayXXf wp(p.rows, p.cols, CV_32F);
   float *const __restrict__ pt_wp = (float*)wp.data;
   float *const __restrict__ pt_p = (float*)p.data;
   size_t idx;
@@ -199,9 +199,9 @@ cv::Mat wphase(const cv::Mat p)
   return wp;
 }
 
-cv::Mat mapRange(const cv::Mat mat, float a, float b)
+Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf mat, float a, float b)
 {
-  cv::Mat img;
+  Eigen::ArrayXXf img;
   double min;
   double max;
 

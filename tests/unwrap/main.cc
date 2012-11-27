@@ -40,16 +40,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace std;
 
 inline
-void imshow(const char* wn, cv::Mat im)
+void imshow(const char* wn, Eigen::ArrayXXf im)
 {
-  cv::Mat tmp;
+  Eigen::ArrayXXf tmp;
   im.convertTo(tmp, CV_32F);
   cv::normalize(tmp, tmp, 1, 0, cv::NORM_MINMAX);
   cv::imshow(wn, tmp);
 }
 
 inline
-cv::Mat readFltFile(const char* fname)
+Eigen::ArrayXXf readFltFile(const char* fname)
 {
   ifstream file;
   file.open(fname, ios::in);
@@ -58,7 +58,7 @@ cv::Mat readFltFile(const char* fname)
   file>>M;
   file>>N;
 
-  cv::Mat_<double> dat(M,N);
+  Eigen::ArrayXXf_<double> dat(M,N);
   for(int i=0; i<M; i++)
     for(int j=0; j<N;j++){
       file>>val;
@@ -70,7 +70,7 @@ cv::Mat readFltFile(const char* fname)
 }
 
 inline
-void writeFltFile(cv::Mat_<double> mat, const char* fname)
+void writeFltFile(Eigen::ArrayXXf_<double> mat, const char* fname)
 {
   ofstream file;
   file.open(fname, ios::out);
@@ -89,11 +89,11 @@ void writeFltFile(cv::Mat_<double> mat, const char* fname)
 
 int main(int argc, char* argv[])
 {
-  cv::Mat wphase;
-  cv::Mat uphase;
-  cv::Mat visited;
-  cv::Mat mask;
-  cv::Mat path, dx, dy;
+  Eigen::ArrayXXf wphase;
+  Eigen::ArrayXXf uphase;
+  Eigen::ArrayXXf visited;
+  Eigen::ArrayXXf mask;
+  Eigen::ArrayXXf path, dx, dy;
   cv::Point pixel;
 
   namespace po = boost::program_options;
@@ -161,8 +161,8 @@ int main(int argc, char* argv[])
   x = vm["xinit"].as<int>();
   y = vm["yinit"].as<int>();
 
-  //cv::Mat image = cv::imread(argv[1], 0);
-  cv::Mat image = readFltFile(phasefile.c_str());
+  //Eigen::ArrayXXf image = cv::imread(argv[1], 0);
+  Eigen::ArrayXXf image = readFltFile(phasefile.c_str());
   if(image.empty()){
     cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
     return 1;
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
     }
   }
   else
-    mask = cv::Mat::ones(image.rows, image.cols, CV_8U);
+    mask = Eigen::ArrayXXf::ones(image.rows, image.cols, CV_8U);
   cout<<"Phase unwrapping with the following parameters:"<<endl
      <<"   Input file: " << phasefile<<endl
      <<"          tau: "<<tau <<endl
@@ -198,8 +198,8 @@ int main(int argc, char* argv[])
   if(min!=max)
     cv::normalize(mask, mask, 1, 0, cv::NORM_MINMAX);
 
-  visited= cv::Mat::zeros(image.rows, image.cols, CV_8U);
-  uphase = cv::Mat::zeros(image.rows, image.cols, CV_64F);
+  visited= Eigen::ArrayXXf::zeros(image.rows, image.cols, CV_8U);
+  uphase = Eigen::ArrayXXf::zeros(image.rows, image.cols, CV_64F);
   mask.convertTo(mask, CV_8S);
 
   //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);

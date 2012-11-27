@@ -61,12 +61,12 @@ void Seguidor::calcQualityMap(int levels)
 {
   int nr=_I.rows;
   int nc=_I.cols;
-  cv::Mat dx(nr,nc, CV_32FC1);
-  cv::Mat dy(nr,nc, CV_32FC1);
-  cv::Mat g=_I;
+  Eigen::ArrayXXf dx(nr,nc, CV_32FC1);
+  Eigen::ArrayXXf dy(nr,nc, CV_32FC1);
+  Eigen::ArrayXXf g=_I;
 
-  cv::Mat qmap=_qmap;
-  cv::Mat path(nr,nc, CV_32FC1);
+  Eigen::ArrayXXf qmap=_qmap;
+  Eigen::ArrayXXf path(nr,nc, CV_32FC1);
 
   double a=0,b=0;
   for(int i=0; i<nr; i++)
@@ -96,7 +96,7 @@ void Seguidor::calcQualityMap(int levels)
 void Seguidor::set_inicio()
 {
    int i_init=0, j_init=0;
-   cv::Mat qmap= _qmap;
+   Eigen::ArrayXXf qmap= _qmap;
    int nr=_qmap.rows;
    int nc=_qmap.cols;
 
@@ -121,7 +121,7 @@ int Seguidor::pesoVecinos(const int i, const int j)
 {
   const int nr=_I.rows;
   const int nc=_I.cols;
-  const cv::Mat& caminado=_caminado;
+  const Eigen::ArrayXXf& caminado=_caminado;
   int peso=0;
 
   if(i-1>=0)
@@ -256,13 +256,13 @@ void Seguidor::cargaVecinos()
     }
 }
 
-Seguidor::Seguidor(const cv::Mat& I,int levels)
+Seguidor::Seguidor(const Eigen::ArrayXXf& I,int levels)
 {
   _I=I;
   _colas=new std::list<Punto>[levels];
-  _m=cv::Mat::zeros(_I.rows, _I.cols, CV_8U);
-  _caminado=cv::Mat::zeros(_I.rows, _I.cols, CV_8U);
-  _qmap=cv::Mat::zeros(_I.rows, _I.cols, CV_8U);
+  _m=Eigen::ArrayXXf::zeros(_I.rows, _I.cols, CV_8U);
+  _caminado=Eigen::ArrayXXf::zeros(_I.rows, _I.cols, CV_8U);
+  _qmap=Eigen::ArrayXXf::zeros(_I.rows, _I.cols, CV_8U);
   _levels=levels;
   //la variable _punto se inicializa en set_inicio()
   //Primero calculamos el mapa de calidad por niveles
@@ -271,13 +271,13 @@ Seguidor::Seguidor(const cv::Mat& I,int levels)
   set_inicio();
   cargaVecinos();
 }
-Seguidor::Seguidor(const cv::Mat& I,int r, int c, int levels)
+Seguidor::Seguidor(const Eigen::ArrayXXf& I,int r, int c, int levels)
 {
   _I=I;
   _colas=new std::list<Punto>[(int)levels];
-  _m=cv::Mat::zeros(_I.rows, _I.cols, CV_8U);
-  _caminado=cv::Mat::zeros(_I.rows, _I.cols, CV_8U);
-  _qmap=cv::Mat::zeros(_I.rows, _I.cols, CV_8U);
+  _m=Eigen::ArrayXXf::zeros(_I.rows, _I.cols, CV_8U);
+  _caminado=Eigen::ArrayXXf::zeros(_I.rows, _I.cols, CV_8U);
+  _qmap=Eigen::ArrayXXf::zeros(_I.rows, _I.cols, CV_8U);
   _levels=levels;
   //la variable _punto se inicializa en set_inicio()
   //Primero calculamos el mapa de calidad por niveles
@@ -299,7 +299,7 @@ int Seguidor::get_r()
   return _punto.r;
 }
 
-cv::Mat Seguidor::get_qmap()
+Eigen::ArrayXXf Seguidor::get_qmap()
 {
   return _qmap;
 }
@@ -328,10 +328,10 @@ bool Seguidor::siguiente()
   return false;
 }
 
-void Seguidor::setQMap(const cv::Mat& qmap)
+void Seguidor::setQMap(const Eigen::ArrayXXf& qmap)
 {
   _qmap.create(qmap.rows, qmap.cols, CV_8U);
-  cv::Mat map=qmap;
+  Eigen::ArrayXXf map=qmap;
 
   double a,b;
   a=map.at<uchar>(0,0);

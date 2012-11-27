@@ -31,35 +31,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 Scanner::Scanner()
+  :m_matu(NULL), m_matv(NULL)
 {
   m_freqmin=0.6;
-  m_pixel.x=0;
-  m_pixel.y=0;
+  m_pixel(0)=0;
+  m_pixel(1)=0;
   m_updateMinFreq=true;
 }
 
-Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v)
+Scanner::Scanner(const Eigen::ArrayXXf* mat_u, const Eigen::ArrayXXf* mat_v)
+  :m_matu(mat_u), m_matv(mat_v)
 {
-  CV_Assert(mat_u.type()==CV_64F && mat_v.type()==CV_64F);
-
-  m_matu=mat_u;
-  m_matv=mat_v;
-  m_visited = cv::Mat_<bool>::zeros(mat_u.rows, mat_u.cols);
-  m_mask = cv::Mat_<bool>::ones(mat_u.rows, mat_u.cols);
-  m_pixel.x=0;
-  m_pixel.y=0;
+  m_visited = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
+  m_mask = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
+  m_pixel(0)=0;
+  m_pixel(1)=0;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;
   m_updateMinFreq=true;
 }
-Scanner::Scanner(const cv::Mat& mat_u, const cv::Mat& mat_v, cv::Point pixel)
+Scanner::Scanner(const Eigen::ArrayXXf* mat_u, const Eigen::ArrayXXf* mat_v,
+                 Eigen::Array2i pixel)
+  :m_matu(mat_u), m_matv(mat_v)
 {
-  CV_Assert(mat_u.type()==CV_64F && mat_v.type()==CV_64F);
-
-  m_matu=mat_u;
-  m_matv=mat_v;
-  m_visited = cv::Mat_<bool>::zeros(mat_u.rows, mat_u.cols);
-  m_mask = cv::Mat_<bool>::ones(mat_u.rows, mat_u.cols);
+  m_visited = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
+  m_mask = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;
@@ -71,22 +67,24 @@ void Scanner::setFreqMin(double freq)
   m_freqmin = freq;
 }
 
-void Scanner::setMask(cv::Mat mask)
+void Scanner::setMask(Eigen::ArrayXXf mask)
 {
   m_mask = mask;
 }
 
 bool Scanner::next()
 {
+  const Eigen::ArrayXXf& matu = *m_matu;
+  const Eigen::ArrayXXf& matv = *m_matv;
   if(!next(m_freqmin*m_freqmin)){
     m_pixel=findPixel();
-    if(m_pixel.x>=0 && m_pixel.y>=0 && m_updateMinFreq){
+    if(m_pixel(0)>=0 && m_pixel(1)>=0 && m_updateMinFreq){
       //std::cout<<"Frequencia actual: "<<m_freqmin;
-      m_freqmin=sqrt(m_matu(m_pixel.y,m_pixel.x)*m_matu(m_pixel.y,m_pixel.x)
-        + m_matv(m_pixel.y,m_pixel.x)*m_matv(m_pixel.y,m_pixel.x));
+      m_freqmin=sqrt(matu(m_pixel(1),m_pixel(0))*matu(m_pixel(1),m_pixel(0))
+        + matv(m_pixel(1),m_pixel(0))*matv(m_pixel(1),m_pixel(0)));
       //m_freqmin-=0.01;
       //std::cout<<", Frecuencia ajustada: "<<m_freqmin<<std::endl;
-      //std::cout<<"Nuevo punto inicial: (" << m_pixel.x << ", " <<m_pixel.y
+      //std::cout<<"Nuevo punto inicial: (" << m_pixel(0) << ", " <<m_pixel(1)
       //         << ")" << std::endl;
       insertPixelToPath(m_pixel);
       return true;//next(m_freqmin*m_freqmin);
@@ -98,125 +96,127 @@ bool Scanner::next()
   //return next(m_freqmin*m_freqmin);
 }
 
-bool Scanner::checkNeighbor(cv::Point pixel)
+bool Scanner::checkNeighbor(Eigen::Array2i pixel)
 {
-  int y=pixel.y, x=pixel.x;
+  int y=pixel(1), x=pixel(0);
 
   if(!m_visited(y,x) && m_mask(y,x)){
     if(x-1>=0)
       if(m_visited(y,x-1) && m_mask(y,x-1))
         return true;
-    if(x+1<m_matu.cols)
+    if(x+1<m_matu->cols())
       if(m_visited(y,x+1) && m_mask(y,x+1))
         return true;
     if(y-1>=0)
       if(m_visited(y-1,x) && m_mask(y-1,x))
         return true;
-    if(y+1<m_matu.rows)
+    if(y+1<m_matu->rows())
       if(m_visited(y+1,x) && m_mask(y+1,x))
         return true;
     if(x-1>=0 && y-1>=0)
       if(m_visited(y-1,x-1) && m_mask(y-1,x-1))
         return true;
-    if(x+1<m_matu.cols && y-1>=0)
+    if(x+1<m_matu->cols() && y-1>=0)
       if(m_visited(y-1,x+1) && m_mask(y-1,x+1))
         return true;
-    if(x+1<m_matu.cols && y+1<m_matu.rows)
+    if(x+1<m_matu->cols() && y+1<m_matu->rows())
       if(m_visited(y+1,x+1) && m_mask(y+1,x+1))
         return true;
-    if(x-1>=0 && y+1<m_matu.rows)
+    if(x-1>=0 && y+1<m_matu->rows())
       if(m_visited(y+1,x-1) && m_mask(y+1,x-1))
         return true;
   }
   return false;
 }
 
-cv::Point Scanner::findPixel()
+Eigen::Array2i Scanner::findPixel()
 {
-  cv::Point pixel;
-  int &x=pixel.x, &y=pixel.y;
-  m_pixel.x=(m_pixel.x>=0 && m_pixel.x<m_visited.cols)? m_pixel.x:0;
-  m_pixel.y=(m_pixel.y>=0 && m_pixel.y<m_visited.rows)? m_pixel.y:0;
+  Eigen::Array2i pixel;
+  int &x=pixel(0), &y=pixel(1);
+  m_pixel(0)=(m_pixel(0)>=0 && m_pixel(0)<m_visited.cols())? m_pixel(0):0;
+  m_pixel(1)=(m_pixel(1)>=0 && m_pixel(1)<m_visited.rows())? m_pixel(1):0;
 
-  for(y=m_pixel.y; y<m_visited.rows; y++)
-    for(x=m_pixel.x; x<m_visited.cols; x++){
+  for(y=m_pixel(1); y<m_visited.rows(); y++)
+    for(x=m_pixel(0); x<m_visited.cols(); x++){
       if(checkNeighbor(pixel)){
         return pixel;
       }
     }
-  for(y=m_pixel.y; y>=0; y--)
-    for(x=m_pixel.x; x<m_visited.cols; x++){
+  for(y=m_pixel(1); y>=0; y--)
+    for(x=m_pixel(0); x<m_visited.cols(); x++){
       if(checkNeighbor(pixel)){
         return pixel;
       }
     }
-  for(y=m_pixel.y; y>=0; y--)
-    for(x=m_pixel.x; x>=0; x--){
+  for(y=m_pixel(1); y>=0; y--)
+    for(x=m_pixel(0); x>=0; x--){
       if(checkNeighbor(pixel)){
         return pixel;
       }
     }
-  for(y=m_pixel.y; y<m_visited.rows; y++)
-    for(x=m_pixel.x; x>=0; x--){
+  for(y=m_pixel(1); y<m_visited.rows(); y++)
+    for(x=m_pixel(0); x>=0; x--){
       if(checkNeighbor(pixel)){
         return pixel;
       }
     }
-  return cv::Point(-1,-1);
+  return Eigen::Array2i(-1,-1);
 }
 
 inline
 bool Scanner::next(double fpow)
 {
-  cv::Vec<double, 8> magn;
-  std::vector<cv::Point> pixel(8,cv::Point(0,0));
+  const Eigen::ArrayXXf& matu = *m_matu;
+  const Eigen::ArrayXXf& matv = *m_matv;
+  Eigen::ArrayXf magn(8);
+  std::vector<Eigen::Array2i> pixel(8,Eigen::Array2i(0,0));
   while(!m_path.empty()){
     m_pixel=m_path.back();
     for(int i=0; i<8; i++) magn[i]=-1;
-    int x=m_pixel.x, y=m_pixel.y;
+    int x=m_pixel(0), y=m_pixel(1);
     if(x-1>=0)
       if(!m_visited(y,x-1) && m_mask(y,x-1)){
-        pixel[0]=cv::Point(x-1,y);
-        magn[0]=m_matu(y,x-1)*m_matu(y,x-1) + m_matv(y,x-1)*m_matv(y,x-1);
+        pixel[0]=(Eigen::Array2i() << x-1, y).finished();
+        magn[0]=matu(y,x-1)*matu(y,x-1) + matv(y,x-1)*matv(y,x-1);
       }
-    if(x+1<m_matu.cols)
+    if(x+1<matu.cols())
       if(!m_visited(y,x+1) && m_mask(y,x+1)){
-        pixel[1]=cv::Point(x+1,y);
-        magn[1]=m_matu(y,x+1)*m_matu(y,x+1) + m_matv(y,x+1)*m_matv(y,x+1);
+        pixel[1]=(Eigen::Array2i() << x+1, y).finished();
+        magn[1]=matu(y,x+1)*matu(y,x+1) + matv(y,x+1)*matv(y,x+1);
       }
     if(y-1>=0)
       if(!m_visited(y-1,x) && m_mask(y-1,x)){
-        pixel[2]=cv::Point(x,y-1);
-        magn[2]=m_matu(y-1,x)*m_matu(y-1,x) + m_matv(y-1,x)*m_matv(y-1,x);
+        pixel[2]=(Eigen::Array2i() << x, y-1).finished();
+        magn[2]=matu(y-1,x)*matu(y-1,x) + matv(y-1,x)*matv(y-1,x);
       }
-    if(y+1<m_matu.rows)
+    if(y+1<matu.rows())
       if(!m_visited(y+1,x) && m_mask(y+1,x)){
-        pixel[3]=cv::Point(x,y+1);
-        magn[3]=m_matu(y+1,x)*m_matu(y+1,x) + m_matv(y+1,x)*m_matv(y+1,x);
+        pixel[3]=(Eigen::Array2i() << x, y+1).finished();
+        magn[3]=matu(y+1,x)*matu(y+1,x) + matv(y+1,x)*matv(y+1,x);
       }
     if(x-1>=0 && y-1>=0)
       if(!m_visited(y-1,x-1) && m_mask(y-1,x-1)){
-        pixel[4]=cv::Point(x-1,y-1);
-        magn[4]=m_matu(y-1,x-1)*m_matu(y-1,x-1) +
-            m_matv(y-1,x-1)*m_matv(y-1,x-1);
+        pixel[4]=(Eigen::Array2i() << x-1, y-1).finished();
+        magn[4]=matu(y-1,x-1)*matu(y-1,x-1) +
+            matv(y-1,x-1)*matv(y-1,x-1);
       }
-    if(x+1<m_matu.cols && y-1>=0)
+    if(x+1<matu.cols() && y-1>=0)
       if(!m_visited(y-1,x+1) && m_mask(y-1,x+1)){
-        pixel[5]=cv::Point(x+1,y-1);
-        magn[5]=m_matu(y-1,x+1)*m_matu(y-1,x+1) +
-            m_matv(y-1,x+1)*m_matv(y-1,x+1);
+        pixel[5]=(Eigen::Array2i() << x+1, y-1).finished();
+        magn[5]=matu(y-1,x+1)*matu(y-1,x+1) +
+            matv(y-1,x+1)*matv(y-1,x+1);
       }
-    if(x+1<m_matu.cols && y+1<m_matu.rows)
+    if(x+1<matu.cols() && y+1<matu.rows())
       if(!m_visited(y+1,x+1) && m_mask(y+1,x+1)){
-        pixel[6]=cv::Point(x+1,y+1);
-        magn[6]=m_matu(y+1,x+1)*m_matu(y+1,x+1) +
-            m_matv(y+1,x+1)*m_matv(y+1,x+1);
+        pixel[6]=(Eigen::Array2i() << x+1, y+1).finished();
+        magn[6]=matu(y+1,x+1)*matu(y+1,x+1) +
+            matv(y+1,x+1)*matv(y+1,x+1);
       }
-    if(x-1>=0 && y+1<m_matu.rows)
+    if(x-1>=0 && y+1<matu.rows())
       if(!m_visited(y+1,x-1) && m_mask(y+1,x-1)){
-        pixel[7]=cv::Point(x-1,y+1);
-        magn[7]=m_matu(y+1,x-1)*m_matu(y+1,x-1) +
-            m_matv(y+1,x-1)*m_matv(y+1,x-1);
+        pixel[7]=(Eigen::Array2i() << x-1, y+1).finished();
+        magn[7]=matu(y+1,x-1)*matu(y+1,x-1) +
+            matv(y+1,x-1)*matv(y+1,x-1);
       }
 
     int idx=0;
@@ -242,22 +242,22 @@ bool Scanner::next(double fpow)
   return false;
 }
 
-void Scanner::setInitPosition(cv::Point pixel)
+void Scanner::setInitPosition(Eigen::Array2i pixel)
 {
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
 }
 
-cv::Point2i Scanner::getPosition()
+Eigen::Array2i Scanner::getPosition()
 {
   return m_pixel;
 }
 
 inline
-void Scanner::insertPixelToPath(const cv::Point& pixel)
+void Scanner::insertPixelToPath(const Eigen::Array2i& pixel)
 {
-  if(m_mask(pixel.y, pixel.x)){
-    m_visited(pixel.y, pixel.x)=true;
+  if(m_mask(pixel(1), pixel(0))){
+    m_visited(pixel(1), pixel(0))=true;
     m_path.push_back(pixel);
   }
 }
