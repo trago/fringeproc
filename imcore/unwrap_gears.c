@@ -47,7 +47,8 @@ double dW(double phase)
   return (phase - m * n);
 }
 
-float sunwrap_pixel(const size_t idx, const int x, const int y,
+// Intercambie la posicion de las variables x,y a y,x usar storage collumn-major
+float sunwrap_pixel(const size_t idx, const int y, const int x,
                     const float *restrict phase, 
                     const int *restrict mask,
                     const float *restrict uphase,
@@ -118,7 +119,8 @@ float sunwrap_pixel(const size_t idx, const int x, const int y,
   return val + tao*grad;
 }
 
-double dunwrap_pixel(const size_t idx, const int x, const int y,
+// Intercambie la posicion de las variables x,y a y,x usar storage collumn-major
+double dunwrap_pixel(const size_t idx, const int y, const int x,
                      const double *restrict phase,
                      const int *restrict mask,
                      const double *restrict uphase,

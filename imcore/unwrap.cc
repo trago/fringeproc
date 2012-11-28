@@ -50,7 +50,7 @@ void sunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
     if(i%2==0)
       for(int j=low_j; j<=hig_j; j++){
         if(mask(i,j)){
-          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+          pp(i,j)=sunwrap_pixel(j*wp.rows()+i, j, i,
                                           wp.data(),
                                           mask.data(),
                                           pp.data(),
@@ -62,7 +62,7 @@ void sunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
     else
       for(int j=hig_j; j>=low_j; j--){
         if(mask(i,j)){
-          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+          pp(i,j)=sunwrap_pixel(j*wp.rows()+i, j, i,
                                           wp.data(),
                                           mask.data(),
                                           pp.data(),
@@ -89,7 +89,7 @@ void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
     if(i%2==0)
       for(int j=low_j; j<=hig_j; j++){
         if(mask(i,j)){
-          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+          pp(i,j)=sunwrap_pixel(j*wp.rows()+i, j, i,
                                 wp.data(),
                                 mask.data(),
                                 pp.data(),
@@ -101,7 +101,7 @@ void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
     else
       for(int j=hig_j; j>=low_j; j--){
         if(mask(i,j)){
-          pp(i,j)=sunwrap_pixel(i*wp.cols()+j, j, i,
+          pp(i,j)=sunwrap_pixel(j*wp.rows()+i, j, i,
                                            wp.data(),
                                            mask.data(),
                                            pp.data(),
