@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
   }
 
   //Eigen::ArrayXXf image = cv::imread(argv[1], 0);
-  Eigen::ArrayXXf image = readFltFile("ICh_WrapPh_776Hz.flt"/*phasefile.c_str()*/);
+  Eigen::ArrayXXf image = readFltFile(phasefile.c_str());
   if(image.cols()==0 and image.rows()==0){
     cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
     return 1;

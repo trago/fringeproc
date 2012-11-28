@@ -11,5 +11,5 @@ set(imcore_SRCS
   )
 
 add_library(imcore STATIC ${imcore_SRCS})
-target_link_libraries(imcore utils)
+target_link_libraries(imcore)
 

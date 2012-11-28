@@ -1,4 +1,3 @@
-# This is a CMake example for Python
 cmake_minimum_required(VERSION 2.8)
 project(fringeproc)
 
