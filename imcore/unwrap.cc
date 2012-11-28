@@ -191,7 +191,7 @@ bool Unwrap::runInteractive(int iters)
     _visited(i,j)=1;
   }while(_scanner->next() && (++iter)<iters);
 
-  return iter==iters;
+  return !_scanner->empty();//iter==iters;
 }
 
 void Unwrap::processPixel(const Eigen::Array2i& pixel)

@@ -266,3 +266,8 @@ void Scanner::updateFreqMin(bool update)
 {
   m_updateMinFreq=update;
 }
+
+bool Scanner::empty()
+{
+  return m_path.empty();
+}

@@ -119,13 +119,12 @@ int main(int argc, char* argv[])
   outfile = cimg_option("-o", "output.flt",
                         "Output file where result is saved");
 
-  /*
   if(phasefile == "no_input_file"){
     cout<< "You must indicate an input file using option -i"
         << endl;
     return 1;
   }
-  */
+
   if(mfile == "no_input_file"){
     mfile="";
   }
@@ -175,31 +174,24 @@ int main(int argc, char* argv[])
 
   CImgDisplay disp_uphase(wphase.cols(), wphase.rows(), "Uphase");
 
-  int iter=0;
   unwrap.runInteractive();
   do{
-    if(iter++ % 9000 ==0){
-      uphase = unwrap.getOutput();
-      imshow(disp_uphase, uphase);
-      disp_uphase.wait(32);
-    }
-  }while(unwrap.runInteractive());
+    uphase = unwrap.getOutput();
+    imshow(disp_uphase, uphase);
+  }while(unwrap.runInteractive(9000));
 
   /*
+  unwrap.setTao(0.05);
   unwrap.setPixel(pixel);
   unwrap.runInteractive();
-  unwrap.setTao(0.05);
-  iter=0;
-
   do{
-    if(iter++ % 9000 ==0){
-      imshow("phase", uphase);
-      cv::waitKey(32);
-    }
-  }while(unwrap.runInteractive());
+    uphase = unwrap.getOutput();
+    imshow(disp_uphase, uphase);
+  }while(unwrap.runInteractive(9000));
   std::cout<<"Number of pixels: "<< iter<<std::endl;
   */
 
+  uphase = unwrap.getOutput();
   writeFltFile(uphase, outfile.c_str());
 
   CImgDisplay disp_wphase(wphase.cols(), wphase.rows(), "WPhase");

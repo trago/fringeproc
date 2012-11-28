@@ -123,6 +123,7 @@ public:
    */
   void updateFreqMin(bool update);
 
+  bool empty();
 private:
   /** The frequencies or differences in x-direction */
   const Eigen::ArrayXXf* m_matu;
