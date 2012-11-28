@@ -59,6 +59,16 @@ double dconvolutionAtXY(const double *__restrict data,
   return sum;//weight!=0? sum/weight:0;
 }
 
+float convolutionAtXY(const Eigen::ArrayXXf& data,
+                      const Eigen::ArrayXXf& kernelx,
+                      const Eigen::ArrayXXf& kernely, const int x, const int y)
+{
+  return sconvolutionAtXY(data.data(), kernelx.data(),
+                          kernely.data(), x, y,
+                          data.rows(), data.cols(), kernely.cols()/2,
+                          kernelx.cols()/2);
+}
+
 inline
 void dconvolution(const double *__restrict data,
          const double *__restrict kernelx,
@@ -90,7 +100,7 @@ void dconvolution(const double *__restrict data,
     }
 }
 
-inline
+//inline
 float sconvolutionAtXY(const float *__restrict data,
                const float *__restrict kernelx,
                const float *__restrict kernely,

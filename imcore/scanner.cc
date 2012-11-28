@@ -55,7 +55,7 @@ Scanner::Scanner(const Eigen::ArrayXXf* mat_u, const Eigen::ArrayXXf* mat_v,
   :m_matu(mat_u), m_matv(mat_v)
 {
   m_visited = Eigen::ArrayXXf::Zero(mat_u->rows(), mat_u->cols());
-  m_mask = Eigen::ArrayXXi::Zero(mat_u->rows(), mat_u->cols());
+  m_mask = Eigen::ArrayXXi::Constant(mat_u->rows(), mat_u->cols(),1);
   m_pixel=pixel;
   insertPixelToPath(m_pixel);
   m_freqmin=0.6;

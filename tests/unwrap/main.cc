@@ -39,12 +39,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace std;
 
 inline
-void imshow(const char* wn, Eigen::ArrayXXf im)
+void imshow(cimg_library::CImgDisplay& disp, const Eigen::ArrayXXf& im)
 {
-  Eigen::ArrayXXf tmp;
-  im.convertTo(tmp, CV_32F);
-  cv::normalize(tmp, tmp, 1, 0, cv::NORM_MINMAX);
-  cv::imshow(wn, tmp);
+  const cimg_library::CImg<float> img(im.data(), im.cols(),
+                                      im.rows(), 1, 1, true);
+
+  disp.display(img);
 }
 
 inline
@@ -52,28 +52,34 @@ Eigen::ArrayXXf readFltFile(const char* fname)
 {
   ifstream file;
   file.open(fname, ios::in);
-  float M, N;
+  float M=0, N=0;
   float val;
-  file>>M;
-  file>>N;
+  Eigen::ArrayXXf dat((int)M,(int)N);
+  //dat.resize(M,N);
 
-  Eigen::ArrayXXf_<double> dat(M,N);
-  for(int i=0; i<M; i++)
-    for(int j=0; j<N;j++){
-      file>>val;
-      dat(i,j)=val;
-    }
+  if(file.is_open()){
+
+    file>>M;
+    file>>N;
+    dat.resize((int)M,(int)N);
+
+    for(int i=0; i<M; i++)
+      for(int j=0; j<N;j++){
+        file>>val;
+        dat(i,j)=val;
+      }
+  }
 
   cout<<"("<<M << ", "<< N<<")"<<endl;
   return dat;
 }
 
 inline
-void writeFltFile(Eigen::ArrayXXf_<double> mat, const char* fname)
+void writeFltFile(const Eigen::ArrayXXf& mat, const char* fname)
 {
   ofstream file;
   file.open(fname, ios::out);
-  float M=mat.cols, N=mat.rows;
+  float M=mat.rows(), N=mat.cols();
   float val;
   file<<M<<endl;
   file<<N<<endl;
@@ -88,136 +94,95 @@ void writeFltFile(Eigen::ArrayXXf_<double> mat, const char* fname)
 
 int main(int argc, char* argv[])
 {
+  using namespace cimg_library;
   Eigen::ArrayXXf wphase;
   Eigen::ArrayXXf uphase;
-  Eigen::ArrayXXf visited;
-  Eigen::ArrayXXf mask;
+  Eigen::ArrayXXi visited;
+  Eigen::ArrayXXi mask;
   Eigen::ArrayXXf path, dx, dy;
-  cv::Point pixel;
+  Eigen::Array2i pixel;
 
-  namespace po = boost::program_options;
-  double tau;
-  int N, sigma, x, y;
   std::string mfile, phasefile, outfile;
-  po::options_description desc("Allowed options");
-  desc.add_options()
-      ("help", "Help message")
-      ("tau,t", po::value<double>(&tau)->default_value(0.2),
-       "Set the bandwidth of the unwrapping system")
-      ("sigma,s", po::value<int>(&sigma)->default_value(13),
-       "Smoothing parameter to generate the scanning path")
-      ("Nwindow,N", po::value<int>(&N)->default_value(9),
-       "Window size of the windowed phase unwrapper")
-      ("mask,m", po::value<std::string>(&mfile),
-       "Mask file name that selects the region of interst")
-      ("input", po::value<std::string>(),
-       "The wrapped phase to be processed")
-      ("output,o", po::value<std::string>(),
-       "Output file where unwrapped phase is stored")
-      ("xinit,x", po::value<int>(&x)->default_value(13),
-       "Direction 'x' of starting point.")
-      ("yinit,y", po::value<int>(&y)->default_value(1),
-       "Direction 'y' of starting point.");
-  po::positional_options_description p;
-  p.add("input", -1);
-  po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).
-            options(desc).positional(p).run(), vm);
 
-  if(vm.count("help")){
-    cout<<"Windowed phase unwrapping program.\n"<<endl;
-    cout<<"Usage: " << argv[0] << " <options> input-file" <<endl;
-    cout<<"Copyright (C) 2012, Julio C. Estrada\n"<<endl;
-    desc.print(cout);
-    cout<<endl;
-    cout<<"Example:"<<endl
-       <<"  $ "<<argv[0]<<" -N 13 -t 0.03 file.flt"<<endl;
-    return 0;
-  }
-  if(vm.count("input")){
-    phasefile = vm["input"].as<string>();
-  }
-  else{
-    cout<<"Usage: " << argv[0] << " <options> input-file" <<endl;
-    cout<<"Copyright (C) 2012, Julio C. Estrada\n"<<endl;
-    cerr << "Error: Input file required. Use --help" << endl;
+  cimg_usage("Command line argumments");
+  const float tau = cimg_option("-t", 0.2,
+                                "Bandwidth of the unwrapping system");
+  const float sigma = cimg_option("-s", 13,
+                                  "Smooth power to generate the scanning path");
+  const int N = cimg_option("-N", 9, "Window size of the phase unwrapper");
+  const int x =cimg_option("-x", 338, "x-position of starting pixel");
+  const int y =cimg_option("-y", 400, "y-position of starting pixel");
+  mfile = cimg_option("-m", "no_input_file",
+                      "File name of the mask to select region of interest");
+  phasefile = cimg_option("-i" , "no_input_file",
+                          "Wrapped phase to be processed");
+  outfile = cimg_option("-o", "output.flt",
+                        "Output file where result is saved");
+
+  /*
+  if(phasefile == "no_input_file"){
+    cout<< "You must indicate an input file using option -i"
+        << endl;
     return 1;
   }
-  if(vm.count("mask")){
-    mfile = vm["mask"].as<string>();
+  */
+  if(mfile == "no_input_file"){
+    mfile="";
   }
-  else
-    mfile = "";
-  if(vm.count("output")){
-    outfile = vm["output"].as<string>();
-  }
-  else
-    outfile = "output.flt";
-  N = vm["Nwindow"].as<int>();
-  tau = vm["tau"].as<double>();
-  sigma = vm["sigma"].as<int>()%2==0?
-        vm["sigma"].as<int>()+1:vm["sigma"].as<int>();
-  x = vm["xinit"].as<int>();
-  y = vm["yinit"].as<int>();
 
   //Eigen::ArrayXXf image = cv::imread(argv[1], 0);
-  Eigen::ArrayXXf image = readFltFile(phasefile.c_str());
-  if(image.empty()){
+  Eigen::ArrayXXf image = readFltFile("ICh_WrapPh_776Hz.flt"/*phasefile.c_str()*/);
+  if(image.cols()==0 and image.rows()==0){
     cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
     return 1;
   }
   if(mfile != ""){
-    mask = cv::imread(argv[2], 0);
-    if(mask.empty()){
+    CImg<int> cimg_mask(mfile.c_str());
+    Eigen::Map<Eigen::ArrayXXi> data(cimg_mask.data(), cimg_mask.height(),
+                                     cimg_mask.width());
+    if(cimg_mask.is_empty()){
       cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
       return 1;
     }
-    if(mask.rows!=image.rows || mask.cols!=image.cols){
+    if(mask.rows()!=image.rows() || mask.cols()!=image.cols()){
       cerr<<"Error: Mask dimensions must match image dimensions." << endl;
       return 1;
     }
+    mask = data;
   }
   else
-    mask = Eigen::ArrayXXf::ones(image.rows, image.cols, CV_8U);
-  cout<<"Phase unwrapping with the following parameters:"<<endl
-     <<"   Input file: " << phasefile<<endl
-     <<"          tau: "<<tau <<endl
-     <<"       Window: "<<N<<"x"<<N<<endl
-     <<"        sigma: "<<sigma<<endl
-     <<"Init position: ("<<x<<", "<<y<<")"<<endl;
-  pixel.x = x;
-  pixel.y = y;
-  wphase.create(image.rows, image.cols, CV_64F);
-  image.convertTo(wphase, CV_64F);
-  cv::normalize(wphase, wphase, M_PI, -M_PI, cv::NORM_MINMAX);
+    mask = Eigen::ArrayXXi::Constant(image.rows(), image.cols(), 1);
 
-  double min, max;
-  mask.convertTo(mask, CV_64F);
-  cv::minMaxLoc(mask, &min, &max);
-  if(min!=max)
-    cv::normalize(mask, mask, 1, 0, cv::NORM_MINMAX);
+  pixel(0) = x;
+  pixel(1)= y;
+  wphase.resize(image.rows(), image.cols());
+  float a = image.minCoeff(), b= image.maxCoeff();
+  float range = b-a;
+  wphase = 2*M_PI*(image-a)/range - M_PI;
 
-  visited= Eigen::ArrayXXf::zeros(image.rows, image.cols, CV_8U);
-  uphase = Eigen::ArrayXXf::zeros(image.rows, image.cols, CV_64F);
-  mask.convertTo(mask, CV_8S);
+  a = mask.minCoeff();
+  b = mask.maxCoeff();
+  range = b-a;
+  if(range != 0)
+    mask = (mask-a)/range;
 
-  //cv::normalize(path, path, 15*M_PI,0, cv::NORM_MINMAX);
-  //path = sin<float>(path);
-  //unwrap2D(wphase, uphase, tao, sigma,N);
-  //cv::Point pixel;
-  //pixel.x=383;
-  //pixel.y=331;
+  visited= Eigen::ArrayXXi::Zero(image.rows(), image.cols());
+  uphase = Eigen::ArrayXXf::Zero(image.rows(), image.cols());
+
   Unwrap unwrap(wphase, tau, sigma, N);
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
 
-  uphase = unwrap.getOutput();
   int iter=0;
   unwrap.runInteractive();
+
+  CImgDisplay disp_uphase(wphase.cols(), wphase.rows(), "Uphase");
+
   do{
     if(iter++ % 3000 ==0){
-      imshow("phase", uphase);
-      cv::waitKey(32);
+      uphase = unwrap.getOutput();
+      imshow(disp_uphase, uphase);
+      disp_uphase.wait(32);
     }
   }while(unwrap.runInteractive());
 
@@ -226,21 +191,30 @@ int main(int argc, char* argv[])
   unwrap.runInteractive();
   unwrap.setTao(0.05);
   iter=0;
+
   do{
     if(iter++ % 9000 ==0){
       imshow("phase", uphase);
       cv::waitKey(32);
     }
   }while(unwrap.runInteractive());
-  */
   std::cout<<"Number of pixels: "<< iter<<std::endl;
+  */
 
   writeFltFile(uphase, outfile.c_str());
 
-  imshow("phase", uphase);
-  imshow("wphase", wphase);
-  imshow("path", atan2<double>(sin<double>(uphase),cos<double>(uphase)));
+  CImgDisplay disp_wphase(wphase.cols(), wphase.rows(), "WPhase");
+  CImgDisplay disp_path(wphase.cols(), wphase.rows(), "Path");
+  path = unwrap.genPath(sigma);
 
-  cv::waitKey();
+  imshow(disp_uphase, uphase);
+  imshow(disp_wphase, wphase);
+  imshow(disp_path, path);
+
+  while(!disp_path.is_closed() && !disp_uphase.is_closed()
+        && !disp_wphase.is_closed()){
+    disp_uphase.wait_all();
+  }
+
   return 0;
 }

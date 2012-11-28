@@ -127,15 +127,9 @@ void sconvolution(const float *__restrict data,
            const int KM, const int KN);
 
 
-float convolutionAtXY(const Eigen::ArrayXXf& data, const Eigen::ArrayXXf& kernelx,
-          const Eigen::ArrayXXf& kernely, const int x, const int y)
-{
-  return sconvolutionAtXY(data.data(), kernelx.data(),
-                          kernely.data(), x, y,
-                          data.rows(), data.cols(), kernely.cols()/2,
-                          kernelx.cols()/2);
-  return 0;
-}
+float convolutionAtXY(const Eigen::ArrayXXf& data,
+                      const Eigen::ArrayXXf& kernelx,
+                      const Eigen::ArrayXXf& kernely, const int x, const int y);
 
 namespace gabor{
   /**

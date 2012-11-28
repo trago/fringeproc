@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define cimg_display 0
 #include <CImg.h>
 
-void gradient(const Eigen::ArrayXXf I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy)
+void gradient(const Eigen::ArrayXXf& I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy)
 {
   dx.resize(I.rows(), I.cols());
   dy.resize(I.rows(), I.cols());
@@ -149,7 +149,7 @@ Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
   return wphase(Ic0-Ic1);
 }
 
-Eigen::ArrayXXf wphase(const Eigen::ArrayXXf p)
+Eigen::ArrayXXf wphase(const Eigen::ArrayXXf& p)
 {
   Eigen::ArrayXXf wp(p.rows(), p.cols());
   float *const __restrict__ pt_wp = (float*)wp.data();
