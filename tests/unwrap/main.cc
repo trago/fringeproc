@@ -28,13 +28,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <imcore/scanner.h>
 #include <utils/utils.h>
-#include <imcore/unwrap.h>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <Eigen/Dense>
 #include <CImg.h>
+#include <imcore/unwrap.h>
 
 using namespace std;
 
@@ -110,8 +110,8 @@ int main(int argc, char* argv[])
   const float sigma = cimg_option("-s", 13,
                                   "Smooth power to generate the scanning path");
   const int N = cimg_option("-N", 9, "Window size of the phase unwrapper");
-  const int x =cimg_option("-x", 338, "x-position of starting pixel");
-  const int y =cimg_option("-y", 400, "y-position of starting pixel");
+  const int x =cimg_option("-x", 10, "x-position of starting pixel");
+  const int y =cimg_option("-y", 10, "y-position of starting pixel");
   mfile = cimg_option("-m", "no_input_file",
                       "File name of the mask to select region of interest");
   phasefile = cimg_option("-i" , "no_input_file",
@@ -173,13 +173,12 @@ int main(int argc, char* argv[])
   unwrap.setPixel(pixel);
   unwrap.setMask(mask);
 
-  int iter=0;
-  unwrap.runInteractive();
-
   CImgDisplay disp_uphase(wphase.cols(), wphase.rows(), "Uphase");
 
+  int iter=0;
+  unwrap.runInteractive();
   do{
-    if(iter++ % 3000 ==0){
+    if(iter++ % 9000 ==0){
       uphase = unwrap.getOutput();
       imshow(disp_uphase, uphase);
       disp_uphase.wait(32);
