@@ -53,7 +53,7 @@ float sunwrap_pixel(const size_t idx, const int y, const int x,
                     const int *restrict mask,
                     const float *restrict uphase,
                     const int *restrict visited, float tao,
-                    const size_t M, const size_t N)
+                    const size_t N, const size_t M)
 {
   float val= 0;
   float grad= 0;
@@ -125,7 +125,7 @@ double dunwrap_pixel(const size_t idx, const int y, const int x,
                      const int *restrict mask,
                      const double *restrict uphase,
                      const int *restrict visited, double tao,
-                     const size_t M, const size_t N)
+                     const size_t N, const size_t M)
 {
   double val= 0;
   double grad= 0;

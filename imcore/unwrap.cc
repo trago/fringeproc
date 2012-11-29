@@ -207,7 +207,7 @@ void Unwrap::setPixel(const Eigen::Array2i& pixel)
   if(_scanner!=NULL){
     delete _scanner;
   }
-  Eigen::ArrayXXf path(_wphase.rows(), _wphase.rows());
+  Eigen::ArrayXXf path(_wphase.rows(), _wphase.cols());
   CImg<float> cimg_wphase(_wphase.data(), _wphase.cols(), _wphase.rows(),
                           1, 1, true);
   CImg<float> cimg_path(path.data(), _wphase.cols(), _wphase.rows(),
