@@ -1,6 +1,6 @@
 if(UNIX)
   find_package(X11)
-  set(OTHER_LIBRARIES ${X11_LIBRARIES})
+  set(OTHER_LIBRARIES ${X11_LIBRARIES} -lpthread)
 elseif(WIN32)
   set(OTHER_LIBRARIES -l)
 endif(UNIX)
