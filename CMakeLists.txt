@@ -4,10 +4,11 @@ project(fringeproc)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_C_FLAGS_RELEASE "-fPIC -std=gnu99  -funroll-loops -O3")
-set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -funroll-loops -O3")
-set(CMAKE_C_FLAGS_DEBUG "-fPIC -std=gnu99 -g")
-set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -g")
+
+if(UNIX)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -fPIC -DUSE_RESTRICT_POINTER -ffast-math")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DUSE_RESTRICT_POINTER -ffast-math")
+endif(UNIX)
 
 add_subdirectory(imcore)
 add_subdirectory(utils)

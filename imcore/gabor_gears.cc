@@ -29,13 +29,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <iostream>
 #include "gabor_gears.h"
+#include "imcore_config.h"
 
 /**
  */
 inline
-double dconvolutionAtXY(const double *__restrict data,
-               const double *__restrict kernelx,
-               const double *__restrict kernely,
+double dconvolutionAtXY(const double *_RESTRICT_ data,
+               const double *_RESTRICT_ kernelx,
+               const double *_RESTRICT_ kernely,
                const int x, const int y,
                const int M, const int N,
                const int kM, const int kN)
@@ -70,10 +71,10 @@ float convolutionAtXY(const Eigen::ArrayXXf& data,
 }
 
 inline
-void dconvolution(const double *__restrict data,
-         const double *__restrict kernelx,
-         const double *__restrict kernely,
-         double *__restrict out,
+void dconvolution(const double *_RESTRICT_ data,
+         const double *_RESTRICT_ kernelx,
+         const double *_RESTRICT_ kernely,
+         double *_RESTRICT_ out,
          const int M, const int N,
          const int KM, const int KN)
 {
@@ -101,9 +102,9 @@ void dconvolution(const double *__restrict data,
 }
 
 //inline
-float sconvolutionAtXY(const float *__restrict data,
-               const float *__restrict kernelx,
-               const float *__restrict kernely,
+float sconvolutionAtXY(const float *_RESTRICT_ data,
+               const float *_RESTRICT_ kernelx,
+               const float *_RESTRICT_ kernely,
                const int x, const int y,
                const int M, const int N,
                const int kM, const int kN)
@@ -128,10 +129,10 @@ float sconvolutionAtXY(const float *__restrict data,
 }
 
 inline
-void sconvolution(const float *__restrict data,
-           const float *__restrict kernelx,
-           const float *__restrict kernely,
-           float *__restrict out,
+void sconvolution(const float *_RESTRICT_ data,
+           const float *_RESTRICT_ kernelx,
+           const float *_RESTRICT_ kernely,
+           float *_RESTRICT_ out,
            const int M, const int N,
            const int KM, const int KN)
 {

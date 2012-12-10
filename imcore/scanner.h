@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Eigen/Dense>
 #include <list>
 #include <vector>
+#include "imcore_config.h"
 
 #endif
 
@@ -52,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author Julio C. Estrada
  */
-class Scanner
+class IMCORE_EXPORT Scanner
 {
 public:
   /**

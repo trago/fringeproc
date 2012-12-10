@@ -80,8 +80,8 @@ bool Scanner::next()
     m_pixel=findPixel();
     if(m_pixel(0)>=0 && m_pixel(1)>=0 && m_updateMinFreq){
       //std::cout<<"Frequencia actual: "<<m_freqmin;
-      m_freqmin=sqrt(matu(m_pixel(1),m_pixel(0))*matu(m_pixel(1),m_pixel(0))
-        + matv(m_pixel(1),m_pixel(0))*matv(m_pixel(1),m_pixel(0)));
+      m_freqmin=(double)sqrt((double)matu(m_pixel(1),m_pixel(0))*matu(m_pixel(1),m_pixel(0))
+        + (double)matv(m_pixel(1),m_pixel(0))*matv(m_pixel(1),m_pixel(0)));
       //m_freqmin-=0.01;
       //std::cout<<", Frecuencia ajustada: "<<m_freqmin<<std::endl;
       //std::cout<<"Nuevo punto inicial: (" << m_pixel(0) << ", " <<m_pixel(1)

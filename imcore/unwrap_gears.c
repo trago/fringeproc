@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <math.h>
 #include "unwrap_gears.h"
+#include "imcore_config.h"
 
 
 float sW(float phase)
@@ -49,10 +50,10 @@ double dW(double phase)
 
 // Intercambie la posicion de las variables x,y a y,x usar storage collumn-major
 float sunwrap_pixel(const size_t idx, const int y, const int x,
-                    const float *restrict phase, 
-                    const int *restrict mask,
-                    const float *restrict uphase,
-                    const int *restrict visited, float tao,
+                    const float *RESTRICT phase,
+                    const int *RESTRICT mask,
+                    const float *RESTRICT uphase,
+                    const int *RESTRICT visited, float tao,
                     const size_t N, const size_t M)
 {
   float val= 0;
@@ -121,10 +122,10 @@ float sunwrap_pixel(const size_t idx, const int y, const int x,
 
 // Intercambie la posicion de las variables x,y a y,x usar storage collumn-major
 double dunwrap_pixel(const size_t idx, const int y, const int x,
-                     const double *restrict phase,
-                     const int *restrict mask,
-                     const double *restrict uphase,
-                     const int *restrict visited, double tao,
+                     const double *RESTRICT phase,
+                     const int *RESTRICT mask,
+                     const double *RESTRICT uphase,
+                     const int *RESTRICT visited, double tao,
                      const size_t N, const size_t M)
 {
   double val= 0;

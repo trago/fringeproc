@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef SWIG
 #include <Eigen/Dense>
 #include "scanner.h"
+#include "imcore_config.h"
 #endif
 
 /**
@@ -55,7 +56,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * region of interst using \sa setMask.
  *
  */
-class Unwrap{
+class IMCORE_EXPORT Unwrap{
 public:
 
 #ifndef SWIG
