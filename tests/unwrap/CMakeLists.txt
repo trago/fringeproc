@@ -2,7 +2,7 @@ if(UNIX)
   find_package(X11)
   set(OTHER_LIBRARIES ${X11_LIBRARIES} -lpthread)
 elseif(WIN32)
-  set(OTHER_LIBRARIES -l)
+  set(OTHER_LIBRARIES -lm)
 endif(UNIX)
 
 include_directories(${X11_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}
