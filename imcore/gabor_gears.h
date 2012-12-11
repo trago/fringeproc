@@ -152,14 +152,14 @@ namespace gabor{
      *
      * @param size the maximum size
      */
-    FilterXY& setKernelSize(double size);
+    FilterXY& setKernelSize(float size);
   protected:
     Eigen::ArrayXXf hxr, hxi, hyr, hyi;
     const Eigen::ArrayXXf& data;
     Eigen::ArrayXXf &fr, &fi;
   private:
     /** The maximum kernel size. */
-    double m_kernelN;
+    float m_kernelN;
   };
 
   /**
@@ -176,7 +176,7 @@ namespace gabor{
     FilterNeighbor(const Eigen::ArrayXXf& param_I, Eigen::ArrayXXf& param_fr,
                    Eigen::ArrayXXf& param_fi);
     void operator()(double wx, double wy, int i, int j);
-    FilterNeighbor& setKernelSize(double size);
+    FilterNeighbor& setKernelSize(float size);
   protected:
     FilterXY m_localFilter;
   private:
@@ -195,14 +195,14 @@ namespace gabor{
     CalcFreqXY(Eigen::ArrayXXf& param_fr,
                Eigen::ArrayXXf& param_fi);
 
-    CalcFreqXY& setMinFq(const double w);
-    CalcFreqXY& setMaxFq(const double w);
+    CalcFreqXY& setMinFq(const float w);
+    CalcFreqXY& setMaxFq(const float w);
     Eigen::Array2f operator()(const int x, const int y);
     bool changed();
   protected:
     const Eigen::ArrayXXf &fr, &fi;
   private:
-    double m_minf, m_maxf;
+    float m_minf, m_maxf;
     bool m_changed;
   };
   
@@ -231,10 +231,10 @@ namespace gabor{
                Eigen::ArrayXXi& parm_visited);
 
     void operator()(const int i, const int j);
-    DemodPixel& setKernelSize(const double size);
-    DemodPixel& setTau(const double tau);
-    DemodPixel& setMinFq(const double w);
-    DemodPixel& setMaxFq(const double w);
+    DemodPixel& setKernelSize(const float size);
+    DemodPixel& setTau(const float tau);
+    DemodPixel& setMinFq(const float w);
+    DemodPixel& setMaxFq(const float w);
     DemodPixel& setIters(const int iters);
     /**
      * Sets if the estimated frequencies are combed.
@@ -258,7 +258,7 @@ namespace gabor{
     int m_iters;
   private:
     /** Parameter of recursive filter */
-    double m_tau;
+    float m_tau;
     /** Indicates if the frequencies are combed*/
     bool m_combFreqs;
     /** The neighborhood size of the combing function */
@@ -283,10 +283,10 @@ namespace gabor{
                       Eigen::ArrayXXf& param_fy,
                       Eigen::ArrayXXi& param_visited);
 
-    DemodNeighborhood& setKernelSize(const double size);
-    DemodNeighborhood& setMinFq(const double w);
-    DemodNeighborhood& setMaxFq(const double w);
-    DemodNeighborhood& setTau(const double tau);
+    DemodNeighborhood& setKernelSize(const float size);
+    DemodNeighborhood& setMinFq(const float w);
+    DemodNeighborhood& setMaxFq(const float w);
+    DemodNeighborhood& setTau(const float tau);
     DemodNeighborhood& setIters(const int iters);
     DemodNeighborhood& setCombFreqs(bool flag);
     DemodNeighborhood& setCombSize(int size);

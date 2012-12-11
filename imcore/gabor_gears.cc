@@ -125,7 +125,7 @@ float sconvolutionAtXY(const float *_RESTRICT_ data,
     //weight+=kernely[kM+i];
   }
 
-  return sum;//weight!=0? sum/weight:0;
+  return (float)sum;//weight!=0? sum/weight:0;
 }
 
 inline
@@ -155,7 +155,7 @@ void sconvolution(const float *_RESTRICT_ data,
         sum+=f*kernely[kM+i];
         //weight+=kernely[kM+i];
       }
-      out[y*N + x]=sum;//sum/weight;
+      out[y*N + x]=(float)sum;//sum/weight;
     }
 }
 
@@ -169,8 +169,8 @@ void gen_gaborKernel(Eigen::ArrayXXf& greal, Eigen::ArrayXXf& gimag,
   gimag.resize(1,2*N+1);
 
   for(int i=-N; i<=N; i++){
-    greal(0,i+N)=exp(-i*i/(2*sigma*sigma))*cos(f*i);
-    gimag(0,i+N)=-exp(-i*i/(2*sigma*sigma))*sin(f*i);
+    greal(0,i+N)=(float)(exp(-i*i/(2*sigma*sigma))*cos(f*i));
+    gimag(0,i+N)=(float)(-exp(-i*i/(2*sigma*sigma))*sin(f*i));
   }
 }
 
@@ -183,8 +183,8 @@ void gen_gaussianKernel(Eigen::ArrayXXf& hx, Eigen::ArrayXXf& hy,
   hy.resize(1,2*N+1);
 
   for(int i=-N; i<=N; i++){
-    hx(0,i+N)=exp(-i*i/(2*sigma*sigma));
-    hy(0,i+N)=exp(-i*i/(2*sigma*sigma));
+    hx(0,i+N)=(float)exp(-i*i/(2*sigma*sigma));
+    hy(0,i+N)=(float)exp(-i*i/(2*sigma*sigma));
   }
 }
 
@@ -313,7 +313,7 @@ void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
       convolutionAtXY(data, hxi, hyr, x, y);
 }
 
-gabor::FilterXY& gabor::FilterXY::setKernelSize(double size)
+gabor::FilterXY& gabor::FilterXY::setKernelSize(float size)
 {
   m_kernelN=size;
   return *this;
@@ -342,7 +342,7 @@ void gabor::FilterNeighbor::operator()(double wx, double wy, int i, int j)
   m_localFilter(wx, wy, j, i);
 }
 
-gabor::FilterNeighbor& gabor::FilterNeighbor::setKernelSize(double size)
+gabor::FilterNeighbor& gabor::FilterNeighbor::setKernelSize(float size)
 {
   m_localFilter.setKernelSize(size);
   return *this;
@@ -355,31 +355,31 @@ gabor::DemodPixel::DemodPixel(const Eigen::ArrayXXf& parm_I,
                               Eigen::ArrayXXf& parm_fy,
                               Eigen::ArrayXXi& parm_visited)
 :m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
- fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15), 
+ fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15f),
   m_combFreqs(false), m_combN(7)
 {
   m_iters=1;
 }
 
-gabor::DemodPixel& gabor::DemodPixel::setKernelSize(const double size)
+gabor::DemodPixel& gabor::DemodPixel::setKernelSize(const float size)
 {
   m_filter.setKernelSize(size);
   return *this;
 }
 
-gabor::DemodPixel& gabor::DemodPixel::setTau(const double tau)
+gabor::DemodPixel& gabor::DemodPixel::setTau(const float tau)
 {
   m_tau=tau;
   return *this;
 }
 
-gabor::DemodPixel& gabor::DemodPixel::setMaxFq(const double w)
+gabor::DemodPixel& gabor::DemodPixel::setMaxFq(const float w)
 {
   m_calcfreq.setMaxFq(w);
   return *this;
 }
 
-gabor::DemodPixel& gabor::DemodPixel::setMinFq(const double w)
+gabor::DemodPixel& gabor::DemodPixel::setMinFq(const float w)
 {
   m_calcfreq.setMinFq(w);
   return *this;
@@ -408,7 +408,7 @@ Eigen::Array2f gabor::DemodPixel::combFreq(Eigen::Array2f& freqs,
 				      const int i, const int j)
 {
   const int N = m_combN;
-  const float p=0.3;//Probabilidad de cambio
+  const float p=0.3f;//Probabilidad de cambio
 
   int cont=0, right=0;
   double sum1=0;
@@ -484,17 +484,17 @@ gabor::CalcFreqXY::CalcFreqXY(Eigen::ArrayXXf& param_fr,
                               Eigen::ArrayXXf& param_fi)
 : fr(param_fr), fi(param_fi)
 {
-  m_maxf=M_PI/2;
-  m_minf=0.1;
+  m_maxf=(float)(M_PI/2.0f);
+  m_minf=0.1f;
 }
 
-gabor::CalcFreqXY& gabor::CalcFreqXY::setMaxFq(const double w)
+gabor::CalcFreqXY& gabor::CalcFreqXY::setMaxFq(const float w)
 {
   m_maxf=w;
   return *this;
 }
 
-gabor::CalcFreqXY& gabor::CalcFreqXY::setMinFq(const double w)
+gabor::CalcFreqXY& gabor::CalcFreqXY::setMinFq(const float w)
 {
   m_minf=w;
   return *this;
@@ -503,15 +503,15 @@ gabor::CalcFreqXY& gabor::CalcFreqXY::setMinFq(const double w)
 Eigen::Array2f gabor::CalcFreqXY::operator()(const int x, const int y)
 {
   Eigen::Array2f freqs;
-  double imx = x-1>=0? (fi(y,x)-fi(y,x-1)):
+  float imx = x-1>=0? (fi(y,x)-fi(y,x-1)):
                        (fi(y,x+1)-fi(y,x));
-  double rex = x-1>=0? (fr(y,x)-fr(y,x-1)):
+  float rex = x-1>=0? (fr(y,x)-fr(y,x-1)):
                        (fr(y,x+1)-fr(y,x));
-  double magn = fr(y,x)*fr(y,x) +
+  float magn = fr(y,x)*fr(y,x) +
       fi(y,x)*fi(y,x);
 
-  if(magn<0.0001)
-    magn=0.0001; //Evitar devision entre 0
+  if(magn<0.0001f)
+    magn=0.0001f; //Evitar devision entre 0
 
   freqs[0] = (imx*fr(y,x) - fi(y,x)*rex)/magn;
 
@@ -555,25 +555,25 @@ gabor::DemodNeighborhood::DemodNeighborhood(const Eigen::ArrayXXf& param_I,
 }
 
 gabor::DemodNeighborhood& gabor::DemodNeighborhood::
-  setKernelSize(const double size)
+  setKernelSize(const float size)
 {
   m_demodPixel.setKernelSize(size);
   return *this;
 }
 
-gabor::DemodNeighborhood& gabor::DemodNeighborhood::setMaxFq(const double w)
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setMaxFq(const float w)
 {
   m_demodPixel.setMaxFq(w);
   return *this;
 }
 
-gabor::DemodNeighborhood& gabor::DemodNeighborhood::setMinFq(const double w)
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setMinFq(const float w)
 {
   m_demodPixel.setMinFq(w);
   return *this;
 }
 
-gabor::DemodNeighborhood& gabor::DemodNeighborhood::setTau(const double tau)
+gabor::DemodNeighborhood& gabor::DemodNeighborhood::setTau(const float tau)
 {
   m_demodPixel.setTau(tau);
   return *this;

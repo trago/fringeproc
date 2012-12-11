@@ -31,11 +31,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "unwrap_gears.h"
 #include "imcore_config.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 float sW(float phase)
 {
-  float m= 2 * M_PI;
-  int n= (phase < 0) ? (phase - M_PI) / m : (phase + M_PI) / m;
+  float m=(float) (2.0 * M_PI);
+  int n= (int)((phase < 0) ? (phase - M_PI) / m : (phase + M_PI) / m);
 
   return (phase - m * n);
 }
@@ -43,7 +46,7 @@ float sW(float phase)
 double dW(double phase)
 {
   double m= 2 * M_PI;
-  int n= (phase < 0) ? (phase - M_PI) / m : (phase + M_PI) / m;
+  int n= (int)((phase < 0) ? (phase - M_PI) / m : (phase + M_PI) / m);
 
   return (phase - m * n);
 }
@@ -54,7 +57,7 @@ float sunwrap_pixel(const size_t idx, const int y, const int x,
                     const int *RESTRICT mask,
                     const float *RESTRICT uphase,
                     const int *RESTRICT visited, float tao,
-                    const size_t N, const size_t M)
+                    const int N, const int M)
 {
   float val= 0;
   float grad= 0;
@@ -126,7 +129,7 @@ double dunwrap_pixel(const size_t idx, const int y, const int x,
                      const int *RESTRICT mask,
                      const double *RESTRICT uphase,
                      const int *RESTRICT visited, double tao,
-                     const size_t N, const size_t M)
+                     const int N, const int M)
 {
   double val= 0;
   double grad= 0;
@@ -134,25 +137,25 @@ double dunwrap_pixel(const size_t idx, const int y, const int x,
 
   if (y - 1 >= 0)
     if (visited[idx-N] && mask[idx-N]) {
-      grad+= sW(phase[idx] - uphase[idx-N]);
+      grad+= dW(phase[idx] - uphase[idx-N]);
       val+= uphase[idx-N];
       ndifs++;
     }
   if (y + 1 < M)
     if (visited[idx+N] && mask[idx+N]) {
-      grad+= sW(phase[idx] - uphase[idx+N]);
+      grad+= dW(phase[idx] - uphase[idx+N]);
       val+= uphase[idx+N];
       ndifs++;
     }
   if (x - 1 >= 0)
     if (visited[idx-1] && mask[idx-1]) {
-      grad+= sW(phase[idx] - uphase[idx-1]);
+      grad+= dW(phase[idx] - uphase[idx-1]);
       val+= uphase[idx-1];
       ndifs++;
     }
   if (x + 1 < N)
     if (visited[idx+1] && mask[idx+1]) {
-      grad+= sW(phase[idx] - uphase[idx+1]);
+      grad+= dW(phase[idx] - uphase[idx+1]);
       val+= uphase[idx+1];
       ndifs++;
     }
@@ -160,25 +163,25 @@ double dunwrap_pixel(const size_t idx, const int y, const int x,
   //static float dist= sqrt(2.0);
   if (x + 1 < N && y + 1 < M)
     if (visited[idx+N+1] && mask[idx+N+1]) {
-      grad+= sW(phase[idx] - uphase[idx+N+1]);
+      grad+= dW(phase[idx] - uphase[idx+N+1]);
       val+= uphase[idx+N+1];
       ndifs++;
     }
   if (x + 1 < N && y - 1 >= 0)
     if (visited[idx-N+1] && mask[idx-N+1]) {
-      grad+= sW(phase[idx] - uphase[idx-N+1]);
+      grad+= dW(phase[idx] - uphase[idx-N+1]);
       val+= uphase[idx-N+1];
       ndifs++;
     }
   if (x - 1 >= 0 && y + 1 < M)
     if (visited[idx+N-1] && mask[idx+N-1]) {
-      grad+= sW(phase[idx] - uphase[idx+N-1]);
+      grad+= dW(phase[idx] - uphase[idx+N-1]);
       val+= uphase[idx+N-1];
       ndifs++;
     }
   if (x - 1 >= 0 && y - 1 >= 0)
     if (visited[idx-N-1] && mask[idx-N-1]) {
-      grad+= sW(phase[idx] - uphase[idx-N-1]);
+      grad+= dW(phase[idx] - uphase[idx-N-1]);
       val+= uphase[idx-N-1];
       ndifs++;
     }

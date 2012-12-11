@@ -79,7 +79,7 @@ void writeFltFile(const Eigen::ArrayXXf& mat, const char* fname)
 {
   ofstream file;
   file.open(fname, ios::out);
-  float M=mat.rows(), N=mat.cols();
+  int M=mat.rows(), N=mat.cols();
   float val;
   file<<M<<endl;
   file<<N<<endl;
@@ -105,9 +105,9 @@ int main(int argc, char* argv[])
   std::string mfile, phasefile, outfile;
 
   cimg_usage("Command line argumments");
-  const float tau = cimg_option("-t", 0.2,
+  const float tau = cimg_option("-t", 0.2f,
                                 "Bandwidth of the unwrapping system");
-  const float sigma = cimg_option("-s", 13,
+  const float sigma = cimg_option("-s", 13.0f,
                                   "Smooth power to generate the scanning path");
   const int N = cimg_option("-N", 9, "Window size of the phase unwrapper");
   const int x =cimg_option("-x", 10, "x-position of starting pixel");
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 
   //Eigen::ArrayXXf image = cv::imread(argv[1], 0);
   Eigen::ArrayXXf image = readFltFile(phasefile.c_str());
-  if(image.cols()==0 and image.rows()==0){
+  if(image.cols()==0 && image.rows()==0){
     cerr<<"Error: file name "<<phasefile<<" can not be opened." << endl;
     return 1;
   }
@@ -157,13 +157,14 @@ int main(int argc, char* argv[])
   wphase.resize(image.rows(), image.cols());
   float a = image.minCoeff(), b= image.maxCoeff();
   float range = b-a;
-  wphase = 2*M_PI*(image-a)/range - M_PI;
+  const float pi2 = (float)(2.0*M_PI);
+  wphase = pi2*(image-a)/range - (float)M_PI;
 
-  a = mask.minCoeff();
-  b = mask.maxCoeff();
+  a = (float)mask.minCoeff();
+  b = (float)mask.maxCoeff();
   range = b-a;
   if(range != 0)
-    mask = (mask-a)/range;
+    mask = (mask-(int)a)/(int)range;
 
   visited= Eigen::ArrayXXi::Zero(image.rows(), image.cols());
   uphase = Eigen::ArrayXXf::Zero(image.rows(), image.cols());

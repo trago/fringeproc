@@ -84,7 +84,7 @@ float sunwrap_pixel(const size_t idx, const int x, const int y,
                     const float *phase, const int* mask,
                     const float *uphase,
                     const int *visited, float tao,
-                    const size_t M, const size_t N);
+                    const int M, const int N);
 
 /**
   Takes the modulus 2pi (single precision).
@@ -135,7 +135,7 @@ double dunwrap_pixel(const size_t idx, const int x, const int y,
                      const double *phase, const int* mask,
                      const double *uphase,
                      const int *visited, double tao,
-                     const size_t M, const size_t N);
+                     const int M, const int N);
 #ifdef __cplusplus
 }
 #endif

@@ -94,7 +94,7 @@ void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
                                 mask.data(),
                                 pp.data(),
                                 visited.data(),
-                                tao, wp.rows(), wp.cols());
+                                (float)tao, wp.rows(), wp.cols());
           visited(i,j)=1;
         }
       }
@@ -106,7 +106,7 @@ void dunwrap_neighborhood(const int ii, const int jj, const Eigen::ArrayXXf& wp,
                                            mask.data(),
                                            pp.data(),
                                            visited.data(),
-                                           tao, wp.rows(), wp.cols());
+                                           (float)tao, wp.rows(), wp.cols());
           visited(i,j)=1;
         }
       }
@@ -126,7 +126,7 @@ void unwrap2D_engine(const Eigen::ArrayXXf& wphase, const Eigen::ArrayXXi& mask,
   Eigen::ArrayXXf path, dx, dy;
 
   if(smooth_path>0){
-    path = gaussian_filter(wphase, smooth_path);
+    path = gaussian_filter(wphase, (float)smooth_path);
     gradient(path, dx, dy);
   }
 
@@ -137,7 +137,7 @@ void unwrap2D_engine(const Eigen::ArrayXXf& wphase, const Eigen::ArrayXXi& mask,
     pixel = scan.getPosition();
     i=pixel(0);
     j=pixel(1);
-    sunwrap_neighborhood(i, j, wphase, mask, uphase, visited, tao, n);
+    sunwrap_neighborhood(i, j, wphase, mask, uphase, visited, (float)tao, n);
   }while(scan.next());
 }
 
@@ -150,7 +150,7 @@ void unwrap2D(const Eigen::ArrayXXf& wphase, const Eigen::ArrayXXi& mask,
   unwrap2D_engine(wphase, mask, uphase, tao, smooth_path, N, pixel);
 }
 
-Unwrap::Unwrap(const Eigen::ArrayXXf& wphase, double tau, double smooth, int N)
+Unwrap::Unwrap(const Eigen::ArrayXXf& wphase, float tau, float smooth, int N)
 : _wphase(wphase)
 {
   _tau = tau;
@@ -255,7 +255,7 @@ void Unwrap::filterPhase(double sigma)
       _wphase(i,j) = atan2(ss, cc);
 }
 */
-Eigen::ArrayXXf Unwrap::genPath(double sigma)
+Eigen::ArrayXXf Unwrap::genPath(float sigma)
 {
   using namespace cimg_library;
   Eigen::ArrayXXf ss = _wphase.sin();
@@ -297,7 +297,7 @@ void Unwrap::takeGradient(const Eigen::Array2i& pixel, const int N)
 
 }
 
-void Unwrap::setTao(double tao)
+void Unwrap::setTao(float tao)
 {
   _tau = tao;
 }

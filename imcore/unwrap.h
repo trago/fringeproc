@@ -73,7 +73,7 @@ public:
    * @param[in] N, the neighborhood size around each pixel that is
    * being processid sequentially.
    */
-  Unwrap(const Eigen::ArrayXXf& wphase, double tau=0.09, double smooth=9, int N=15);
+  Unwrap(const Eigen::ArrayXXf& wphase, float tau=0.09f, float f=9.0f, int N=15);
 #endif
   /**
    * The destructor.
@@ -125,7 +125,7 @@ public:
    */
   void setMask(const Eigen::ArrayXXi& mask);
 
-  Eigen::ArrayXXf genPath(double sigma);
+  Eigen::ArrayXXf genPath(float sigma);
 #endif
 
   /** 
@@ -136,7 +136,7 @@ public:
    * the system. This should be set to a value between 0 and 1 for
    * stability.
    */
-  void setTao(double tao);
+  void setTao(float tao);
   /**
    * Sets the starting pixel to process.
    * 
@@ -161,8 +161,8 @@ private:
   Eigen::ArrayXXf _dx;
   Eigen::ArrayXXf _dy;
   Eigen::Array2i _pixel;
-  double _tau;
-  double _smooth;
+  float _tau;
+  float _smooth;
   int _N;
 
   Scanner* _scanner;

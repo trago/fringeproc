@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define cimg_display 0
 #include <CImg.h>
+#include "utils_config.h"
 
 void gradient(const Eigen::ArrayXXf& I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy)
 {
@@ -52,7 +53,7 @@ void gradient(const Eigen::ArrayXXf& I, Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy
 void parabola(Eigen::ArrayXXf& mat, float A)
 {
   const int M=mat.rows(), N=mat.cols();
-  const float cm=M/2.0, cn=N/2.0;
+  const float cm=(float)(M/2.0), cn=(float)(N/2.0);
 
 
   for(int i=0; i<M; i++)
@@ -76,8 +77,8 @@ void linspaced(Eigen::ArrayXXf& X, Eigen::ArrayXXf& Y, const float bx, float ex,
   Y.resize(M,N);
   const float stepx = (ex-bx)/(float)(N-1);
   const float stepy = (ey-by)/(float)(M-1);
-  float *const __restrict__ ptx=(float*)X.data();
-  float *const __restrict__ pty=(float*)Y.data();
+  float * _RESTRICT_ const ptx=(float*)X.data();
+  float * _RESTRICT_ const pty=(float*)Y.data();
   size_t idx;
 
   float x=bx;
@@ -116,7 +117,7 @@ Eigen::ArrayXXf peaks(const int M, const int N)
 Eigen::ArrayXXf ramp(float wx, float wy, const int M, const int N)
 {
   Eigen::ArrayXXf X, Y, res;
-  linspaced(X, Y, 0, M-1, 0, N-1, M, N);
+  linspaced(X, Y, 0.0f, (float)(M-1), 0.0f, (float)(N-1), M, N);
   res = wx*X + wy*Y;
 
   return res;
@@ -133,9 +134,9 @@ Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
   Eigen::ArrayXXf noise1(M,N);
   CImg<float> n0(noise0.data(), noise0.cols(), noise0.rows(), 1, 1, true);
   CImg<float> n1(noise1.data(), noise1.cols(), noise1.rows(), 1, 1, true);
-  const float pi=M_PI;
+  const float pi=(float)(M_PI);
 
-  float sigma = speckle_size/6.0;
+  float sigma = speckle_size/6.0f;
   n0.rand(-pi, pi);
   n1.rand(-pi, pi);
   n0.blur(sigma);
@@ -144,7 +145,7 @@ Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
   noise1 = mapRange(noise1, -pi, pi);
 
   Ic0 = wphase(noise0);
-  Ic1 = wphase(noise1 + p + pi/2.);
+  Ic1 = wphase(noise1 + p + pi/2.0f);
 
   return wphase(Ic0-Ic1);
 }
@@ -152,8 +153,8 @@ Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
 Eigen::ArrayXXf wphase(const Eigen::ArrayXXf& p)
 {
   Eigen::ArrayXXf wp(p.rows(), p.cols());
-  float *const __restrict__ pt_wp = (float*)wp.data();
-  float *const __restrict__ pt_p = (float*)p.data();
+  float *_RESTRICT_ const pt_wp = (float*)wp.data();
+  float *_RESTRICT_ const pt_p = (float*)p.data();
   size_t idx;
 
   for(int i=0; i<p.rows(); i++){
@@ -168,8 +169,8 @@ Eigen::ArrayXXf wphase(const Eigen::ArrayXXf& p)
 Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf& mat, float a, float b)
 {
   Eigen::ArrayXXf img;
-  double min = mat.minCoeff();
-  double max = mat.maxCoeff();
+  float min = mat.minCoeff();
+  float max = mat.maxCoeff();
 
   float m = (b-a)/(max-min);
 

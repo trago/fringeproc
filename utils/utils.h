@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define UTILS_H
 
 #include <Eigen/Dense>
+#include "utils_config.h"
 
 /**
   Fills the matrix using an parabola.
@@ -45,7 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   @param mat the matrix
   @param A the manitude.
   */
-void parabola(Eigen::ArrayXXf& mat, float A);
+UTILS_EXPORT void parabola(Eigen::ArrayXXf& mat, float A);
 
 /**
   Takes the cosine of the matrix given as angle.
@@ -56,7 +57,7 @@ void parabola(Eigen::ArrayXXf& mat, float A);
   @param angle the values taken as argument of the cosine function
   @param cc the cosine values obtained
   */
-void cosine(const Eigen::ArrayXXf& angle, Eigen::ArrayXXf& cc);
+UTILS_EXPORT void cosine(const Eigen::ArrayXXf& angle, Eigen::ArrayXXf& cc);
 
 /**
   Generates the field X and Y with linear spaced data.
@@ -76,7 +77,7 @@ void cosine(const Eigen::ArrayXXf& angle, Eigen::ArrayXXf& cc);
   @param M number of rows for X and Y
   @param N number of columns for X and Y
   */
-void linspaced(Eigen::ArrayXXf& X, Eigen::ArrayXXf& Y, const float bx, float ex,
+UTILS_EXPORT void linspaced(Eigen::ArrayXXf& X, Eigen::ArrayXXf& Y, const float bx, float ex,
                const float by, float ey,
                const int M, const int N);
 
@@ -86,7 +87,7 @@ void linspaced(Eigen::ArrayXXf& X, Eigen::ArrayXXf& Y, const float bx, float ex,
  * @param M the number of rows
  * @param N the number of columns
  */
-Eigen::ArrayXXf peaks(const int M, const int N);
+UTILS_EXPORT Eigen::ArrayXXf peaks(const int M, const int N);
 /**
  * Generates a ramp
  * @param wx the tilt in X
@@ -94,12 +95,12 @@ Eigen::ArrayXXf peaks(const int M, const int N);
  * @param M number of rows
  * @param N number of columns
  */
-Eigen::ArrayXXf ramp(float wx, float wy, const int M, const int N);
+UTILS_EXPORT Eigen::ArrayXXf ramp(float wx, float wy, const int M, const int N);
 
 /**
  * Generates the peaks function with speckle noise.
  */
-Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
+UTILS_EXPORT Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
                       const int speckle_size);
 
 /**
@@ -112,8 +113,8 @@ Eigen::ArrayXXf speckle_peaks(const int M, const int N, const float magn,
 void gradient(const Eigen::ArrayXXf& I,
               Eigen::ArrayXXf& dx, Eigen::ArrayXXf& dy);
 
-Eigen::ArrayXXf wphase(const Eigen::ArrayXXf& p);
-Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf& mat, float a, float b);
+UTILS_EXPORT Eigen::ArrayXXf wphase(const Eigen::ArrayXXf& p);
+UTILS_EXPORT Eigen::ArrayXXf mapRange(const Eigen::ArrayXXf& mat, float a, float b);
 
 /* Codigo para opencv--- No sirve en estos momentos
 template<typename T>

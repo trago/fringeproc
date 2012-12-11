@@ -20,7 +20,7 @@ building a DLL on windows.
   #if defined(imcore_EXPORTS)
     #define  IMCORE_EXPORT __declspec(dllexport)
   #else
-    #define  IMCORE_EXPORT __declspec(dllimport)
+    #define  IMCORE_EXPORT //__declspec(dllimport)
   #endif /* platereader_EXPORTS */
 #else /* defined (_WIN32) */
   #define IMCORE_EXPORT
