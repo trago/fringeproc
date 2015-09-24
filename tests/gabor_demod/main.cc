@@ -1,7 +1,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <imcore/seguidor.h>
-#include "scanner.h"
+#include "freqscan.h"
 #include <utils/utils.h>
 #include <iostream>
 #include "gabor_gears.h"
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(7).
+  gabor.setIters(1).setKernelSize(11).
         setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.97).setSeedIters(11).
         setScanMinf(.5);
   gabor.setCombFreqs(false).setCombSize(3);
@@ -91,16 +91,14 @@ int main(int argc, char* argv[])
   ffy = gabor.getWy();
   fr = gabor.getFr();
   fi = gabor.getFi();
-  Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.1);
-  scan.updateFreqMin(true);
+  FreqScan scan(p, freqs[0], freqs[1], I.rows, I.cols);
   cv::Point pixel;
 
   //gabor.run();
 
   do{
     // Codigo para mostrar resultados en tiempo real
-    if((cont++)%5000==0){
+    if((cont++)%50==0){
       // Genera kerneles del filtro de gabor
       wx = ffx.at<double>(i,j);
       wy = ffy.at<double>(i,j);

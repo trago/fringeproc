@@ -20,7 +20,7 @@
 
 #include "demodgabor.h"
 #include "gabor_gears.h"
-#include "scanner.h"
+#include "freqscan.h"
 #include <opencv2/imgproc/imgproc.hpp>
 
 DemodGabor::DemodGabor()
@@ -143,7 +143,7 @@ void DemodGabor::run()
   }while(scan.next());
 }
 
-bool DemodGabor::runInteractive(Scanner& scan)
+bool DemodGabor::runInteractive(FreqScan& scan)
 {
   cv::Vec2d freqs(0.7,0.7);
 
@@ -161,12 +161,14 @@ bool DemodGabor::runInteractive(Scanner& scan)
   const int j=pixel.x;
   if((i==m_startPixel.y && j==m_startPixel.x)){
     demodSeed(freqs,i,j);
-    freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
     //scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
   }
   else
     demodN(i,j);
 
+  freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
+  scan.setDirection(freqs[0], freqs[1]);
+    
   return scan.next();
 }
 

@@ -26,7 +26,7 @@
 #include "gabor_gears.h"
 #endif
 
-class Scanner;
+class FreqScan;
 
 /**
  * Implemments an adaptive Gabor filter guided by the local frequencies.
@@ -144,7 +144,7 @@ public:
    */
   void run();
 
-  bool runInteractive(Scanner& scan);
+  bool runInteractive(FreqScan& scan);
 private:
   /** The image matrix being processed */
   cv::Mat_<double> m_I;

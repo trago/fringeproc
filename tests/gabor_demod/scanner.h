@@ -54,7 +54,7 @@ public:
    *
    * @return true if there was a next pixel, false in other case.
    */
-  bool next();
+  virtual bool next();
   /**
    * Gets the actual pixel position.
    *
