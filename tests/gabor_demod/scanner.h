@@ -102,7 +102,7 @@ private:
   /** The current pixel in the scanning sequence */
   cv::Point m_pixel;
   /** Stores the pixel sequence */
-  std::vector<cv::Point> m_path;
+  std::list<cv::Point> m_path;
   /** The minimum frequency to scan*/
   double m_freqmin;
   /** Indicates if the minimum frequency to scan is updated*/
