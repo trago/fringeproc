@@ -1,3 +1,6 @@
+include_directories(${CMAKE_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/include)
+
 set(gabor_SRC main.cc
 )
 set(gabor_LIBS imcore utils ${OpenCV_LIBS})
