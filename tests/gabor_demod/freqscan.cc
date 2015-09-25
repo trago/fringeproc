@@ -170,6 +170,9 @@ void FreqScan::give_next(double dir)
 
 void FreqScan::setDirection(float wx, float wy)
 {
-  const double angle = atan2(wx,wy);
+
+  const double magn = sqrt(wx*wx + wy*wy);
+  const double angle = (magn < 0.001)? 0:atan2(wx,wy);
+
   m_angle.at<double>(m_pixel.y, m_pixel.x)= angle;
 }

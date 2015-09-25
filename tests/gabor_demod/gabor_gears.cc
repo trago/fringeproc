@@ -562,6 +562,8 @@ void gabor::DemodNeighborhood::operator()(const int i, const int j)
 {
   //if(!visit(i,j))
     m_demodPixel(i, j);
+
+/*
   if(j-1>=0)
     if(!visit(i,j-1))
       m_demodPixel(i, j-1);
@@ -586,6 +588,8 @@ void gabor::DemodNeighborhood::operator()(const int i, const int j)
   if(j-1>=0 && i+1<visit.rows)
     if(!visit(i+1,j-1))
       m_demodPixel(i+1, j-1);
+
+*/
 }
 
 

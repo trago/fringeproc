@@ -22,6 +22,7 @@
 #include "gabor_gears.h"
 #include "freqscan.h"
 #include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
 
 DemodGabor::DemodGabor()
 {
@@ -169,6 +170,7 @@ bool DemodGabor::runInteractive(FreqScan& scan)
   freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
   scan.setDirection(freqs[0], freqs[1]);
     
+  std::cout<< "wx = " <<freqs[0]<<", "<<"wy = "<<freqs[1]<<std::endl;
   return scan.next();
 }
 
