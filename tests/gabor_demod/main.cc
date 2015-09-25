@@ -82,9 +82,9 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(7).
-        setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.97).setSeedIters(11).
-        setScanMinf(.5);
+  gabor.setIters(1).setKernelSize(9).
+        setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.97).setSeedIters(11).
+        setScanMinf(.1);
   gabor.setCombFreqs(false).setCombSize(3);
   gabor.setStartPixel(p);
   ffx = gabor.getWx();
@@ -102,6 +102,9 @@ int main(int argc, char* argv[])
     // Codigo para mostrar resultados en tiempo real
     if((cont++)%5000==0){
       // Genera kerneles del filtro de gabor
+      pixel=scan.getPosition();
+      const int i=pixel.y;
+      const int j=pixel.x;  
       wx = ffx.at<double>(i,j);
       wy = ffy.at<double>(i,j);
       double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
