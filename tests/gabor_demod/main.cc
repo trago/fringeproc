@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(9).
+  gabor.setIters(4).setKernelSize(9).
         setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.97).setSeedIters(11).
         setScanMinf(.1);
   gabor.setCombFreqs(false).setCombSize(3);

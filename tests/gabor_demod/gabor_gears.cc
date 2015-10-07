@@ -356,18 +356,18 @@ void gabor::DemodPixel::operator()(const int i, const int j)
   cv::Vec2d freqs, freq;
 
   freqs= peak_freqXY(fx, fy, visited, j, i);
-  visited.at<char>(i,j)=1;
 
   for(int iter=0; iter<m_iters; iter++){
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
     freq = (!m_calcfreq.changed())? freq:0.;
     freq = m_tau*freq + (1-m_tau)*freqs;
-    fx.at<double>(i,j)=freq[0];
-    fy.at<double>(i,j)=freq[1];
     if(m_combFreqs)
       freq = combFreq(freq,i,j);
   }
+  fx.at<double>(i,j)=freq[0];
+  fy.at<double>(i,j)=freq[1];
+  visited.at<char>(i,j)=1;
 }
 
 cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
@@ -560,7 +560,7 @@ gabor::DemodNeighborhood& gabor::DemodNeighborhood::setCombSize(int size)
 
 void gabor::DemodNeighborhood::operator()(const int i, const int j)
 {
-  //if(!visit(i,j))
+  if(!visit(i,j))
     m_demodPixel(i, j);
   if(j-1>=0)
     if(!visit(i,j-1))
