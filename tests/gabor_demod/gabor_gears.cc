@@ -214,7 +214,7 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
 cv::Vec2d peak_freqXY(const cv::Mat fx, const cv::Mat fy, cv::Mat visited,
                       const int x, const int y)
 {
-  const int N=9;
+  const int N=3;
   cv::Vec2d freqs=0;
   int cont=0;
 
