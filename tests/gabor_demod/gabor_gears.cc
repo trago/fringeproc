@@ -364,6 +364,7 @@ void gabor::DemodPixel::operator()(const int i, const int j)
     freq = m_tau*freq + (1-m_tau)*freqs;
     if(m_combFreqs)
       freq = combFreq(freq,i,j);
+    freqs = freq;
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
