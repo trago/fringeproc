@@ -103,16 +103,25 @@ void DemodGabor::removeDC()
   m_I-=aux;
 }
 
+DemodGabor& DemodGabor::setFreqSeed(const double wx, const double wy)
+{
+  m_frequencySeed[0]=wx;
+  m_frequencySeed[1]=wy;
+  return *this;
+}
+
 DemodGabor& DemodGabor::setStartPixel(const cv::Point pixel)
 {
   m_startPixel=pixel;
+  return *this;
 }
 
 void DemodGabor::run()
 {
   cv::Vec2d freqs;
   int i=m_startPixel.y, j=m_startPixel.x;
-  freqs[0]=0.7; freqs[1]=0.7;
+  //freqs[0]=0.7; freqs[1]=0.7;
+  freqs = m_frequencySeed;
 
   m_fx(i,j)=freqs[0];
   m_fy(i,j)=freqs[1];
@@ -135,7 +144,7 @@ void DemodGabor::run()
     j=pixel.x;
     if((i==m_startPixel.y && j==m_startPixel.x)){
       demodSeed(freqs,i,j);
-      freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
+      //freqs[0]=m_fx.at<double>(i,j); freqs[1]=m_fy.at<double>(i,j);
       //scan.setFreqMin(sqrt(freqs[0]*freqs[0]+freqs[1]*freqs[1]));
     }
     else
@@ -154,7 +163,7 @@ bool DemodGabor::runInteractive(Scanner& scan)
   const int i=pixel.y;
   const int j=pixel.x;
   if((i==m_startPixel.y && j==m_startPixel.x)){
-    const cv::Vec2d freqs(0.7,0.7);
+    const cv::Vec2d freqs=m_frequencySeed;
     gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
     demodSeed.setIters(m_seedIters).setKernelSize(m_kernelSize).
       setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);

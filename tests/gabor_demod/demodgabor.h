@@ -136,6 +136,7 @@ public:
   DemodGabor& setStartPixel(const cv::Point pixel);
   DemodGabor& setCombFreqs(const bool comb);
   DemodGabor& setCombSize(const int size);
+  DemodGabor& setFreqSeed(const double wx, const double wy);
   cv::Point getStartPixel();
 
 
@@ -159,6 +160,7 @@ private:
   /** Label field marking the pixels already visited */
   cv::Mat_<uchar> m_visited;
   cv::Point m_startPixel;
+  cv::Vec2d m_frequencySeed;
 
   /** The minimum radial frequency to process */
   double m_scanMinf;

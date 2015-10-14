@@ -32,7 +32,7 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 
 int main(int argc, char* argv[])
 {
-  double wx= .7, wy=.7;
+  double wx= .05, wy=.0;
   const int M=456, N=456;
   cv::Mat I(M,N,CV_64F);
   cv::Mat phase(M,N,CV_64F);
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
   if(argc==1){
     // Genera datos de entrada
     //parabola(phase, 0.0008);
-    phase = peaks(M, N)*23;
-    //phase=ramp(wx, wy, M, N);
+    //phase = peaks(M, N)*23;
+    phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
     I=cos<double>(phase);
 
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 
   cv::Vec2d freqs;
   cv::Point p;
-  freqs[0]=.7; freqs[1]=.7;
+  freqs[0]=.04; freqs[1]=.0;
   p.x=I.rows/3; p.y=I.cols/2;
 
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
@@ -82,11 +82,11 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(4).setKernelSize(7).
-        setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.3).setSeedIters(11).
+  gabor.setIters(2).setKernelSize(1.5708/0.05).
+        setMaxfq(M_PI/2).setMinfq(0.06).setTau(0.7).setSeedIters(11).
         setScanMinf(.1);
   gabor.setCombFreqs(false).setCombSize(3);
-  gabor.setStartPixel(p);
+  gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
   fr = gabor.getFr();
