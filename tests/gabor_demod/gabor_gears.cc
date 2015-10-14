@@ -126,16 +126,17 @@ void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
   const int N =(int) sigma*3;
   greal.create(1,2*N+1, type);
   gimag.create(1,2*N+1, type);
+  const double C = 1.0/(sigma*sqrt(2*3.1416));
 
   if(type==CV_32F)
     for(int i=-N; i<=N; i++){
-      greal.at<float>(0,i+N)=exp(-i*i/(2*sigma*sigma))*cos(f*i);
-      gimag.at<float>(0,i+N)=-exp(-i*i/(2*sigma*sigma))*sin(f*i);
+      greal.at<float>(0,i+N)=C*exp(-i*i/(2*sigma*sigma))*cos(f*i);
+      gimag.at<float>(0,i+N)=-C*exp(-i*i/(2*sigma*sigma))*sin(f*i);
     }
   else if(type==CV_64F)
     for(int i=-N; i<=N; i++){
-      greal.at<double>(0,i+N)=exp(-i*i/(2*sigma*sigma))*cos(f*i);
-      gimag.at<double>(0,i+N)=-exp(-i*i/(2*sigma*sigma))*sin(f*i);
+      greal.at<double>(0,i+N)=C*exp(-i*i/(2*sigma*sigma))*cos(f*i);
+      gimag.at<double>(0,i+N)=-C*exp(-i*i/(2*sigma*sigma))*sin(f*i);
     }
   else{
     cv::Exception e(DEMOD_UNKNOWN_TYPE, "Data type not supported",
@@ -360,7 +361,7 @@ void gabor::DemodPixel::operator()(const int i, const int j)
   for(int iter=0; iter<m_iters; iter++){
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
-    freq = (!m_calcfreq.changed())? freq:0.;
+    //freq = (!m_calcfreq.changed())? freq:0.;
     freq = m_tau*freq + (1-m_tau)*freqs;
     if(m_combFreqs)
       freq = combFreq(freq,i,j);
