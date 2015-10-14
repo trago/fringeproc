@@ -51,6 +51,8 @@ void linspaced(cv::Mat& X, cv::Mat& Y, const float bx, float ex,
                const float by, float ey,
                const int M, const int N);
 
+cv::Mat ramp(const double wx, const double wy, const int M, const int N);
+
 /**
  * Generates the peaks function.
  *

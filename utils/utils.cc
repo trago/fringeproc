@@ -68,6 +68,18 @@ void linspaced(cv::Mat& X, cv::Mat& Y, const float bx, float ex,
   }
 }
 
+cv::Mat ramp(const double wx, const double wy, const int M, const int N)
+{
+  cv::Mat g(M,N, CV_32F);
+  
+  for(int m=0; m<M; m++)
+    for(int n=0; n<N; n++){
+      g.at<float>(m,n) = wx*n + wy*m;
+    }
+    
+  return g;
+}
+
 cv::Mat peaks(const int M, const int N)
 {
   cv::Mat X, Y;
