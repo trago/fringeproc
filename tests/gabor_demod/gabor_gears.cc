@@ -291,9 +291,8 @@ gabor::FilterXY& gabor::FilterXY::setKernelSize(double size)
   return *this;
 }
 
-void gabor::FilterXY::takeMean(const int i, const int j)
+void gabor::FilterXY::takeMean(const int i, const int j, const int N)
 {
-  const int N = 5;
   double mfr=0, mfi=0;
   int cont =0;
   for(int m=i-N/2; m<=i+N/2; m++)
@@ -338,9 +337,9 @@ gabor::FilterNeighbor& gabor::FilterNeighbor::setKernelSize(double size)
   return *this;
 }
 
-void gabor::FilterNeighbor::takeMean(const int i, const int j)
+void gabor::FilterNeighbor::takeMean(const int i, const int j, const int N)
 {
-  m_localFilter.takeMean(i,j);
+  m_localFilter.takeMean(i,j,N);
 }
 
 gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
@@ -420,7 +419,7 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
     std::cout<<"CF("<<i<<", "<<j<<"):= ["<< freqs[0] << ", "
              << freqs[1] << "] ==> [";
     
-    m_filter.takeMean(i,j);
+    m_filter.takeMean(i,j,N);
              
     std::cout<< freqs[0] << ", " << freqs[1] << "]" << std::endl; 
   }

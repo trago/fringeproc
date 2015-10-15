@@ -128,7 +128,7 @@ namespace gabor{
      * @param size the maximum size
      */
     FilterXY& setKernelSize(double size);
-    void takeMean(const int i, const int j);
+    void takeMean(const int i, const int j, const int N);
   protected:
     cv::Mat hxr, hxi, hyr, hyi;
     cv::Mat data;
@@ -155,7 +155,7 @@ namespace gabor{
     );
     void operator()(double wx, double wy, int i, int j);
     FilterNeighbor& setKernelSize(double size);
-    void takeMean(const int i, const int j);
+    void takeMean(const int i, const int j, const int N);
   protected:
     FilterXY m_localFilter;
     cv::Mat m_visited;
