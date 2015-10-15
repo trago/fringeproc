@@ -241,8 +241,8 @@ gabor::FilterXY::FilterXY()
   m_kernelN=7;
 }
 
-gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim)
-:data(dat), fr(fre), fi(fim)
+gabor::FilterXY::FilterXY(cv::Mat dat, cv::Mat fre, cv::Mat fim, cv::Mat visit)
+:data(dat), fr(fre), fi(fim), visited(visit)
 {
   m_kernelN=7;
 }
@@ -291,10 +291,30 @@ gabor::FilterXY& gabor::FilterXY::setKernelSize(double size)
   return *this;
 }
 
+void gabor::FilterXY::takeMean(const int i, const int j)
+{
+  const int N = 5;
+  double mfr=0, mfi=0;
+  int cont =0;
+  for(int m=i-N/2; m<=i+N/2; m++)
+    for(int n=j-N/2; n<=j+N/2; n++)
+      if(n>=0 && n<fr.cols && m>=0 && m<fr.rows)
+        if(visited.at<char>(m,n)){
+          mfr+=fr.at<double>(m,n);
+          mfi+=fi.at<double>(m,n);
+          cont++;
+        }
+  mfr/=cont;
+  mfi/=cont;
+  
+  fr.at<double>(i,j) = mfr;
+  fi.at<double>(i,j) = mfi;
+}
 
 gabor::FilterNeighbor::FilterNeighbor(cv::Mat param_I, cv::Mat param_fr,
-                                      cv::Mat param_fi)
-:m_localFilter(param_I, param_fr, param_fi), M(param_I.rows), N(param_I.cols)
+                                      cv::Mat param_fi, cv::Mat visited)
+:m_localFilter(param_I, param_fr, param_fi, visited), M(param_I.rows), 
+N(param_I.cols), m_visited(visited)
 {
 }
 
@@ -318,10 +338,16 @@ gabor::FilterNeighbor& gabor::FilterNeighbor::setKernelSize(double size)
   return *this;
 }
 
+void gabor::FilterNeighbor::takeMean(const int i, const int j)
+{
+  m_localFilter.takeMean(i,j);
+}
+
 gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
                               cv::Mat parm_fi, cv::Mat parm_fx,
                               cv::Mat parm_fy, cv::Mat parm_visited)
-:m_filter(parm_I, parm_fr, parm_fi), m_calcfreq(parm_fr, parm_fi),
+:m_filter(parm_I, parm_fr, parm_fi, parm_visited), m_calcfreq(parm_fr, 
+parm_fi),
  fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15), 
   m_combFreqs(false), m_combN(7)
 {
@@ -366,7 +392,7 @@ void gabor::DemodPixel::operator()(const int i, const int j)
   }
   if(m_combFreqs){
     freq = combFreq(freq,i,j);
-    m_filter(freq[0], freq[1], i, j);
+    freq = m_calcfreq(j, i);
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
@@ -393,20 +419,9 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
   if((1-cp)>p){
     std::cout<<"CF("<<i<<", "<<j<<"):= ["<< freqs[0] << ", "
              << freqs[1] << "] ==> [";
-    freqs[0]=0;
-    freqs[1]=0;
-    cont=0;
-
-    for(int m=i-N/2; m<=i+N/2; m++)
-      for(int n=j-N/2; n<=j+N/2; n++)
-        if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
-          if(visited.at<char>(m,n)){
-            freqs[0]+=fx.at<double>(m,n);
-            freqs[1]+=fy.at<double>(m,n);
-            cont++;
-          }
-    freqs[0]/=cont>0? cont:1;
-    freqs[1]/=cont>0? cont:1;
+    
+    m_filter.takeMean(i,j);
+             
     std::cout<< freqs[0] << ", " << freqs[1] << "]" << std::endl; 
   }
   return freqs;

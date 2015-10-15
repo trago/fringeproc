@@ -116,7 +116,7 @@ namespace gabor{
   class FilterXY{
   public:
     FilterXY();
-    FilterXY(cv::Mat data, cv::Mat fre, cv::Mat fim);
+    FilterXY(cv::Mat data, cv::Mat fre, cv::Mat fim, cv::Mat visit);
     FilterXY(const FilterXY& cpy);
 
     virtual void operator()(cv::Mat data, cv::Mat fre, cv::Mat fim);
@@ -128,10 +128,12 @@ namespace gabor{
      * @param size the maximum size
      */
     FilterXY& setKernelSize(double size);
+    void takeMean(const int i, const int j);
   protected:
     cv::Mat hxr, hxi, hyr, hyi;
     cv::Mat data;
     cv::Mat fr, fi;
+    cv::Mat visited;
   private:
     /** The maximum kernel size. */
     double m_kernelN;
@@ -148,11 +150,15 @@ namespace gabor{
    */
   class FilterNeighbor{
   public:
-    FilterNeighbor(cv::Mat param_I, cv::Mat param_fr, cv::Mat param_fi);
+    FilterNeighbor(cv::Mat param_I, cv::Mat param_fr, cv::Mat param_fi,
+        cv::Mat visited
+    );
     void operator()(double wx, double wy, int i, int j);
     FilterNeighbor& setKernelSize(double size);
+    void takeMean(const int i, const int j);
   protected:
     FilterXY m_localFilter;
+    cv::Mat m_visited;
   private:
     const int M, N;
   };
