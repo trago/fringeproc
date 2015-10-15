@@ -74,7 +74,7 @@ cv::Mat ramp(const double wx, const double wy, const int M, const int N)
   
   for(int m=0; m<M; m++)
     for(int n=0; n<N; n++){
-      g.at<float>(m,n) = wx*n + wy*m;
+      g.at<float>(m,n) = wy*n + wx*m;
     }
     
   return g;

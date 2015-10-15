@@ -361,11 +361,12 @@ void gabor::DemodPixel::operator()(const int i, const int j)
   for(int iter=0; iter<m_iters; iter++){
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
-    //freq = (!m_calcfreq.changed())? freq:0.;
     freq = m_tau*freq + (1-m_tau)*freqs;
-    if(m_combFreqs)
-      freq = combFreq(freq,i,j);
     freqs = freq;
+  }
+  if(m_combFreqs){
+    freq = combFreq(freq,i,j);
+    m_filter(freq[0], freq[1], i, j);
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
@@ -376,7 +377,7 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 				      const int i, const int j)
 {
   const int N = m_combN;
-  const float p=0.3;//Probabilidad de cambio
+  const float p=0.5;//Probabilidad de cambio
 
   int cont=0, right=0;
   double sum1=0;
@@ -390,7 +391,8 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
         }
   float cp = (float)right/(float)cont;
   if((1-cp)>p){
-    std::cout<<"Cambiamos frecuencias en ("<<i<<", "<<j<<")"<<std::endl;
+    std::cout<<"CF("<<i<<", "<<j<<"):= ["<< freqs[0] << ", "
+             << freqs[1] << "] ==> [";
     freqs[0]=0;
     freqs[1]=0;
     cont=0;
@@ -405,6 +407,7 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
           }
     freqs[0]/=cont>0? cont:1;
     freqs[1]/=cont>0? cont:1;
+    std::cout<< freqs[0] << ", " << freqs[1] << "]" << std::endl; 
   }
   return freqs;
 }

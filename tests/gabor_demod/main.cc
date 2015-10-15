@@ -33,7 +33,7 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 int main(int argc, char* argv[])
 {
   double wx= .05, wy=.0;
-  const int M=456, N=456;
+  const int M=156, N=156;
   cv::Mat I(M,N,CV_64F);
   cv::Mat phase(M,N,CV_64F);
   cv::Mat fx(cv::Mat::zeros(M,N,CV_64F)), fy(cv::Mat::zeros(M,N,CV_64F)),
@@ -51,14 +51,14 @@ int main(int argc, char* argv[])
 
   if(argc==1){
     // Genera datos de entrada
-    //parabola(phase, 0.0008);
+    parabola(phase, 0.001);
     //phase = peaks(M, N)*23;
-    phase=ramp(wx, wy, M, N);
+    //phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
     I=cos<double>(phase);
 
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, 1.2);
+    cv::randn(noise, 0, .1);
     I=I+noise;
   }
   else{
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 
   cv::Vec2d freqs;
   cv::Point p;
-  freqs[0]=.04; freqs[1]=.0;
+  freqs[0]=0.7; freqs[1]=0.7;
   p.x=I.rows/3; p.y=I.cols/2;
 
   std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
@@ -82,10 +82,10 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(2).setKernelSize(1.5708/0.05).
-        setMaxfq(M_PI/2).setMinfq(0.06).setTau(0.7).setSeedIters(11).
+  gabor.setIters(3).setKernelSize(15).
+        setMaxfq(M_PI/2).setMinfq(0.06).setTau(0.5).setSeedIters(21).
         setScanMinf(.1);
-  gabor.setCombFreqs(false).setCombSize(3);
+  gabor.setCombFreqs(true).setCombSize(5);
   gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 
   do{
     // Codigo para mostrar resultados en tiempo real
-    if((cont++)%5000==0){
+    if((cont++)%50==0){
       // Genera kerneles del filtro de gabor
       pixel=scan.getPosition();
       const int i=pixel.y;
