@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
   if(argc==1){
     // Genera datos de entrada
-    parabola(phase, 0.002);
+    parabola(phase, 0.001);
     //phase = peaks(M, N)*23;
     //phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
