@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
   if(argc==1){
     // Genera datos de entrada
-    parabola(phase, 0.001);
+    parabola(phase, 0.002);
     //phase = peaks(M, N)*23;
     //phase=ramp(wx, wy, M, N);
     phase.convertTo(phase, CV_64F);
@@ -82,10 +82,10 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(3).setKernelSize(25).
+  gabor.setIters(3).setKernelSize(35).
         setMaxfq(M_PI/2).setMinfq(0.03).setTau(0.7).setSeedIters(21).
         setScanMinf(.1);
-  gabor.setCombFreqs(true).setCombSize(5);
+  gabor.setCombFreqs(true).setCombSize(3);
   gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
