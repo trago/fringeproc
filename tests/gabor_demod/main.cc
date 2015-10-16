@@ -82,10 +82,10 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(2).setKernelSize(15).
+  gabor.setIters(2).setKernelSize(25).
         setMaxfq(M_PI/2).setMinfq(0.03).setTau(0.7).setSeedIters(21).
         setScanMinf(.1);
-  gabor.setCombFreqs(true).setCombSize(3);
+  gabor.setCombFreqs(true).setCombSize(5);
   gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
