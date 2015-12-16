@@ -33,7 +33,7 @@ void gradient(const cv::Mat I, cv::Mat& dx, cv::Mat& dy)
 int main(int argc, char* argv[])
 {
   double wx= .05, wy=.0;
-  const int M=456, N=456;
+  const int M=256, N=256;
   cv::Mat I(M,N,CV_64F);
   cv::Mat phase(M,N,CV_64F);
   cv::Mat fx(cv::Mat::zeros(M,N,CV_64F)), fy(cv::Mat::zeros(M,N,CV_64F)),
@@ -92,8 +92,8 @@ int main(int argc, char* argv[])
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.1);
-  scan.updateFreqMin(true);
+  scan.setFreqMin(.6);
+  scan.updateFreqMin(false);
   cv::Point pixel;
 
   //gabor.run();
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
       gen_gaborKernel(hxr, hxi, wx, sx, CV_64F);
       gen_gaborKernel(hyr, hyi, wy, sy, CV_64F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo
-      h=cv::Mat::zeros(64,64, CV_64F)-1;
+      h=cv::Mat::zeros(hyr.cols,hxr.cols, CV_64F)-1;
       for(int i=0; i<hyr.cols; i++)
         for(int j=0; j<hxr.cols; j++)
           h.at<double>(i,j)=hxr.at<double>(0,j)*hyi.at<double>(0,i) +
