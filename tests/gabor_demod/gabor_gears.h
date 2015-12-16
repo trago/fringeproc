@@ -240,7 +240,7 @@ namespace gabor{
     /** The neighborhood size of the combing function */
     char m_combN;
 
-    cv::Vec2d combFreq(cv::Vec2d freqs, const int i, const int j);
+    bool combFreq(cv::Vec2d freqs, const int i, const int j);
   };
 
   class DemodSeed:public DemodPixel{

@@ -390,15 +390,17 @@ void gabor::DemodPixel::operator()(const int i, const int j)
     freqs = freq;
   }
   if(m_combFreqs){
-    freq = combFreq(freq,i,j);
-    freq = m_calcfreq(j, i);
+    if(combFreq(freq,i,j)){
+      freq = m_calcfreq(j, i);
+      std::cout<< freq[0] << ", " << freq[1] << "]" << std::endl;
+    }
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
   visited.at<char>(i,j)=1;
 }
 
-cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs, 
+bool gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 				      const int i, const int j)
 {
   const int N = m_combN;
@@ -420,10 +422,11 @@ cv::Vec2d gabor::DemodPixel::combFreq(cv::Vec2d freqs,
              << freqs[1] << "] ==> [";
     
     m_filter.takeMean(i,j,N);
-             
-    std::cout<< freqs[0] << ", " << freqs[1] << "]" << std::endl; 
+    //fx.at<double>(i,j)=-freqs[0];
+    //fy.at<double>(i,j)=-freqs[1];
+    return true;
   }
-  return freqs;
+  return false;
 }
 
 gabor::DemodPixel& gabor::DemodPixel::setCombFreqs(bool flag)
