@@ -229,6 +229,7 @@ namespace gabor{
 
   protected:
     cv::Mat fx, fy, visited;
+    cv::Mat fimg;
     FilterNeighbor m_filter;
     CalcFreqXY m_calcfreq;
     int m_iters;

@@ -347,7 +347,7 @@ gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
                               cv::Mat parm_fy, cv::Mat parm_visited)
 :m_filter(parm_I, parm_fr, parm_fi, parm_visited), m_calcfreq(parm_fr, 
 parm_fi),
- fx(parm_fx), fy(parm_fy), visited(parm_visited), m_tau(0.15), 
+ fx(parm_fx), fy(parm_fy), fimg(parm_fi), visited(parm_visited), m_tau(0.15),
   m_combFreqs(false), m_combN(7)
 {
   m_iters=1;
@@ -387,13 +387,14 @@ void gabor::DemodPixel::operator()(const int i, const int j)
     m_filter(freqs[0], freqs[1], i, j);
     freq = m_calcfreq(j, i);
     freq = m_tau*freq + (1-m_tau)*freqs;
-    freqs = freq;
-  }
-  if(m_combFreqs){
-    if(combFreq(freq,i,j)){
-      freq = m_calcfreq(j, i);
-      std::cout<< freq[0] << ", " << freq[1] << "]" << std::endl;
+
+    if(m_combFreqs){
+      if(combFreq(freq,i,j)){
+        freq = m_calcfreq(j, i);
+        std::cout<< freq[0] << ", " << freq[1] << "]" << std::endl;
+      }
     }
+    freqs = freq;
   }
   fx.at<double>(i,j)=freq[0];
   fy.at<double>(i,j)=freq[1];
@@ -408,11 +409,13 @@ bool gabor::DemodPixel::combFreq(cv::Vec2d freqs,
 
   int cont=0, right=0;
   double sum1=0;
+  const double imag=fimg.at<double>(i,j);
   for(int m=i-N/2; m<=i+N/2; m++)
     for(int n=j-N/2; n<=j+N/2; n++)
       if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
         if(visited.at<char>(m,n)){
           sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
+          //sum1 = imag*fimg.at<double>(i,j);
           cont++;
           right+= (sum1>=0? 1:0);
         }
