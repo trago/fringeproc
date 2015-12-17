@@ -415,7 +415,6 @@ bool gabor::DemodPixel::combFreq(cv::Vec2d freqs,
       if(n>=0 && n<fx.cols && m>=0 && m<fx.rows)
         if(visited.at<char>(m,n)){
           sum1=freqs[0]*fx.at<double>(m,n) + freqs[1]*fy.at<double>(m,n);
-          //sum1 = imag*fimg.at<double>(i,j);
           cont++;
           right+= (sum1>=0? 1:0);
         }
@@ -425,8 +424,6 @@ bool gabor::DemodPixel::combFreq(cv::Vec2d freqs,
              << freqs[1] << "] ==> [";
     
     m_filter.takeMean(i,j,N);
-    //fx.at<double>(i,j)=-freqs[0];
-    //fy.at<double>(i,j)=-freqs[1];
     return true;
   }
   return false;

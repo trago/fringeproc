@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.3);
+  scan.setFreqMin(.5);
   scan.updateFreqMin(false);
   cv::Point pixel;
 
