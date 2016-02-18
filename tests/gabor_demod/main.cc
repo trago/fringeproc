@@ -82,9 +82,9 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(3).setKernelSize(15).
-        setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.5).setSeedIters(21).
-        setScanMinf(.1);
+  gabor.setIters(3).setKernelSize(3).
+        setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.3).setSeedIters(21).
+        setScanMinf(.01);
   gabor.setCombFreqs(true).setCombSize(5);
   gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
   ffx = gabor.getWx();
@@ -92,8 +92,8 @@ int main(int argc, char* argv[])
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.5);
-  scan.updateFreqMin(false);
+  scan.setFreqMin(.9);
+  scan.updateFreqMin(true);
   cv::Point pixel;
 
   //gabor.run();
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
       // Genera kerneles del filtro de gabor
       pixel=scan.getPosition();
       const int i=pixel.y;
-      const int j=pixel.x;  
+      const int j=pixel.x;
       wx = ffx.at<double>(i,j);
       wy = ffy.at<double>(i,j);
       double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
