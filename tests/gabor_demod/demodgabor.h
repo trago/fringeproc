@@ -75,6 +75,7 @@ public:
    * @return the image data
    */
   cv::Mat getInput();
+
 #endif
 
   /**
@@ -103,7 +104,7 @@ public:
   void removeDC();
 
   /**
-    Sets the number of iterations that the gabor filter is applied in each 
+    Sets the number of iterations that the gabor filter is applied in each
     point.
 
     When the convolution is applied, the local frequencies are estimated.
@@ -114,6 +115,7 @@ public:
     @param iters the number of iterations.
     */
   DemodGabor& setIters(const int iters);
+  int getIters() const;
   /**
     Sets the number of iterations for the first pixel to process.
 
@@ -123,6 +125,7 @@ public:
     @param iters the number of iterations.
     */
   DemodGabor& setSeedIters(const int iters);
+  int getSeedIters() const;
   /**
     Sets the kernel size of the gabor filter.
 
@@ -137,6 +140,13 @@ public:
   DemodGabor& setCombFreqs(const bool comb);
   DemodGabor& setCombSize(const int size);
   DemodGabor& setFreqSeed(const double wx, const double wy);
+
+  double getKernelSize() const;
+  double getMaxfq() const;
+  double getMinfq() const;
+  double getTau() const;
+  double getCombSize() const;
+
   cv::Point getStartPixel();
 
 

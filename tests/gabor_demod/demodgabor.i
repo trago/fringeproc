@@ -7,6 +7,7 @@
 %}
 
 %include "scanner.i"
+%include "cvmaps.i"
 %include "numpy.i"
 
 %ignore DemodGabor(const cv::Mat I);
@@ -20,7 +21,7 @@
 
 %extend DemodGabor{
  public:
-  %apply (double* IN_FARRAY2, int DIM1, int DIM2) 
+  %apply (double* IN_FARRAY2, int DIM1, int DIM2)
      {
        (double* I, int M, int N)
      };
@@ -39,35 +40,36 @@
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
-  } 
+  }
 
   void getFi(double** data, int* M, int *N){
     cv::Mat mat = $self->getFr();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
-  } 
+  }
 
   void getWx(double** data, int* M, int *N){
     cv::Mat mat = $self->getFr();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
-  } 
+  }
 
   void getWy(double** data, int* M, int *N){
     cv::Mat mat = $self->getFr();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
-  } 
+  }
 
   void getInput(double** data, int* M, int *N){
     cv::Mat mat = $self->getFr();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
-  } 
+  }
+
  };
 
 #endif

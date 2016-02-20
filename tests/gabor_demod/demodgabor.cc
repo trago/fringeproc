@@ -217,6 +217,39 @@ DemodGabor& DemodGabor::setCombSize(const int size)
   return *this;
 }
 
+double DemodGabor::getKernelSize() const
+{
+  return m_kernelSize;
+}
+double DemodGabor::getMaxfq() const
+{
+  return m_maxfq;
+}
+double DemodGabor::getMinfq() const
+{
+  return m_minfq;
+}
+
+double DemodGabor::getTau() const
+{
+  return m_tau;
+}
+
+double DemodGabor::getCombSize() const
+{
+  return m_combSize;
+}
+
+int DemodGabor::getIters() const
+{
+  return m_iters;
+}
+
+int DemodGabor::getSeedIters() const
+{
+  return m_seedIters;
+}
+
 void DemodGabor::reset()
 {
   m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;
