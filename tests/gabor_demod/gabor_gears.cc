@@ -262,11 +262,13 @@ void gabor::FilterXY::operator()(cv::Mat dat, cv::Mat fre, cv::Mat fim)
 void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
                                  const int y)
 {
-  double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
-      sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
+  double sx = fabs(wx)>0.001? fabs(M_PI_2/wx):1570,
+      sy = fabs(wy)>0.001? fabs(M_PI_2/wy):1570;
 
-  sx = sx>m_kernelN? m_kernelN:(sx<1? 1:sx);
-  sy = sy>m_kernelN? m_kernelN:(sy<1? 1:sy);
+  if(sx*6 > m_kernelN)
+    sx = m_kernelN/6.0;
+  if(sy*6 > m_kernelN)
+    sy = m_kernelN/6.0;
 
   gen_gaborKernel(hxr, hxi, wx, sx, data.type());
   gen_gaborKernel(hyr, hyi, wy, sy, data.type());
@@ -305,14 +307,14 @@ void gabor::FilterXY::takeMean(const int i, const int j, const int N)
         }
   mfr/=cont;
   mfi/=cont;
-  
+
   fr.at<double>(i,j) = mfr;
   fi.at<double>(i,j) = mfi;
 }
 
 gabor::FilterNeighbor::FilterNeighbor(cv::Mat param_I, cv::Mat param_fr,
                                       cv::Mat param_fi, cv::Mat visited)
-:m_localFilter(param_I, param_fr, param_fi, visited), M(param_I.rows), 
+:m_localFilter(param_I, param_fr, param_fi, visited), M(param_I.rows),
 N(param_I.cols), m_visited(visited)
 {
 }
@@ -345,7 +347,7 @@ void gabor::FilterNeighbor::takeMean(const int i, const int j, const int N)
 gabor::DemodPixel::DemodPixel(cv::Mat parm_I, cv::Mat parm_fr,
                               cv::Mat parm_fi, cv::Mat parm_fx,
                               cv::Mat parm_fy, cv::Mat parm_visited)
-:m_filter(parm_I, parm_fr, parm_fi, parm_visited), m_calcfreq(parm_fr, 
+:m_filter(parm_I, parm_fr, parm_fi, parm_visited), m_calcfreq(parm_fr,
 parm_fi),
  fx(parm_fx), fy(parm_fy), fimg(parm_fi), visited(parm_visited), m_tau(0.15),
   m_combFreqs(false), m_combN(7)
@@ -422,7 +424,7 @@ bool gabor::DemodPixel::combFreq(cv::Vec2d freqs,
   if((1-cp)>p){
     std::cout<<"CF("<<i<<", "<<j<<"):= ["<< freqs[0] << ", "
              << freqs[1] << "] ==> [";
-    
+
     m_filter.takeMean(i,j,N);
     return true;
   }
@@ -506,21 +508,7 @@ cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
                        (fr.at<double>(y+1,x)-fr.at<double>(y,x));
 
   freqs[1] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
-  m_changed=false;
 
-  magn=freqs[0]*freqs[0]+freqs[1]*freqs[1];
-  if(magn < m_minf*m_minf){
-    magn = m_minf/sqrt(magn);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
-    m_changed=true;
-  }
-  else if(magn > m_maxf*m_maxf){
-    magn = m_maxf/sqrt(magn);
-    freqs[0]=freqs[0]*magn;
-    freqs[1]=freqs[1]*magn;
-    m_changed=true;
-  }
   return freqs;
 }
 bool gabor::CalcFreqXY::changed()
@@ -609,7 +597,3 @@ void gabor::DemodNeighborhood::operator()(const int i, const int j)
     if(!visit(i+1,j-1))
       m_demodPixel(i+1, j-1);
 }
-
-
-
-

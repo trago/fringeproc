@@ -266,7 +266,7 @@ namespace gabor{
     DemodNeighborhood& setCombSize(int size);
     void operator()(const int i, const int j);
   protected:
-    const cv::Mat_<uchar> visit;
+    cv::Mat_<uchar> visit;
     DemodPixel m_demodPixel;
   };
 }
