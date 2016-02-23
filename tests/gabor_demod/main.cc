@@ -58,14 +58,14 @@ int main(int argc, char* argv[])
     I=cos<double>(phase);
 
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, .1);
+    cv::randn(noise, 0, .7);
     I=I+noise;
   }
   else{
     I=cv::imread(argv[1], 0);
     I.convertTo(I, CV_64F);
     cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
-    cv::GaussianBlur(tmp, I, cv::Size(0,0), 1.7);
+    cv::GaussianBlur(tmp, I, cv::Size(0,0), 5.7);
     cv::GaussianBlur(I, tmp, cv::Size(0,0), 17);
     I = I - tmp;
   }
@@ -82,8 +82,8 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(3).setKernelSize(3).
-        setMaxfq(M_PI/2).setMinfq(0.1).setTau(0.3).setSeedIters(21).
+  gabor.setIters(1).setKernelSize(15).
+        setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.3).setSeedIters(5).
         setScanMinf(.01);
   gabor.setCombFreqs(true).setCombSize(5);
   gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.9);
+  scan.setFreqMin(.5);
   scan.updateFreqMin(true);
   cv::Point pixel;
 
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 
   do{
     // Codigo para mostrar resultados en tiempo real
-    if((cont++)%50==0){
+    if((cont++)%500==0){
       // Genera kerneles del filtro de gabor
       pixel=scan.getPosition();
       const int i=pixel.y;
