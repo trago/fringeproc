@@ -1,7 +1,7 @@
 import numpy as np
 from gabor import Scanner, DemodGabor
 import cv2
-from matplotlib import pylab as pl
+#from matplotlib import pylab as pl
 
 
 def peaks(M,N):
@@ -22,11 +22,12 @@ def gen_gaborKernel(w, sigma):
 
 def runInteractive(gabor, scan):
   cont = 0
+  pixel = scan.getPosition()
   while(gabor.runInteractive(scan)):
+    
     if cont%50 == 0:
-      pixel = scan.getPosition()
-      wx = ffx[pixel]
-      wy = ffy[pixel]
+      wx = gabor.getWxAtPoint(pixel)
+      wy = gabor.getWyAtPoint(pixel)
       sx = np.fabs(1.5708/wx); sy = np.fabs(1.5708/wy)
       
       kernelSize = gabor.getKernelSize()
@@ -35,14 +36,19 @@ def runInteractive(gabor, scan):
       hx = np.matrix(gen_gaborKernel(wx, sx))
       hy = np.matrix(gen_gaborKernel(wy, sy)).transpose()
       h = np.array(hy*hx)
-
-      hr = cv2.normalize(np.real(h), 1, 0, cv2.NORM_MINMAX)
+      
+      hr = np.real(h)
+      (a,b) = (hr.min(), hr.max())
+      hr = (hr - a)/(b-a)
       cv2.imshow('Kernel', hr)
-      fr = cv2.normalize(gabor.getFr(), 1, 0, cv2.NORM_MINMAX)
+      fr = gabor.getFr()
+      (a,b) = (fr.min(), fr.max())
       cv2.imshow('Out', fr)
-      cv2.waitKey(32)
+      
+      cv2.waitKey(64)
   
     cont = cont+1
+    pixel = scan.getPosition()
 
 
 P = peaks(256,256)*23
@@ -68,7 +74,8 @@ scan = Scanner(ffx, ffy, pixel);
 scan.setFreqMin(.9);
 scan.updateFreqMin(True);
 
+#runInteractive(gabor, scan)
       
-pl.imshow(I, cmap=pl.cm.gray)
-pl.show()
-  
+cv2.waitKey()
+#pl.imshow(I, cmap=pl.cm.gray)
+#pl.show()
