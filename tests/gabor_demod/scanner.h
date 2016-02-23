@@ -60,7 +60,7 @@ public:
    *
    * @return the actual pixel point
    */
-  cv::Point getPosition();
+  cv::Point getPosition() const;
    /**
    * Sets the starting pixel point.
    *

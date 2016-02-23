@@ -213,7 +213,7 @@ void Scanner::setInitPosition(cv::Point pixel)
   insertPixelToPath(m_pixel);
 }
 
-cv::Point2i Scanner::getPosition()
+cv::Point2i Scanner::getPosition() const
 {
   return m_pixel;
 }
