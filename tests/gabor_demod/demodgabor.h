@@ -146,8 +146,13 @@ public:
   double getMinfq() const;
   double getTau() const;
   double getCombSize() const;
+  double getWxAtScanPoint(Scanner& scan) const;
+  double getWyAtScanPoint(Scanner& scan) const;
+  double getWxAtPoint(const cv::Point pixel) const;
+  double getWyAtPoint(const cv::Point pixel) const;
 
   cv::Point getStartPixel();
+
 
 
   /**

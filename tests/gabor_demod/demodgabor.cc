@@ -250,6 +250,40 @@ int DemodGabor::getSeedIters() const
   return m_seedIters;
 }
 
+double DemodGabor::getWxAtScanPoint(Scanner& scan) const
+{
+  const cv::Point2i pixel = scan.getPosition();
+  const int i=pixel.y;
+  const int j=pixel.x;
+
+  return m_fx.at<double>(i,j);
+}
+double DemodGabor::getWyAtScanPoint(Scanner& scan) const
+{
+  const cv::Point2i pixel = scan.getPosition();
+  const int i=pixel.y;
+  const int j=pixel.x;
+
+  return m_fy.at<double>(i,j);
+}
+
+double DemodGabor::getWxAtPoint(const cv::Point pixel) const
+{
+  const int i=pixel.y;
+  const int j=pixel.x;
+
+  return m_fx.at<double>(i,j);
+}
+
+double DemodGabor::getWyAtPoint(const cv::Point pixel) const
+{
+  const int i=pixel.y;
+  const int j=pixel.x;
+
+  return m_fy.at<double>(i,j);
+}
+
+
 void DemodGabor::reset()
 {
   m_fx = cv::Mat_<double>::ones(m_I.rows, m_I.cols)*M_PI/2.0;

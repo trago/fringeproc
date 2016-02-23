@@ -43,28 +43,28 @@
   }
 
   void getFi(double** data, int* M, int *N){
-    cv::Mat mat = $self->getFr();
+    cv::Mat mat = $self->getFi();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
   }
 
   void getWx(double** data, int* M, int *N){
-    cv::Mat mat = $self->getFr();
+    cv::Mat mat = $self->getWx();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
   }
 
   void getWy(double** data, int* M, int *N){
-    cv::Mat mat = $self->getFr();
+    cv::Mat mat = $self->getWy();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
   }
 
   void getInput(double** data, int* M, int *N){
-    cv::Mat mat = $self->getFr();
+    cv::Mat mat = $self->getInput();
     *data=mat.ptr<double>();
     *M=mat.rows;
     *N=mat.cols;
