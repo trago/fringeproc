@@ -184,10 +184,10 @@ namespace gabor{
     double m_minf, m_maxf;
     bool m_changed;
   };
-  
+
   /**
    * Applies the gabor filter to a given pixel.
-   * 
+   *
    * It filters the neighborhood around the given pixel and estimates the
    * local frequency and stores the local frequency.
    */
@@ -195,7 +195,7 @@ namespace gabor{
   public:
     /**
      * Constructor.
-     * 
+     *
      * @param parm_I The fringe patern intensity
      * @param parm_fr The real part of the gabor filter output
      * @param parm_fi The imaginary part of the gabor filter output
@@ -215,14 +215,14 @@ namespace gabor{
     DemodPixel& setIters(const int iters);
     /**
      * Sets if the estimated frequencies are combed.
-     * 
+     *
      * @param flag True if the estimated frequencies will be combed,
      * false otherwise. Default is true
      */
     DemodPixel& setCombFreqs(bool flag);
     /**
      * Sets the neighborhood comb size for combing the frequencies.
-     * 
+     *
      * @param Nsize the comb size. Default is 7
      */
     DemodPixel& setCombNsize(const int Nsize);
@@ -266,7 +266,7 @@ namespace gabor{
     DemodNeighborhood& setCombSize(int size);
     void operator()(const int i, const int j);
   protected:
-    cv::Mat_<uchar> visit;
+    const cv::Mat_<uchar> visit;
     DemodPixel m_demodPixel;
   };
 }
