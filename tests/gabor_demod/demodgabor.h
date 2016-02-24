@@ -76,6 +76,12 @@ public:
    */
   cv::Mat getInput();
 
+  /**
+   * Returns the phase of the arctan between estimated real and imaginary
+   * part.
+   */
+  cv::Mat getPhase();
+
 #endif
 
   /**
@@ -100,8 +106,10 @@ public:
    * Removes the background component from the input data.
    *
    * It removes the DC term or background illumination component.
+   *
+   * @param sigma is the gaussian smooth applied before removing DC
    */
-  void removeDC();
+  void removeDC(double sigma);
 
   /**
     Sets the number of iterations that the gabor filter is applied in each
@@ -159,6 +167,7 @@ public:
    * Executes the filtering operation.
    */
   void run();
+  void run(Scanner& scan);
 
   bool runInteractive(Scanner& scan);
 private:
@@ -172,6 +181,8 @@ private:
   cv::Mat_<double> m_fx;
   /** The obtained frequencies at y-direction */
   cv::Mat_<double> m_fy;
+  /** The phase is stored here when getPhase() is called */
+  cv::Mat_<double> m_phase;
   /** Label field marking the pixels already visited */
   cv::Mat_<uchar> m_visited;
   cv::Point m_startPixel;

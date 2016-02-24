@@ -22,6 +22,7 @@
 #include "gabor_gears.h"
 #include "scanner.h"
 #include <opencv2/imgproc/imgproc.hpp>
+#include "utils/utils.h"
 
 DemodGabor::DemodGabor()
 {
@@ -89,16 +90,23 @@ cv::Mat DemodGabor::getWy()
   return m_fy;
 }
 
+cv::Mat DemodGabor::getPhase()
+{
+  m_phase =  atan2<double>(m_fi, m_fr);
+
+  return m_phase;
+}
+
 DemodGabor& DemodGabor::setScanMinf(double minf)
 {
   m_scanMinf=minf;
 }
 
-void DemodGabor::removeDC()
+void DemodGabor::removeDC(double sigma)
 {
   cv::Mat_<double> aux;
-  cv::GaussianBlur(m_I, m_I, cv::Size(0,0), 1);
-  cv::GaussianBlur(m_I, aux, cv::Size(0,0), 15);
+  cv::GaussianBlur(m_I, m_I, cv::Size(0,0), sigma);
+  cv::GaussianBlur(m_I, aux, cv::Size(0,0), 25);
 
   m_I-=aux;
 }
@@ -150,6 +158,40 @@ void DemodGabor::run()
     else
       demodN(i,j);
   }while(scan.next());
+}
+
+void DemodGabor::run(Scanner& scan)
+{
+  cv::Vec2d freqs;
+  int i=m_startPixel.y, j=m_startPixel.x;
+  //freqs[0]=0.7; freqs[1]=0.7;
+  freqs = m_frequencySeed;
+
+  m_fx(i,j)=freqs[0];
+  m_fy(i,j)=freqs[1];
+
+  //scan.setInitPosition(m_startPixel);
+  cv::Point pixel;
+  gabor::DemodNeighborhood demodN(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
+  gabor::DemodSeed demodSeed(m_I, m_fr, m_fi, m_fx, m_fy, m_visited);
+
+  demodN.setIters(m_iters).setKernelSize(m_kernelSize).
+    setCombFreqs(m_combFreqs).setCombSize(m_combSize).
+    setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
+  demodSeed.setIters(m_seedIters).setKernelSize(m_kernelSize).
+    setMaxFq(m_maxfq).setMinFq(m_minfq).setTau(m_tau);
+
+  pixel = scan.getPosition();
+  i=pixel.y;
+  j=pixel.x;
+  demodSeed(freqs,i,j);
+
+  while(scan.next()){
+    pixel=scan.getPosition();
+    i=pixel.y;
+    j=pixel.x;
+    demodN(i,j);
+  }
 }
 
 bool DemodGabor::runInteractive(Scanner& scan)

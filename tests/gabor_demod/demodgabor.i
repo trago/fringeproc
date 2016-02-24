@@ -70,6 +70,13 @@
     *N=mat.cols;
   }
 
+  void getPhase(double** data, int* M, int *N){
+    cv::Mat mat = $self->getPhase();
+    *data=mat.ptr<double>();
+    *M=mat.rows;
+    *N=mat.cols;
+  }
+
  };
 
 #endif
