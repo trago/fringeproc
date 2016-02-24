@@ -45,22 +45,25 @@ def runInteractive(gabor, scan):
       (a,b) = (fr.min(), fr.max())
       cv2.imshow('Out', fr)
       
-      cv2.waitKey(64)
+      cv2.waitKey(32)
   
     cont = cont+1
     pixel = scan.getPosition()
 
 
 P = peaks(256,256)*23
-I = np.cos(P) + np.random.randn(256,256)
+I = np.cos(P) + 0.*np.random.randn(256,256)
 
-pixel = (I.shape[1]/3, I.shape[0]/2) #Starting pixel
+# shape[0] es y
+# shape[1] es x
+pixel = (int(I.shape[1]/2), int(I.shape[0]/2)) #Starting pixel
+#pixel = (128,85)
 wu = 0.7 # Frequency x seed
 wv = 0.7 # Frequency y seed
 
 gabor = DemodGabor(I)
-gabor.setIters(3).setKernelSize(3).setMaxfq(np.pi/2).setMinfq(0.1).setTau(0.3)
-gabor.setSeedIters(21)
+gabor.setIters(1).setKernelSize(22).setMaxfq(np.pi/2).setMinfq(0.01).setTau(0.3)
+gabor.setSeedIters(5)
 gabor.setScanMinf(.01);
 gabor.setCombFreqs(True).setCombSize(5);
 gabor.setStartPixel(pixel).setFreqSeed(wu, wv);
@@ -71,11 +74,10 @@ fr = gabor.getFr()
 fi = gabor.getFi()
 
 scan = Scanner(ffx, ffy, pixel);
-scan.setFreqMin(.9);
+scan.setFreqMin(.7);
 scan.updateFreqMin(True);
 
 #runInteractive(gabor, scan)
       
-cv2.waitKey()
 #pl.imshow(I, cmap=pl.cm.gray)
 #pl.show()
