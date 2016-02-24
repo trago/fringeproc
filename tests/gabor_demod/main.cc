@@ -40,8 +40,7 @@ int main(int argc, char* argv[])
       ffx, ffy; // las f's son las frecuencias teoricas y las
                 // ff's las estimadas
   cv::Mat noise(M,N,CV_64F);
-  cv::Mat fr(cv::Mat::zeros(M,N,CV_64F)), fi(cv::Mat::zeros(M,N,CV_64F)),
-      visited;
+  cv::Mat fr(cv::Mat::zeros(M,N,CV_64F)), fi(cv::Mat::zeros(M,N,CV_64F)), visited;
   cv::Mat path(M,N,CV_64F);
   cv::Mat magn;
   cv::Mat hxr, hxi, hyr, hyi;
@@ -63,26 +62,33 @@ int main(int argc, char* argv[])
   }
   else{
     I=cv::imread(argv[1], 0);
-    I.convertTo(I, CV_64F);
-    cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
-    cv::GaussianBlur(tmp, I, cv::Size(0,0), 5.7);
-    cv::GaussianBlur(I, tmp, cv::Size(0,0), 17);
-    I = I - tmp;
+    if (I.data != NULL){
+      I.convertTo(I, CV_64F);
+      cv::normalize(I,tmp,1,0,cv::NORM_MINMAX);
+      cv::GaussianBlur(tmp, I, cv::Size(0,0), 2.7);
+      cv::GaussianBlur(I, tmp, cv::Size(0,0), 17);
+      I = I - tmp;
+    }
+    else{
+      std::cerr<< "The file can not be read" << std::endl;
+      return 1;
+    }
   }
 
 
   cv::Vec2d freqs;
   cv::Point p;
   freqs[0]=0.7; freqs[1]=0.7;
-  p.x=I.rows/3; p.y=I.cols/2;
+  p.x=I.rows/2; p.y=I.cols/2;
 
-  std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
-           <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
+  if(argc==1)
+    std::cout<<"Frecuencia teorica local en el punto: ("<<fx.at<double>(p.y,p.x)
+             <<", "<<fy.at<double>(p.y,p.x) <<")"<<std::endl;
 
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(15).
+  gabor.setIters(1).setKernelSize(22).
         setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.3).setSeedIters(5).
         setScanMinf(.01);
   gabor.setCombFreqs(true).setCombSize(5);
@@ -92,7 +98,7 @@ int main(int argc, char* argv[])
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.5);
+  scan.setFreqMin(.7);
   scan.updateFreqMin(true);
   cv::Point pixel;
 
