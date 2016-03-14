@@ -100,6 +100,7 @@ cv::Mat DemodGabor::getPhase()
 DemodGabor& DemodGabor::setScanMinf(double minf)
 {
   m_scanMinf=minf;
+  return *this;
 }
 
 void DemodGabor::removeDC(double sigma)
