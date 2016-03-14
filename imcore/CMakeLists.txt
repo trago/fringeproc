@@ -7,5 +7,7 @@ set(imcore_SRCS
 
 add_library(imcore SHARED ${imcore_SRCS})
 target_link_libraries(imcore ${OpenCV_LIBS})
+target_compile_features(imcore PRIVATE c_restrict)
 
-
+# Current version OpenCV does not compiles with standard 11
+set_property(TARGET imcore PROPERTY CXX_STANDARD 98)
