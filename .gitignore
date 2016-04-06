@@ -1,4 +1,3 @@
-CMake/common
 /Build
 /.gitignore~
 /readme.org~
@@ -6,3 +5,6 @@ CMake/common
 *.pyc
 /nbproject
 /build
+*.user
+.idea
+CMake/common
