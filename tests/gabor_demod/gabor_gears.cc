@@ -120,23 +120,22 @@ void sconvolution(const float *__restrict data,
     }
 }
 
-void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
-             const double sigma, const int type) throw(cv::Exception)
+void gen_gaborKernel(cv::Mat &greal, cv::Mat &gimag, const double f, const double sigma,
+                     const int N, const int type) throw(cv::Exception)
 {
-  const int N =(int) sigma*3;
-  greal.create(1,2*N+1, type);
-  gimag.create(1,2*N+1, type);
+  greal.create(1,N+1, type);
+  gimag.create(1,N+1, type);
   const double C = 1.0/(sigma*sqrt(2*3.1416));
 
   if(type==CV_32F)
-    for(int i=-N; i<=N; i++){
-      greal.at<float>(0,i+N)=C*exp(-i*i/(2*sigma*sigma))*cos(f*i);
-      gimag.at<float>(0,i+N)=-C*exp(-i*i/(2*sigma*sigma))*sin(f*i);
+    for(int i=-N/2; i<=N/2; i++){
+      greal.at<float>(0,i+N/2)=C*exp(-i*i/(2*sigma*sigma))*cos(f*i);
+      gimag.at<float>(0,i+N/2)=-C*exp(-i*i/(2*sigma*sigma))*sin(f*i);
     }
   else if(type==CV_64F)
-    for(int i=-N; i<=N; i++){
-      greal.at<double>(0,i+N)=C*exp(-i*i/(2*sigma*sigma))*cos(f*i);
-      gimag.at<double>(0,i+N)=-C*exp(-i*i/(2*sigma*sigma))*sin(f*i);
+    for(int i=-N/2; i<=N/2; i++){
+      greal.at<double>(0,i+N/2)=C*exp(-i*i/(2*sigma*sigma))*cos(f*i);
+      gimag.at<double>(0,i+N/2)=-C*exp(-i*i/(2*sigma*sigma))*sin(f*i);
     }
   else{
     cv::Exception e(DEMOD_UNKNOWN_TYPE, "Data type not supported",
@@ -149,15 +148,18 @@ void gabor_adaptiveFilterXY(cv::Mat data, cv::Mat fr, cv::Mat fi,
                             const double wx, const double wy,
                             const int x, const int y)
 {
+  const double w = sqrt(wx*wx + wy*wy);
+  double sigma = fabs(w)>0.0001? fabs(3.0/w):1570;
+  int N = 6*sigma;
+
+  if(N > 64) {
+    N = 64;
+    sigma = N / 6.0;
+  }
   cv::Mat hxr, hxi, hyr, hyi;
-  double sx = fabs(wx)>0.001? fabs(1.57/wx):1570,
-      sy = fabs(wy)>0.001? fabs(1.57/wy):1570;
 
-  sx = sx>7? 7:(sx<1? 1:sx);
-  sy = sy>7? 7:(sy<1? 1:sy);
-
-  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
-  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+  gen_gaborKernel(hxr, hxi, wx, sigma, N, data.type());
+  gen_gaborKernel(hyr, hyi, wy, sigma, N, data.type());
 
   if(data.type()==CV_32F){
     fr.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyr, x, y) -
@@ -183,8 +185,9 @@ void gabor_filter(cv::Mat data, cv::Mat fr, cv::Mat fi,
 
   sx = sx>22? 22:(sx<1? 1:sx);
   sy = sy>22? 22:(sy<1? 1:sy);
-  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
-  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+  int Nx = 6*sx, Ny = 6*sy;
+  gen_gaborKernel(hxr, hxi, wx, sx, Nx, data.type());
+  gen_gaborKernel(hyr, hyi, wy, sy, Ny, data.type());
 
   if(data.type()==CV_32F){
     sconvolution(data.ptr<float>(), hxr.ptr<float>(), hyr.ptr<float>(),
@@ -262,16 +265,17 @@ void gabor::FilterXY::operator()(cv::Mat dat, cv::Mat fre, cv::Mat fim)
 void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
                                  const int y)
 {
-  double sx = fabs(wx)>0.001? fabs(M_PI_2/wx):1570,
-      sy = fabs(wy)>0.001? fabs(M_PI_2/wy):1570;
+  const double w = sqrt(wx*wx + wy*wy);
+  double sigma = fabs(w)>0.0001? fabs(3.0/w):1570;
+  int N = 6*sigma;
 
-  if(sx*6 > m_kernelN)
-    sx = m_kernelN/6.0;
-  if(sy*6 > m_kernelN)
-    sy = m_kernelN/6.0;
+  if(N > m_kernelN) {
+    N = m_kernelN;
+    sigma = N / 6.0;
+  }
 
-  gen_gaborKernel(hxr, hxi, wx, sx, data.type());
-  gen_gaborKernel(hyr, hyi, wy, sy, data.type());
+  gen_gaborKernel(hxr, hxi, wx, sigma, N, data.type());
+  gen_gaborKernel(hyr, hyi, wy, sigma, N, data.type());
 
   if(data.type()==CV_32F){
     fr.at<float>(y,x)=convolutionAtXY<float>(data, hxr, hyr, x, y) -
@@ -497,8 +501,8 @@ cv::Vec2d gabor::CalcFreqXY::operator()(const int x, const int y)
   double magn = fr.at<double>(y,x)*fr.at<double>(y,x) +
       fi.at<double>(y,x)*fi.at<double>(y,x);
 
-  if(magn<0.0001)
-    magn=0.0001; //Evitar devision entre 0
+  if(magn<1e-10)
+    magn=1e-10; //Evitar devision entre 0
 
   freqs[0] = (imx*fr.at<double>(y,x) - fi.at<double>(y,x)*rex)/magn;
 

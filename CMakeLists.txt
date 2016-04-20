@@ -6,7 +6,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
                               ${CMAKE_SOURCE_DIR}/CMake/common)
 include(GitExternal)
 
-set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_C_FLAGS_RELEASE "-fPIC -O2 -mfpmath=sse -msse2 -funroll-loops")
 set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O2 -mfpmath=sse -msse2 -funroll-loops")
 set(CMAKE_C_FLAGS_DEBUG "-fPIC -ggdb3 -DBZ_DEBUG")

@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     I=cos<double>(phase);
 
     gradient(phase, fx, fy);
-    cv::randn(noise, 0, .7);
+    cv::randn(noise, 0, .0);
     I=I+noise;
   }
   else{
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
   int i=p.y, j=p.x, cont=0;
 
   DemodGabor gabor(I);
-  gabor.setIters(1).setKernelSize(22).
+  gabor.setIters(1).setKernelSize(64).
         setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.3).setSeedIters(5).
         setScanMinf(.01);
   gabor.setCombFreqs(true).setCombSize(5);
@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 
   //gabor.run();
 
+  int kernSize = gabor.getKernelSize();
   do{
     // Codigo para mostrar resultados en tiempo real
     if((cont++)%500==0){
@@ -113,11 +114,16 @@ int main(int argc, char* argv[])
       const int j=pixel.x;
       wx = ffx.at<double>(i,j);
       wy = ffy.at<double>(i,j);
-      double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
-      sx = sx>7? 7:(sx<1? 1:sx);
-      sy = sy>7? 7:(sy<1? 1:sy);
-      gen_gaborKernel(hxr, hxi, wx, sx, CV_64F);
-      gen_gaborKernel(hyr, hyi, wy, sy, CV_64F);
+      double w = sqrt(wx*wx + wy*wy);
+      double sigma = fabs(w)>0.0001? fabs(3.0/w):1570;
+      int N = 6*sigma;
+      if(N >kernSize) {
+        N = kernSize;
+        sigma = N / 6.0;
+      }
+
+      gen_gaborKernel(hxr, hxi, wx, sigma, N, CV_64F);
+      gen_gaborKernel(hyr, hyi, wy, sigma, N, CV_64F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo
       h=cv::Mat::zeros(hyr.cols,hxr.cols, CV_64F)-1;
       for(int i=0; i<hyr.cols; i++)
