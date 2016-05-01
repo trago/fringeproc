@@ -21,7 +21,8 @@
  * CV_32F or CV_64F.
  * @throw Exception If the type is not correct.
  */
-void gen_gaborKernel(cv::Mat &greal, cv::Mat &gimag, const double f, const double sigma, const int N, const int type) throw(cv::Exception);
+void gen_gaborKernel(cv::Mat& greal, cv::Mat& gimag, const double f,
+             const double sigma, const int type) throw(cv::Exception);
 
 /**
  * Applies the gabor filter at (x,y) and stores the result.

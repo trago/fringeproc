@@ -5,7 +5,7 @@ import cv2
 
 
 def peaks(M, N):
-    X, Y = np.ogrid[-3:3:M*1j, -3:3:N*1j]
+    Y, X = np.ogrid[-3:3:M*1j, -3:3:N*1j]
 
     p = (1 - X/2.0 + X**5 + Y**3)*np.exp(-(X**2+Y**2))
 
@@ -23,15 +23,14 @@ def gen_gaborKernel(w, sigma):
 def runInteractive(gabor, scan):
     cont = 0
     pixel = scan.getPosition()
-    kernelSize = gabor.getKernelSize()
     while gabor.runInteractive(scan):
 
-        if cont%500 == 0:
-            pixel = scan.getPosition()
+        if cont%50 == 0:
             wx = gabor.getWxAtPoint(pixel)
             wy = gabor.getWyAtPoint(pixel)
-            sx = np.fabs(2*np.pi/wx); sy = np.fabs(2*np.pi/wy)
+            sx = np.fabs(1.5708/wx); sy = np.fabs(1.5708/wy)
 
+            kernelSize = gabor.getKernelSize()
             sx = kernelSize if sx>kernelSize else 1 if sx<1 else sx
             sy = kernelSize if sy>kernelSize else 1 if sy<1 else sy
             hx = np.matrix(gen_gaborKernel(wx, sx))
@@ -39,20 +38,22 @@ def runInteractive(gabor, scan):
             h = np.array(hy*hx)
 
             hr = np.real(h)
-            hr = cv2.normalize(hr, None, 0, 1, cv2.NORM_MINMAX)
+            (a,b) = (hr.min(), hr.max())
+            hr = (hr - a)/(b-a)
             cv2.imshow('Kernel', hr)
-
             fr = gabor.getFr()
-            fr = cv2.normalize(fr, None, 0, 1, cv2.NORM_MINMAX)
+            (a,b) = (fr.min(), fr.max())
+            fr = (fr - a) / (b - a)
             cv2.imshow('Out', fr)
 
             cv2.waitKey(32)
 
         cont += 1
+        pixel = scan.getPosition()
 
-shape = (256,256)
-P = peaks(*shape)*23
-I = np.cos(P) + 0.*np.random.randn(*shape)
+
+P = peaks(256,256)*23
+I = np.cos(P) + 0.*np.random.randn(256,256)
 
 # shape[0] es y
 # shape[1] es x
