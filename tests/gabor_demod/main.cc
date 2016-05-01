@@ -89,17 +89,17 @@ int main(int argc, char* argv[])
 
   DemodGabor gabor(I);
   gabor.setIters(1).setKernelSize(22).
-        setMaxfq(M_PI/2).setMinfq(0.01).setTau(0.3).setSeedIters(5).
+        setMaxfq(M_PI/4).setMinfq(0.01).setTau(0.3).setSeedIters(5).
         setScanMinf(.01);
-  gabor.setCombFreqs(true).setCombSize(5);
+  gabor.setCombFreqs(false).setCombSize(5);
   gabor.setStartPixel(p).setFreqSeed(freqs[0], freqs[1]);
   ffx = gabor.getWx();
   ffy = gabor.getWy();
   fr = gabor.getFr();
   fi = gabor.getFi();
   Scanner scan(ffx, ffy, p);
-  scan.setFreqMin(.7);
-  scan.updateFreqMin(true);
+  scan.setFreqMin(.1);
+  scan.updateFreqMin(false);
   cv::Point pixel;
 
   //gabor.run();
@@ -113,9 +113,15 @@ int main(int argc, char* argv[])
       const int j=pixel.x;
       wx = ffx.at<double>(i,j);
       wy = ffy.at<double>(i,j);
-      double sx = fabs(1.5708/wx), sy = fabs(1.5708/wy);
-      sx = sx>7? 7:(sx<1? 1:sx);
-      sy = sy>7? 7:(sy<1? 1:sy);
+      const double w = sqrt(wx*wx + wy*wy);
+      double sx = fabs(w)>0.001? fabs(M_PI_2/w):1570,
+              sy = fabs(w)>0.001? fabs(M_PI_2/w):1570;
+      int kernelN = gabor.getKernelSize();
+      if(sx*6 > kernelN)
+        sx = kernelN/6.0;
+      if(sy*6 > kernelN)
+        sy = kernelN/6.0;
+
       gen_gaborKernel(hxr, hxi, wx, sx, CV_64F);
       gen_gaborKernel(hyr, hyi, wy, sy, CV_64F);
       // Genera la parte imaginaria del filtro de gabor para desplegarlo

@@ -262,8 +262,9 @@ void gabor::FilterXY::operator()(cv::Mat dat, cv::Mat fre, cv::Mat fim)
 void gabor::FilterXY::operator()(const double wx, const double wy, const int x,
                                  const int y)
 {
-  double sx = fabs(wx)>0.001? fabs(M_PI_2/wx):1570,
-      sy = fabs(wy)>0.001? fabs(M_PI_2/wy):1570;
+  const double w = sqrt(wx*wx + wy*wy);
+  double sx = fabs(w)>0.001? fabs(M_PI_2/w):1570,
+      sy = fabs(w)>0.001? fabs(M_PI_2/w):1570;
 
   if(sx*6 > m_kernelN)
     sx = m_kernelN/6.0;
